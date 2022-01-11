@@ -6,6 +6,10 @@ import androidx.room.Room;
 
 import m.co.rh.id.a_medic_log.base.AppDatabase;
 import m.co.rh.id.a_medic_log.base.dao.AndroidNotificationDao;
+import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.dao.NoteDao;
+import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
+import m.co.rh.id.a_medic_log.base.repository.AndroidNotificationRepo;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
@@ -33,8 +37,16 @@ public class DatabaseProviderModule implements ProviderModule {
                         AppDatabase.class, mDbName)
                         .build());
         // register Dao separately to decouple from AppDatabase
+        providerRegistry.registerAsync(ProfileDao.class, () -> provider.get(AppDatabase.class)
+                .profileDao());
+        providerRegistry.registerAsync(NoteDao.class, () -> provider.get(AppDatabase.class)
+                .noteDao());
+        providerRegistry.registerAsync(MedicineDao.class, () -> provider.get(AppDatabase.class)
+                .medicineDao());
         providerRegistry.registerAsync(AndroidNotificationDao.class, () -> provider.get(AppDatabase.class)
                 .androidNotificationDao());
+        providerRegistry.registerLazy(AndroidNotificationRepo.class, () ->
+                new AndroidNotificationRepo(context, provider));
     }
 
     @Override

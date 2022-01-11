@@ -7,4 +7,6 @@
     <dimen name="nav_header_height">176dp</dimen>
     <dimen name="text_margin">16dp</dimen>
     <dimen name="text_nav_menu">16sp</dimen>
+    <dimen name="text_section_title">20sp</dimen>
+    <dimen name="icon_size">48dp</dimen>
 </resources>

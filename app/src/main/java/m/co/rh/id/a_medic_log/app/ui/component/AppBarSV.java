@@ -16,6 +16,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
+import m.co.rh.id.a_medic_log.base.BaseApplication;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.annotation.NavRouteIndex;
@@ -26,12 +27,10 @@ public class AppBarSV extends StatefulView<Activity> implements Externalizable, 
 
     @NavInject
     private transient INavigator mNavigator;
-    @NavInject
-    private transient Provider mProvider;
     @NavRouteIndex
     private transient byte mRouteIndex;
     private String mTitle;
-    private transient Runnable mNavigationOnClick;
+    private transient View.OnClickListener mNavigationOnClickListener;
     private Integer mMenuResId;
     private transient Toolbar.OnMenuItemClickListener mOnMenuItemClickListener;
     private transient Provider mSvProvider;
@@ -58,19 +57,16 @@ public class AppBarSV extends StatefulView<Activity> implements Externalizable, 
         if (mSvProvider != null) {
             mSvProvider.dispose();
         }
-        mSvProvider = mProvider.get(StatefulViewProvider.class);
+        mSvProvider = BaseApplication.of(activity).getProvider().get(StatefulViewProvider.class);
         Toolbar toolbar = view.findViewById(R.id.toolbar);
         mSvProvider.get(RxDisposer.class).add("updateTitle",
                 mUpdateTitle.subscribe(toolbar::setTitle));
         if (isInitialRoute()) {
             toolbar.setNavigationIcon(R.drawable.ic_menu_white);
-            toolbar.setNavigationContentDescription(R.string.main_menu);
         } else {
             toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white);
-            toolbar.setNavigationContentDescription(R.string.back_to_previous_page);
         }
         toolbar.setNavigationOnClickListener(this);
-
         if (mMenuResId != null) {
             toolbar.inflateMenu(mMenuResId);
         }
@@ -85,10 +81,9 @@ public class AppBarSV extends StatefulView<Activity> implements Externalizable, 
             mSvProvider.dispose();
             mSvProvider = null;
         }
-        mNavigator = null;
-        mNavigationOnClick = null;
+        mNavigationOnClickListener = null;
         mTitle = null;
-        mProvider = null;
+        mNavigator = null;
     }
 
     public boolean isInitialRoute() {
@@ -102,8 +97,8 @@ public class AppBarSV extends StatefulView<Activity> implements Externalizable, 
         }
     }
 
-    public void setNavigationOnClick(Runnable navigationOnClick) {
-        mNavigationOnClick = navigationOnClick;
+    public void setNavigationOnClick(View.OnClickListener navigationOnClickListener) {
+        mNavigationOnClickListener = navigationOnClickListener;
     }
 
     public void setMenuItemListener(Toolbar.OnMenuItemClickListener listener) {
@@ -113,8 +108,8 @@ public class AppBarSV extends StatefulView<Activity> implements Externalizable, 
     @Override
     public void onClick(View view) {
         if (isInitialRoute()) {
-            if (mNavigationOnClick != null) {
-                mNavigationOnClick.run();
+            if (mNavigationOnClickListener != null) {
+                mNavigationOnClickListener.onClick(view);
             }
         } else {
             mNavigator.pop();

@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/container_app_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/text_margin"
+        android:hint="@string/form_start_date_time">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/input_text_start_date_time"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:cursorVisible="false"
+            android:focusable="false"
+            android:inputType="none" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/text_margin"
+        android:hint="@string/form_content">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/input_text_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top"
+            android:maxLines="10"
+            android:minLines="3" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text_reminder_days"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin"
+        android:layout_marginTop="@dimen/text_margin"
+        android:layout_marginEnd="@dimen/text_margin"
+        android:text="@string/title_reminder_days" />
+
+    <LinearLayout
+        android:id="@+id/container_reminder_days"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin"
+        android:layout_marginEnd="@dimen/text_margin"
+        android:minHeight="70dp"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/reminder_days_mon"
+            style="@style/TextAppearance.AppCompat.Widget.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="1dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/button_activated"
+            android:text="@string/days_mon"
+            android:textAllCaps="false"
+            android:textColor="@color/daynight_gray_700_white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/reminder_days_tue"
+            style="@style/TextAppearance.AppCompat.Widget.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="1dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/button_activated"
+            android:text="@string/days_tue"
+            android:textAllCaps="false"
+            android:textColor="@color/daynight_gray_700_white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/reminder_days_wed"
+            style="@style/TextAppearance.AppCompat.Widget.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="1dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/button_activated"
+            android:text="@string/days_wed"
+            android:textAllCaps="false"
+            android:textColor="@color/daynight_gray_700_white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/reminder_days_thu"
+            style="@style/TextAppearance.AppCompat.Widget.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="1dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/button_activated"
+            android:text="@string/days_thu"
+            android:textAllCaps="false"
+            android:textColor="@color/daynight_gray_700_white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/reminder_days_fri"
+            style="@style/TextAppearance.AppCompat.Widget.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="1dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/button_activated"
+            android:text="@string/days_fri"
+            android:textAllCaps="false"
+            android:textColor="@color/daynight_gray_700_white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/reminder_days_sat"
+            style="@style/TextAppearance.AppCompat.Widget.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="1dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/button_activated"
+            android:text="@string/days_sat"
+            android:textAllCaps="false"
+            android:textColor="@color/daynight_gray_700_white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/reminder_days_sun"
+            style="@style/TextAppearance.AppCompat.Widget.Button.Borderless.Colored"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="1dp"
+            android:layout_weight="1"
+            android:backgroundTint="@color/button_activated"
+            android:text="@string/days_sun"
+            android:textAllCaps="false"
+            android:textColor="@color/daynight_gray_700_white" />
+    </LinearLayout>
+</LinearLayout>

@@ -15,6 +15,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.RxProviderModule;
+import m.co.rh.id.a_medic_log.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.base.BaseApplication;
 import m.co.rh.id.aprovider.Provider;
@@ -22,14 +23,18 @@ import m.co.rh.id.aprovider.Provider;
 public class MainActivity extends AppCompatActivity {
 
     private BehaviorSubject<Boolean> mRebuildUi;
-    private Provider mProvider;
+    private Provider mActivityProvider;
+    private AppNotificationHandler mAppNotificationHandler;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        mProvider = Provider.createProvider(this, new RxProviderModule());
+        mActivityProvider = Provider.createNestedProvider("ActivityProvider",
+                BaseApplication.of(this).getProvider(), getApplicationContext()
+                , new RxProviderModule());
+        mAppNotificationHandler = mActivityProvider.get(AppNotificationHandler.class);
         mRebuildUi = BehaviorSubject.create();
         // rebuild UI is expensive and error prone, avoid spam rebuild (especially due to day and night mode)
-        mProvider.get(RxDisposer.class)
+        mActivityProvider.get(RxDisposer.class)
                 .add("rebuildUI", mRebuildUi.debounce(100, TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(aBoolean -> {
@@ -49,7 +54,14 @@ public class MainActivity extends AppCompatActivity {
                                 .getNavigator(MainActivity.this).onBackPressed();
                     }
                 });
+        mAppNotificationHandler.processNotification(getIntent());
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        mAppNotificationHandler.processNotification(intent);
     }
 
     @Override
@@ -70,8 +82,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mProvider.dispose();
-        mProvider = null;
+        mAppNotificationHandler.clearNotificationBuffer();
+        mActivityProvider.dispose();
+        mActivityProvider = null;
         mRebuildUi.onComplete();
         mRebuildUi = null;
     }

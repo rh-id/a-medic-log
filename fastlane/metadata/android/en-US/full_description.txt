@@ -1,0 +1,7 @@
+A simple and easy to use personal medical notes.
+<ul>
+  <li>Easily add your medical notes</li>
+  <li>Multiple profile to keep track elderly and family members medical history</li>
+  <li>Add medicine information and medicine reminder to notify you to take medicine</li>
+  <li>Support dark mode and light mode</li>
+</ul>

@@ -13,6 +13,9 @@ public abstract class AndroidNotificationDao {
     @Query("SELECT * FROM android_notification WHERE request_id = :requestId")
     public abstract AndroidNotification findByRequestId(int requestId);
 
+    @Query("SELECT * FROM android_notification WHERE group_key=:groupKey AND ref_id=:refId")
+    public abstract AndroidNotification findByGroupTagAndRefId(String groupKey, Long refId);
+
     @Query("SELECT COUNT(id) FROM android_notification")
     public abstract long count();
 
@@ -20,7 +23,7 @@ public abstract class AndroidNotificationDao {
     public abstract void deleteByRequestId(int requestId);
 
     @Insert
-    protected abstract long insert(AndroidNotification androidNotification);
+    public abstract long insert(AndroidNotification androidNotification);
 
     @Delete
     public abstract void delete(AndroidNotification androidNotification);

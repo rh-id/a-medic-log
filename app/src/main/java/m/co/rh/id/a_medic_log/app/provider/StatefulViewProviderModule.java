@@ -14,6 +14,7 @@ public class StatefulViewProviderModule implements ProviderModule {
     @Override
     public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
         providerRegistry.registerModule(new RxProviderModule());
+        providerRegistry.registerModule(new CommandProviderModule());
     }
 
     @Override

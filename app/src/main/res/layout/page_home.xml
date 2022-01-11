@@ -20,16 +20,31 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-                android:id="@+id/container_swipe_refresh"
+            <androidx.gridlayout.widget.GridLayout
                 android:layout_width="match_parent"
-                android:layout_height="match_parent">
+                android:layout_height="wrap_content"
+                app:columnCount="@integer/grid_column_count">
 
-                <FrameLayout
-                    android:id="@+id/container_list_news"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent" />
-            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_add_profile"
+                    style="@style/Theme.Amediclog.HomeMenuButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/title_add_profile"
+                    app:icon="@drawable/ic_person_add_black"
+                    app:layout_columnWeight="1"
+                    app:layout_gravity="fill" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/button_add_note"
+                    style="@style/Theme.Amediclog.HomeMenuButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/title_add_note"
+                    app:icon="@drawable/ic_note_add_black"
+                    app:layout_columnWeight="1"
+                    app:layout_gravity="fill" />
+            </androidx.gridlayout.widget.GridLayout>
 
         </LinearLayout>
 
@@ -47,13 +62,20 @@
                 android:background="?attr/colorSecondary" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/menu_profiles"
+                style="@style/Theme.Amediclog.BorderlessMenuButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/title_profile_list"
+                app:icon="@drawable/ic_person_black" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/menu_settings"
                 style="@style/Theme.Amediclog.BorderlessMenuButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/title_settings"
                 app:icon="@drawable/ic_settings_black" />
-
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.drawerlayout.widget.DrawerLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

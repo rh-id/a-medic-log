@@ -1,5 +1,6 @@
 plugins {
     id 'com.android.application'
+    id "com.cookpad.android.plugin.license-tools" version "1.2.8"
 }
 
 def keyStoreFile = File.createTempFile("key", null)
@@ -25,7 +26,7 @@ android {
     }
     defaultConfig {
         applicationId "m.co.rh.id.a_medic_log"
-        minSdk 16
+        minSdk 21
         targetSdk 31
         versionCode 1
         versionName "1.0"
@@ -58,18 +59,17 @@ dependencies {
 
     implementation project(path: ':base')
 
-    implementation 'com.google.android.material:material:1.4.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.1.2'
+    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
     implementation 'androidx.drawerlayout:drawerlayout:1.1.1'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.2.1'
-
-    implementation 'io.reactivex.rxjava3:rxandroid:3.0.0'
-    // unable to update to 3.1.x due to minimum android requirement API 21 since 3.1.0
-    implementation 'io.reactivex.rxjava3:rxjava:3.0.13'
+    implementation "androidx.gridlayout:gridlayout:1.0.0"
 
     def multidex_version = "2.0.1"
     implementation "androidx.multidex:multidex:$multidex_version"
+
+    def work_version = "2.7.1"
+    implementation "androidx.work:work-runtime:$work_version"
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.3'

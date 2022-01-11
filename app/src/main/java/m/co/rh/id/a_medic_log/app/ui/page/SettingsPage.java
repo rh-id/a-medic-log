@@ -11,15 +11,14 @@ import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.settings.LicensesMenuSV;
 import m.co.rh.id.a_medic_log.app.ui.component.settings.LogMenuSV;
+import m.co.rh.id.a_medic_log.app.ui.component.settings.ThemeMenuSV;
 import m.co.rh.id.a_medic_log.app.ui.component.settings.VersionMenuSV;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
-import m.co.rh.id.aprovider.Provider;
 
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class SettingsPage extends StatefulView<Activity> {
 
-    @NavInject
-    private transient Provider mProvider; // global provider
     @NavInject
     private AppBarSV mAppBarSV;
     @NavInject
@@ -28,6 +27,8 @@ public class SettingsPage extends StatefulView<Activity> {
     public SettingsPage() {
         mAppBarSV = new AppBarSV();
         mStatefulViews = new ArrayList<>();
+        ThemeMenuSV themeMenuSV = new ThemeMenuSV();
+        mStatefulViews.add(themeMenuSV);
         LogMenuSV logMenuSV = new LogMenuSV();
         mStatefulViews.add(logMenuSV);
         LicensesMenuSV licensesMenuSV = new LicensesMenuSV();
@@ -62,6 +63,5 @@ public class SettingsPage extends StatefulView<Activity> {
             mStatefulViews.clear();
             mStatefulViews = null;
         }
-        mProvider = null;
     }
 }
