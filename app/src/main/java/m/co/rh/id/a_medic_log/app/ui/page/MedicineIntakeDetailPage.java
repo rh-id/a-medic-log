@@ -7,6 +7,8 @@ import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 
 import androidx.appcompat.widget.Toolbar;
@@ -14,15 +16,19 @@ import androidx.appcompat.widget.Toolbar;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
+import java.util.function.Function;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineIntakeCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.QueryMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineIntakeCmd;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
+import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.alogger.ILogger;
@@ -43,6 +49,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
     private transient Provider mSvProvider;
     private transient RxDisposer mRxDisposer;
     private transient NewMedicineIntakeCmd mNewMedicineIntakeCmd;
+    private transient QueryMedicineCmd mQueryMedicineCmd;
 
     @NavInject
     private AppBarSV mAppBarSv;
@@ -52,6 +59,8 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
 
     private transient TextWatcher mTakenDateTimeTextWatcher;
     private transient TextWatcher mDescriptionTextWatcher;
+    private transient ArrayAdapter<String> mSuggestionAdapter;
+    private transient Function<String, Collection<String>> mSuggestionQuery;
 
     public MedicineIntakeDetailPage() {
         mAppBarSv = new AppBarSV(R.menu.page_medicine_intake_detail);
@@ -78,6 +87,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
         } else {
             mNewMedicineIntakeCmd = mSvProvider.get(NewMedicineIntakeCmd.class);
         }
+        mQueryMedicineCmd = mSvProvider.get(QueryMedicineCmd.class);
         if (isUpdate) {
             mAppBarSv.setTitle(mNavigator.getActivity()
                     .getString(R.string.title_update_medicine_intake));
@@ -87,6 +97,8 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
         }
         mAppBarSv.setMenuItemListener(this);
         initTextWatcher();
+        mSuggestionQuery = s ->
+                mQueryMedicineCmd.searchMedicineIntakeDescription(s).blockingGet();
     }
 
     @Override
@@ -109,8 +121,12 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
         EditText inputTakenDateTime = rootLayout.findViewById(R.id.input_text_taken_date_time);
         inputTakenDateTime.setOnClickListener(this);
         inputTakenDateTime.addTextChangedListener(mTakenDateTimeTextWatcher);
-        EditText inputDescription = rootLayout.findViewById(R.id.input_text_description);
+        mSuggestionAdapter = new SuggestionAdapter
+                (activity, android.R.layout.select_dialog_item, mSuggestionQuery);
+        AutoCompleteTextView inputDescription = rootLayout.findViewById(R.id.input_text_description);
         inputDescription.addTextChangedListener(mDescriptionTextWatcher);
+        inputDescription.setThreshold(1);
+        inputDescription.setAdapter(mSuggestionAdapter);
         mRxDisposer.add("createView_onMedicineIntakeUpdated",
                 mMedicineIntakeSubject.getSubject()
                         .observeOn(AndroidSchedulers.mainThread())
@@ -158,6 +174,11 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
         }
         mTakenDateTimeTextWatcher = null;
         mDescriptionTextWatcher = null;
+        if (mSuggestionAdapter != null) {
+            mSuggestionAdapter.clear();
+            mSuggestionAdapter = null;
+        }
+        mSuggestionQuery = null;
     }
 
     @Override

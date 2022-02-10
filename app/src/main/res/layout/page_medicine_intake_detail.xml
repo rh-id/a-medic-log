@@ -25,17 +25,21 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/label_text_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"
-        android:hint="@string/form_content">
+        android:hint="@string/form_description">
 
-        <com.google.android.material.textfield.TextInputEditText
+        <AutoCompleteTextView
             android:id="@+id/input_text_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="top"
+            android:hint="@string/form_description"
             android:maxLines="10"
-            android:minLines="3" />
+            android:minLines="3"
+            android:paddingStart="@dimen/text_margin"
+            android:paddingTop="24sp" />
     </com.google.android.material.textfield.TextInputLayout>
 </LinearLayout>
