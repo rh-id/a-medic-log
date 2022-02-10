@@ -82,6 +82,7 @@ project.afterEvaluate {
     if (changeLogTxt.exists()) {
         File outputChangeLog = new File(project.buildDir, "changelog.txt")
         if (!outputChangeLog.exists()) {
+            outputChangeLog.parentFile.mkdirs()
             outputChangeLog.createNewFile()
         }
         outputChangeLog.bytes = changeLogTxt.bytes
