@@ -25,7 +25,6 @@
             android:id="@+id/input_text_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/form_name"
             android:paddingStart="@dimen/text_margin"
             android:paddingTop="24sp"
             android:paddingEnd="@dimen/text_margin"
