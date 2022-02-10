@@ -12,12 +12,11 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.aprovider.Provider;
-import m.co.rh.id.aprovider.ProviderValue;
 
 public class PagedMedicineIntakeItemsCmd {
     private Context mAppContext;
-    private ProviderValue<ExecutorService> mExecutorService;
-    private ProviderValue<MedicineDao> mMedicineDao;
+    private ExecutorService mExecutorService;
+    private MedicineDao mMedicineDao;
     private Long mMedicineId;
     private int mLimit;
     private String mSearch;
@@ -26,8 +25,8 @@ public class PagedMedicineIntakeItemsCmd {
 
     public PagedMedicineIntakeItemsCmd(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
-        mExecutorService = provider.lazyGet(ExecutorService.class);
-        mMedicineDao = provider.lazyGet(MedicineDao.class);
+        mExecutorService = provider.get(ExecutorService.class);
+        mMedicineDao = provider.get(MedicineDao.class);
         mItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
         resetPage();
@@ -39,13 +38,13 @@ public class PagedMedicineIntakeItemsCmd {
 
     public void search(String search) {
         mSearch = search;
-        mExecutorService.get().execute(() -> {
+        mExecutorService.execute(() -> {
             if (!isSearching()) {
                 load();
             } else {
                 mIsLoadingSubject.onNext(true);
                 try {
-                    List<MedicineIntake> dbList = mMedicineDao.get().searchMedicineIntakeDescription(mSearch);
+                    List<MedicineIntake> dbList = mMedicineDao.searchMedicineIntakeDescription(mSearch);
                     mItemsSubject.onNext(new ArrayList<>(dbList));
                 } catch (Throwable throwable) {
                     mItemsSubject.onError(throwable);
@@ -79,7 +78,7 @@ public class PagedMedicineIntakeItemsCmd {
     }
 
     private void load() {
-        mExecutorService.get().execute(() -> {
+        mExecutorService.execute(() -> {
             mIsLoadingSubject.onNext(true);
             try {
                 mItemsSubject.onNext(
@@ -95,9 +94,9 @@ public class PagedMedicineIntakeItemsCmd {
     private ArrayList<MedicineIntake> loadItems() {
         List<MedicineIntake> dbList;
         if (mMedicineId == null) {
-            dbList = mMedicineDao.get().findMedicineIntakesByWithLimit(mLimit);
+            dbList = mMedicineDao.findMedicineIntakesByWithLimit(mLimit);
         } else {
-            dbList = mMedicineDao.get().findMedicineIntakesByMedicineIdWithLimit(mMedicineId, mLimit);
+            dbList = mMedicineDao.findMedicineIntakesByMedicineIdWithLimit(mMedicineId, mLimit);
         }
         return new ArrayList<>(dbList);
     }

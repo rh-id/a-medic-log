@@ -14,12 +14,11 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.aprovider.Provider;
-import m.co.rh.id.aprovider.ProviderValue;
 
 public class PagedProfileItemsCmd {
     private Context mAppContext;
-    private ProviderValue<ExecutorService> mExecutorService;
-    private ProviderValue<ProfileDao> mProfileDao;
+    private ExecutorService mExecutorService;
+    private ProfileDao mProfileDao;
     private int mLimit;
     private String mSearch;
     private final BehaviorSubject<ArrayList<Profile>> mItemsSubject;
@@ -28,8 +27,8 @@ public class PagedProfileItemsCmd {
 
     public PagedProfileItemsCmd(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
-        mExecutorService = provider.lazyGet(ExecutorService.class);
-        mProfileDao = provider.lazyGet(ProfileDao.class);
+        mExecutorService = provider.get(ExecutorService.class);
+        mProfileDao = provider.get(ProfileDao.class);
         mItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
         mSelectedIdsSubject = BehaviorSubject.createDefault(new LinkedHashSet<>());
@@ -42,13 +41,13 @@ public class PagedProfileItemsCmd {
 
     public void search(String search) {
         mSearch = search;
-        mExecutorService.get().execute(() -> {
+        mExecutorService.execute(() -> {
             if (!isSearching()) {
                 load();
             } else {
                 mIsLoadingSubject.onNext(true);
                 try {
-                    List<Profile> profileList = mProfileDao.get().searchProfile(mSearch);
+                    List<Profile> profileList = mProfileDao.searchProfile(mSearch);
                     mItemsSubject.onNext(new ArrayList<>(profileList));
                 } catch (Throwable throwable) {
                     mItemsSubject.onError(throwable);
@@ -82,7 +81,7 @@ public class PagedProfileItemsCmd {
     }
 
     private void load() {
-        mExecutorService.get().execute(() -> {
+        mExecutorService.execute(() -> {
             mIsLoadingSubject.onNext(true);
             try {
                 mItemsSubject.onNext(
@@ -96,7 +95,7 @@ public class PagedProfileItemsCmd {
     }
 
     private ArrayList<Profile> loadItems() {
-        List<Profile> profileList = mProfileDao.get().loadProfilesWithLimit(mLimit);
+        List<Profile> profileList = mProfileDao.loadProfilesWithLimit(mLimit);
         return new ArrayList<>(profileList);
     }
 

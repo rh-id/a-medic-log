@@ -12,12 +12,11 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.aprovider.Provider;
-import m.co.rh.id.aprovider.ProviderValue;
 
 public class PagedNoteItemsCmd {
     private Context mAppContext;
-    private ProviderValue<ExecutorService> mExecutorService;
-    private ProviderValue<NoteDao> mNoteDao;
+    private ExecutorService mExecutorService;
+    private NoteDao mNoteDao;
     private Long mProfileId;
     private int mLimit;
     private String mSearch;
@@ -26,8 +25,8 @@ public class PagedNoteItemsCmd {
 
     public PagedNoteItemsCmd(Context context, Provider provider) {
         mAppContext = context.getApplicationContext();
-        mExecutorService = provider.lazyGet(ExecutorService.class);
-        mNoteDao = provider.lazyGet(NoteDao.class);
+        mExecutorService = provider.get(ExecutorService.class);
+        mNoteDao = provider.get(NoteDao.class);
         mItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
         resetPage();
@@ -39,13 +38,13 @@ public class PagedNoteItemsCmd {
 
     public void search(String search) {
         mSearch = search;
-        mExecutorService.get().execute(() -> {
+        mExecutorService.execute(() -> {
             if (!isSearching()) {
                 load();
             } else {
                 mIsLoadingSubject.onNext(true);
                 try {
-                    List<Note> noteList = mNoteDao.get().searchNote(mSearch);
+                    List<Note> noteList = mNoteDao.searchNote(mSearch);
                     mItemsSubject.onNext(new ArrayList<>(noteList));
                 } catch (Throwable throwable) {
                     mItemsSubject.onError(throwable);
@@ -79,7 +78,7 @@ public class PagedNoteItemsCmd {
     }
 
     private void load() {
-        mExecutorService.get().execute(() -> {
+        mExecutorService.execute(() -> {
             mIsLoadingSubject.onNext(true);
             try {
                 mItemsSubject.onNext(
@@ -93,7 +92,7 @@ public class PagedNoteItemsCmd {
     }
 
     private ArrayList<Note> loadItems() {
-        List<Note> noteList = mNoteDao.get().loadNotesWithLimit(mProfileId, mLimit);
+        List<Note> noteList = mNoteDao.loadNotesWithLimit(mProfileId, mLimit);
         return new ArrayList<>(noteList);
     }
 
