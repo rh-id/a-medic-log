@@ -79,9 +79,9 @@ dependencies {
 project.afterEvaluate {
     def versionCode = android.defaultConfig.versionCode
     File changeLogTxt = new File(project.rootDir, "fastlane/metadata/android/en-US/changelogs/" + versionCode + ".txt")
-    if(changeLogTxt.exists()){
-        File outputChangeLog = layout.buildDirectory.file("changelog.txt").get().asFile
-        if(!outputChangeLog.exists()){
+    if (changeLogTxt.exists()) {
+        File outputChangeLog = new File(project.buildDir, "changelog.txt")
+        if (!outputChangeLog.exists()) {
             outputChangeLog.createNewFile()
         }
         outputChangeLog.bytes = changeLogTxt.bytes
