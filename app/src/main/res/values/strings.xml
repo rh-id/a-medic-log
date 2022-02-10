@@ -103,4 +103,5 @@
     <string name="days_sun">Sun</string>
     <string name="reminder_days_is_required">Reminder days is required</string>
     <string name="form_description">Description</string>
+    <string name="form_message">Message</string>
 </resources>
