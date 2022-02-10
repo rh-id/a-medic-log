@@ -45,7 +45,7 @@ public class PagedMedicineIntakeItemsCmd {
             } else {
                 mIsLoadingSubject.onNext(true);
                 try {
-                    List<MedicineIntake> dbList = mMedicineDao.get().searchMedicineIntake(mSearch);
+                    List<MedicineIntake> dbList = mMedicineDao.get().searchMedicineIntakeDescription(mSearch);
                     mItemsSubject.onNext(new ArrayList<>(dbList));
                 } catch (Throwable throwable) {
                     mItemsSubject.onError(throwable);

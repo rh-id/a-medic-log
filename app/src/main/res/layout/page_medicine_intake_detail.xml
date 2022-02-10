@@ -40,6 +40,7 @@
             android:maxLines="10"
             android:minLines="3"
             android:paddingStart="@dimen/text_margin"
+            android:paddingEnd="@dimen/text_margin"
             android:paddingTop="24sp" />
     </com.google.android.material.textfield.TextInputLayout>
 </LinearLayout>

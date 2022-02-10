@@ -7,6 +7,8 @@ import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -15,7 +17,9 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Function;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -24,11 +28,13 @@ import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteMedicineReminderCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.QueryMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineReminderCmd;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineReminderChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
+import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.reminder.MedicineReminderItemSV;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.reminder.MedicineReminderRecyclerViewAdapter;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
@@ -53,7 +59,10 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
     private transient RxDisposer mRxDisposer;
     private transient MedicineReminderChangeNotifier mMedicineReminderChangeNotifier;
     private transient NewMedicineCmd mNewMedicineCmd;
+    private transient QueryMedicineCmd mQueryMedicineCmd;
     private transient MedicineReminderRecyclerViewAdapter mMedicineReminderRecyclerViewAdapter;
+    private transient ArrayAdapter<String> mSuggestionAdapter;
+    private transient Function<String, Collection<String>> mSuggestionQuery;
 
     @NavInject
     private AppBarSV mAppBarSv;
@@ -85,6 +94,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
         } else {
             mNewMedicineCmd = mSvProvider.get(NewMedicineCmd.class);
         }
+        mQueryMedicineCmd = mSvProvider.get(QueryMedicineCmd.class);
         if (mAppBarSv == null) {
             mAppBarSv = new AppBarSV(R.menu.page_medicine_detail);
         }
@@ -105,6 +115,8 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
         initTextWatcher();
         mMedicineReminderRecyclerViewAdapter = new MedicineReminderRecyclerViewAdapter(mMedicineState,
                 this, this, this, mNavigator, this);
+        mSuggestionQuery = s ->
+                mQueryMedicineCmd.searchMedicineName(s).blockingGet();
     }
 
     @Override
@@ -112,8 +124,12 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.page_medicine_detail, container, false);
         ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSv.buildView(activity, container));
-        EditText inputName = rootLayout.findViewById(R.id.input_text_name);
+        mSuggestionAdapter = new SuggestionAdapter
+                (activity, android.R.layout.select_dialog_item, mSuggestionQuery);
+        AutoCompleteTextView inputName = rootLayout.findViewById(R.id.input_text_name);
         inputName.addTextChangedListener(mNameTextWatcher);
+        inputName.setThreshold(1);
+        inputName.setAdapter(mSuggestionAdapter);
         EditText inputDescription = rootLayout.findViewById(R.id.input_text_description);
         inputDescription.addTextChangedListener(mDescriptionTextWatcher);
         Button addMedicineReminderButton = rootLayout.findViewById(R.id.button_add_medicine_reminder);
@@ -184,6 +200,11 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
         }
         mNameTextWatcher = null;
         mDescriptionTextWatcher = null;
+        if (mSuggestionAdapter != null) {
+            mSuggestionAdapter.clear();
+            mSuggestionAdapter = null;
+        }
+        mSuggestionQuery = null;
     }
 
     @Override

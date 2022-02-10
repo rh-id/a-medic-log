@@ -44,7 +44,10 @@ public abstract class MedicineDao {
     public abstract List<MedicineIntake> findMedicineIntakesByMedicineIdWithLimit(long medicineId, int limit);
 
     @Query("SELECT * FROM medicine_intake WHERE description LIKE '%'||:search||'%' ORDER BY created_date_time DESC")
-    public abstract List<MedicineIntake> searchMedicineIntake(String search);
+    public abstract List<MedicineIntake> searchMedicineIntakeDescription(String search);
+
+    @Query("SELECT * FROM medicine WHERE name LIKE '%'||:search||'%' ORDER BY created_date_time DESC")
+    public abstract List<Medicine> searchMedicineName(String search);
 
     @Transaction
     public MedicineState findMedicineStateByMedicineId(long medicineId) {

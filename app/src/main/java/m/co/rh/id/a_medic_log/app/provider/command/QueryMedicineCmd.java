@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.aprovider.Provider;
 
@@ -26,14 +27,28 @@ public class QueryMedicineCmd {
     public Single<LinkedHashSet<String>> searchMedicineIntakeDescription(String search) {
         return Single.fromFuture(mExecutorService.submit(() ->
         {
-            LinkedHashSet<String> descLinkedHashSet = new LinkedHashSet<>();
-            List<MedicineIntake> medicineIntakes = mMedicineDao.searchMedicineIntake(search);
+            LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>();
+            List<MedicineIntake> medicineIntakes = mMedicineDao.searchMedicineIntakeDescription(search);
             if (!medicineIntakes.isEmpty()) {
                 for (MedicineIntake medicineIntake : medicineIntakes) {
-                    descLinkedHashSet.add(medicineIntake.description);
+                    linkedHashSet.add(medicineIntake.description);
                 }
             }
-            return descLinkedHashSet;
+            return linkedHashSet;
+        }));
+    }
+
+    public Single<LinkedHashSet<String>> searchMedicineName(String search) {
+        return Single.fromFuture(mExecutorService.submit(() ->
+        {
+            LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>();
+            List<Medicine> medicines = mMedicineDao.searchMedicineName(search);
+            if (!medicines.isEmpty()) {
+                for (Medicine medicine : medicines) {
+                    linkedHashSet.add(medicine.name);
+                }
+            }
+            return linkedHashSet;
         }));
     }
 }
