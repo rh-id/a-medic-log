@@ -1,0 +1,8 @@
+Release 1.0.1+2
+
+Fixes:
+* Fix incorrect string UI
+
+Features:
+* Implement auto complete for medicine name and medicine intake description
+* Optimize code for performance
