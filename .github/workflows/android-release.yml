@@ -17,6 +17,7 @@ jobs:
       - name: Make Gradle executable
         run: chmod +x ./gradlew
       - name: Build with Gradle
+        working-directory: .
         run: ./gradlew build
         env:
           ALIAS: ${{secrets.ALIAS}}
