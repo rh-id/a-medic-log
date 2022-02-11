@@ -260,9 +260,9 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
             result = startDateTime - currentDateTime;
             while (result < 0) {
                 Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(currentDateTime);
+                calendar.setTimeInMillis(startDateTime);
                 calendar.add(Calendar.DATE, 1);
-                currentDateTime = calendar.getTimeInMillis();
+                startDateTime = calendar.getTimeInMillis();
                 result = startDateTime - currentDateTime;
             }
         }
