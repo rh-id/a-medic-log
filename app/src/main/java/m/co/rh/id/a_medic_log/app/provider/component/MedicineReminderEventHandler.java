@@ -3,8 +3,7 @@ package m.co.rh.id.a_medic_log.app.provider.component;
 import android.content.Context;
 
 import androidx.work.Data;
-import androidx.work.ExistingPeriodicWorkPolicy;
-import androidx.work.PeriodicWorkRequest;
+import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import java.util.ArrayList;
@@ -24,6 +23,7 @@ import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
 import m.co.rh.id.a_medic_log.app.workmanager.Keys;
 import m.co.rh.id.a_medic_log.app.workmanager.MedicineReminderNotificationWorker;
 import m.co.rh.id.a_medic_log.app.workmanager.Tags;
+import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
@@ -33,6 +33,7 @@ import m.co.rh.id.aprovider.ProviderDisposable;
 public class MedicineReminderEventHandler implements ProviderDisposable {
     private final ExecutorService mExecutorService;
     private final WorkManager mWorkManager;
+    private final MedicineDao mMedicineDao;
     private final NoteChangeNotifier mNoteChangeNotifier;
     private final MedicineChangeNotifier mMedicineChangeNotifier;
     private final MedicineReminderChangeNotifier mMedicineReminderChangeNotifier;
@@ -42,6 +43,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
     public MedicineReminderEventHandler(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
         mWorkManager = provider.get(WorkManager.class);
+        mMedicineDao = provider.get(MedicineDao.class);
         mNoteChangeNotifier = provider.get(NoteChangeNotifier.class);
         mMedicineChangeNotifier = provider.get(MedicineChangeNotifier.class);
         mMedicineReminderChangeNotifier = provider.get(MedicineReminderChangeNotifier.class);
@@ -199,21 +201,19 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
         );
     }
 
-    private void startMedicineReminderNotificationWork(List<MedicineReminder> medicineReminders) {
+    public void startMedicineReminderNotificationWork(List<MedicineReminder> medicineReminders) {
         if (!medicineReminders.isEmpty()) {
             for (MedicineReminder medicineReminder : medicineReminders) {
                 if (medicineReminder.reminderEnabled) {
                     long initialDelay = calculateInitialDelayMs(medicineReminder.startDateTime);
                     String tag = calculateTag(medicineReminder);
-                    PeriodicWorkRequest notificationWorkRequest =
-                            new PeriodicWorkRequest.Builder(MedicineReminderNotificationWorker.class,
-                                    1, TimeUnit.DAYS)
+                    OneTimeWorkRequest notificationWorkRequest =
+                            new OneTimeWorkRequest.Builder(MedicineReminderNotificationWorker.class)
                                     .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
                                     .addTag(tag)
                                     .setInputData(calculateInputData(medicineReminder))
                                     .build();
-                    mWorkManager.enqueueUniquePeriodicWork(tag,
-                            ExistingPeriodicWorkPolicy.REPLACE, notificationWorkRequest);
+                    mWorkManager.enqueue(notificationWorkRequest);
                 }
             }
         }
