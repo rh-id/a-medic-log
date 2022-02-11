@@ -1,0 +1,5 @@
+Release 1.0.2+3
+
+Fixes:
+* Some UI issues
+* Medicine reminder notification not appearing
