@@ -1,0 +1,4 @@
+Release 1.0.3+4
+
+Fixes:
+* Incorrect reminder calculation, please update medicine reminder by disabling and then enabling to restart reminder.
