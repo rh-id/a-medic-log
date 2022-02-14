@@ -25,6 +25,7 @@
         android:id="@+id/text_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin"
         android:layout_marginEnd="@dimen/text_margin"
         android:ellipsize="end"
         android:maxLines="1"
@@ -39,6 +40,7 @@
         android:id="@+id/text_description"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin"
         android:layout_marginEnd="@dimen/text_margin"
         android:layout_marginBottom="@dimen/text_margin"
         android:ellipsize="end"
@@ -46,7 +48,7 @@
         android:textSize="18sp"
         app:layout_constraintBottom_toTopOf="@id/text_name"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/text_name"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_name"
         tools:text="Cough medicine" />
 
@@ -54,43 +56,47 @@
         android:id="@+id/container_reminder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin"
+        android:layout_marginTop="@dimen/text_margin"
+        android:layout_marginEnd="@dimen/text_margin"
         app:columnCount="3"
-        app:layout_constraintBottom_toTopOf="@id/button_more_action"
+        app:layout_constraintBottom_toTopOf="@id/container_action"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_description" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_edit"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        app:icon="@drawable/ic_edit_black"
-        app:iconTint="@color/daynight_black_white"
-        app:layout_constraintBottom_toBottomOf="@id/button_delete"
-        app:layout_constraintEnd_toStartOf="@id/button_delete"
-        app:layout_constraintTop_toTopOf="@id/button_delete" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_delete"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="@dimen/text_margin"
-        app:icon="@drawable/ic_delete_forever_black"
-        app:iconTint="@color/red"
-        app:layout_constraintBottom_toBottomOf="@id/button_more_action"
-        app:layout_constraintEnd_toStartOf="@id/button_more_action"
-        app:layout_constraintTop_toTopOf="@id/button_more_action" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/button_more_action"
-        style="@style/Widget.AppCompat.Button.Borderless"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        app:icon="@drawable/ic_more_vert_black"
-        app:iconTint="@color/daynight_black_white"
+    <LinearLayout
+        android:id="@+id/container_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/container_reminder" />
+        app:layout_constraintTop_toBottomOf="@id/container_reminder">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_edit"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:icon="@drawable/ic_edit_black"
+            app:iconTint="@color/daynight_black_white" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_delete"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:icon="@drawable/ic_delete_forever_black"
+            app:iconTint="@color/red" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_more_action"
+            style="@style/Widget.AppCompat.Button.Borderless"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:icon="@drawable/ic_more_vert_black"
+            app:iconTint="@color/daynight_black_white" />
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
