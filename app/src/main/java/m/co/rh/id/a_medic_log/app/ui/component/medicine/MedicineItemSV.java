@@ -1,6 +1,7 @@
 package m.co.rh.id.a_medic_log.app.ui.component.medicine;
 
 import android.app.Activity;
+import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
@@ -8,7 +9,9 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.gridlayout.widget.GridLayout;
 
 import com.google.android.material.textview.MaterialTextView;
@@ -110,11 +113,16 @@ public class MedicineItemSV extends StatefulView<Activity> implements RequireCom
                                             params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1.0f);
                                             materialTextView.setLayoutParams(params);
                                             materialTextView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
+                                            int tintColor = activity.getResources().getColor(R.color.daynight_black_white);
+                                            Drawable icon;
                                             if (medicineReminder.reminderEnabled) {
-                                                materialTextView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_timer_black, 0, 0, 0);
+                                                icon = AppCompatResources.getDrawable(activity, R.drawable.ic_timer_black);
                                             } else {
-                                                materialTextView.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_timer_off_black, 0, 0, 0);
+                                                icon = AppCompatResources.getDrawable(activity, R.drawable.ic_timer_off_black);
                                             }
+                                            icon = DrawableCompat.wrap(icon);
+                                            DrawableCompat.setTint(icon, tintColor);
+                                            materialTextView.setCompoundDrawablesWithIntrinsicBounds(icon, null, null, null);
                                             containerReminder.addView(materialTextView);
                                         }
                                     } else {

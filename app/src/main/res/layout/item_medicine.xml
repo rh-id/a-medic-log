@@ -16,6 +16,7 @@
         android:maxLines="3"
         android:textSize="18sp"
         android:visibility="gone"
+        app:drawableTint="@color/daynight_black_white"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/text_description"
         app:layout_constraintTop_toTopOf="parent"
