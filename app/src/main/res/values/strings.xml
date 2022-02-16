@@ -56,7 +56,7 @@
     <string name="title_update_note">Update Note</string>
     <string name="success_updating_note">Note updated</string>
     <string name="error_failed_to_update_note">Failed updating note</string>
-    <string name="notification_title_medicine_reminder">Reminder for %s</string>
+    <string name="notification_title_medicine_reminder">%s, %s</string>
     <string name="notification_channel_name_medicine_reminder">Medicine Reminder</string>
     <string name="notification_channel_description_medicine_reminder">Remind you of your medicine</string>
     <string name="take_medicine">Take medicine</string>

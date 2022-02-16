@@ -97,7 +97,7 @@ public class AppNotificationHandler {
             Medicine medicine = mMedicineDao.get().findMedicineById(medicineReminder.medicineId);
             Note note = mNoteDao.get().findNoteById(medicine.noteId);
             Profile profile = mProfileDao.get().findProfileById(note.profileId);
-            String title = mAppContext.getString(R.string.notification_title_medicine_reminder, profile.name);
+            String title = mAppContext.getString(R.string.notification_title_medicine_reminder, profile.name, medicine.name);
             String content = medicineReminder.message;
             NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_MEDICINE_REMINDER)
                     .setSmallIcon(R.drawable.ic_notification)
