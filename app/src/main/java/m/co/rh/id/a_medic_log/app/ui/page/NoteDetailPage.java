@@ -33,6 +33,7 @@ import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.MedicineItemSV;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.MedicineRecyclerViewAdapter;
+import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.alogger.ILogger;
@@ -55,6 +56,8 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     private AppBarSV mAppBarSv;
 
     private NoteState mNoteState;
+    private SerialBehaviorSubject<Boolean> mMedicineListShow;
+
     private transient ExecutorService mExecutorService;
     private transient Provider mSvProvider;
     private transient RxDisposer mRxDisposer;
@@ -64,6 +67,10 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     private transient TextWatcher mEntryDateTimeTextWatcher;
     private transient TextWatcher mContentTextWatcher;
     private transient MedicineRecyclerViewAdapter mMedicineRecyclerViewAdapter;
+
+    public NoteDetailPage() {
+        mMedicineListShow = new SerialBehaviorSubject<>(false);
+    }
 
     @Override
     public void provideNavigator(INavigator navigator) {
@@ -136,6 +143,10 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         contentInput.addTextChangedListener(mContentTextWatcher);
         Button medicineButton = rootLayout.findViewById(R.id.button_add_medicine);
         medicineButton.setOnClickListener(this);
+        Button expandMedicine = rootLayout.findViewById(R.id.button_expand_medicine);
+        expandMedicine.setOnClickListener(this);
+        View medicineTextContainer = rootLayout.findViewById(R.id.container_medicine_text);
+        medicineTextContainer.setOnClickListener(this);
         TextView medicineTitle = rootLayout.findViewById(R.id.text_medicine_title);
         RecyclerView medicineRecyclerView = rootLayout.findViewById(R.id.recyclerView_medicine);
         medicineRecyclerView.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL));
@@ -146,6 +157,16 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                         .subscribe(note -> {
                             entryDateTimeInput.setText(mNoteState.getNoteEntryDateTimeDisplay());
                             contentInput.setText(mNoteState.getNoteContent());
+                        }));
+        mRxDisposer.add("createView_onMedicineListShow",
+                mMedicineListShow.getSubject().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(aBoolean -> {
+                            if (aBoolean) {
+                                medicineRecyclerView.setVisibility(View.VISIBLE);
+                            } else {
+                                medicineRecyclerView.setVisibility(View.GONE);
+                            }
+                            expandMedicine.setActivated(aBoolean);
                         }));
         mRxDisposer.add("createView_onMedicineChanged",
                 mNoteState.getMedicineListFlow()
@@ -429,6 +450,9 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                             addMedicineState(result.getMedicineState());
                         }
                     });
+        } else if (id == R.id.container_medicine_text ||
+                id == R.id.button_expand_medicine) {
+            mMedicineListShow.onNext(!mMedicineListShow.getValue());
         }
     }
 

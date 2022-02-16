@@ -35,14 +35,11 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/button_clear_entry_date_time"
-            style="@style/Widget.AppCompat.Button.Borderless"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:minWidth="0dp"
-            android:padding="0dp"
             app:icon="@drawable/ic_clear_black"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp"
             app:iconSize="@dimen/icon_size"
             app:iconTint="@color/red"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -72,70 +69,99 @@
             android:minLines="3" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/container_card_medicine"
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_margin="@dimen/text_margin"
+        android:layout_marginTop="@dimen/text_margin"
+        android:layout_marginBottom="@dimen/text_margin"
         app:layout_constraintBottom_toTopOf="@id/container_app_bar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/form_content">
 
-        <LinearLayout
+        <androidx.cardview.widget.CardView
+            android:id="@+id/container_card_medicine"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_margin="@dimen/text_margin"
+            app:cardElevation="@dimen/card_elevation">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="match_parent"
+                android:animateLayoutChanges="true"
+                android:orientation="vertical">
 
-                <com.google.android.material.textview.MaterialTextView
-                    android:id="@+id/text_medicine_title"
-                    android:layout_width="0dp"
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <LinearLayout
+                        android:id="@+id/container_medicine_text"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toStartOf="@id/button_add_medicine"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_expand_medicine"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:minWidth="0dp"
+                            android:textSize="0sp"
+                            app:icon="@drawable/button_expandable"
+                            app:iconPadding="0dp"
+                            app:iconSize="@dimen/icon_size"
+                            app:iconTint="@color/daynight_black_white" />
+
+                        <com.google.android.material.textview.MaterialTextView
+                            android:id="@+id/text_medicine_title"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:layout_margin="@dimen/text_margin"
+                            android:gravity="center"
+                            android:text="@string/title_medicine"
+                            android:textSize="@dimen/text_section_title"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_add_medicine"
+                        style="@style/Theme.Amediclog.BorderlessMenuButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="0dp"
+                        app:icon="@drawable/ic_add_white"
+                        app:iconPadding="0dp"
+                        app:iconSize="@dimen/icon_size"
+                        app:iconTint="@color/daynight_black_white"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="2dp"
+                    android:background="@drawable/divider_vertical" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerView_medicine"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="@dimen/text_margin"
-                    android:text="@string/title_medicine"
-                    android:textSize="@dimen/text_section_title"
-                    android:textStyle="bold"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@id/button_add_medicine"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/button_add_medicine"
-                    style="@style/Theme.Amediclog.BorderlessMenuButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:minWidth="0dp"
-                    app:icon="@drawable/ic_add_white"
-                    app:iconPadding="0dp"
-                    app:iconSize="@dimen/icon_size"
-                    app:iconTint="@color/daynight_black_white"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@id/text_medicine_title"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="2dp"
-                android:layout_marginBottom="@dimen/text_margin"
-                android:background="@drawable/divider_vertical" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerView_medicine"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="@dimen/text_margin"
-                android:layout_marginEnd="@dimen/text_margin"
-                android:layout_marginBottom="@dimen/text_margin"
-                app:layoutManager=".app.ui.recyclerview.CustomLinearLayoutManager" />
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
+                    android:layout_marginStart="@dimen/text_margin"
+                    android:layout_marginEnd="@dimen/text_margin"
+                    android:layout_marginBottom="@dimen/text_margin"
+                    android:visibility="gone"
+                    app:layoutManager=".app.ui.recyclerview.CustomLinearLayoutManager" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </ScrollView>
 
     <FrameLayout
         android:id="@+id/container_app_bar"
