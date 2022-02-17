@@ -7,7 +7,9 @@ import androidx.room.Query;
 import androidx.room.Transaction;
 import androidx.room.Update;
 
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
@@ -28,6 +30,9 @@ public abstract class NoteDao {
 
     @Query("SELECT * FROM note WHERE id = :noteId")
     public abstract Note findNoteById(Long noteId);
+
+    @Query("SELECT COUNT(*) FROM note")
+    public abstract int countNote();
 
     @Transaction
     public void insertNote(NoteState noteState) {
@@ -57,13 +62,12 @@ public abstract class NoteDao {
         Note note = noteState.getNote();
         update(note);
         long noteId = note.id;
+        Set<Long> toBeDeletedMedicineIds = new LinkedHashSet<>();
         List<Medicine> medicines = findMedicineByNoteId(noteId);
-        if (medicines != null && medicines.isEmpty()) {
-            deleteMedicineByNoteId(noteId);
+        if (medicines != null && !medicines.isEmpty()) {
             for (Medicine medicine : medicines) {
                 long medicineId = medicine.id;
-                deleteMedicineReminderByMedicineId(medicineId);
-                deleteMedicineIntakeByMedicineId(medicineId);
+                toBeDeletedMedicineIds.add(medicineId);
             }
         }
         List<MedicineState> medicineStates = noteState.getMedicineList();
@@ -79,6 +83,7 @@ public abstract class NoteDao {
                     medicineId = insert(medicine);
                 }
                 medicine.id = medicineId;
+                toBeDeletedMedicineIds.remove(medicineId);
                 List<MedicineReminder> medicineReminders = medicineState.getMedicineReminderList();
                 if (medicineReminders != null && !medicineReminders.isEmpty()) {
                     for (MedicineReminder medicineReminder : medicineReminders) {
@@ -92,6 +97,15 @@ public abstract class NoteDao {
                 }
             }
         }
+
+        // handle deleted medicine
+        if (!toBeDeletedMedicineIds.isEmpty()) {
+            for (Long medicineId : toBeDeletedMedicineIds) {
+                deleteMedicineReminderByMedicineId(medicineId);
+                deleteMedicineIntakeByMedicineId(medicineId);
+                deleteMedicineById(medicineId);
+            }
+        }
     }
 
     @Transaction
@@ -99,7 +113,7 @@ public abstract class NoteDao {
         Note note = noteState.getNote();
         delete(note);
         List<Medicine> medicines = findMedicineByNoteId(note.id);
-        if (medicines != null && medicines.isEmpty()) {
+        if (medicines != null && !medicines.isEmpty()) {
             deleteMedicineByNoteId(note.id);
             for (Medicine medicine : medicines) {
                 long medicineId = medicine.id;
@@ -129,6 +143,9 @@ public abstract class NoteDao {
 
     @Query("DELETE FROM medicine WHERE note_id = :noteId")
     protected abstract void deleteMedicineByNoteId(long noteId);
+
+    @Query("DELETE FROM medicine WHERE id = :id")
+    protected abstract void deleteMedicineById(long id);
 
     @Insert
     protected abstract long insert(MedicineReminder medicineReminder);

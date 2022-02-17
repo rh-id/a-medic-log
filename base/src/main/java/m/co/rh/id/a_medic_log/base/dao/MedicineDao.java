@@ -49,6 +49,15 @@ public abstract class MedicineDao {
     @Query("SELECT * FROM medicine WHERE name LIKE '%'||:search||'%' ORDER BY created_date_time DESC")
     public abstract List<Medicine> searchMedicineName(String search);
 
+    @Query("SELECT COUNT(*) FROM medicine")
+    public abstract int countMedicine();
+
+    @Query("SELECT COUNT(*) FROM medicine_reminder")
+    public abstract int countMedicineReminder();
+
+    @Query("SELECT COUNT(*) FROM medicine_intake")
+    public abstract int countMedicineIntake();
+
     @Transaction
     public MedicineState findMedicineStateByMedicineId(long medicineId) {
         MedicineState medicineState = new MedicineState();
