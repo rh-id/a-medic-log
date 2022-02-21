@@ -15,16 +15,22 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+
 import java.io.Serializable;
 import java.util.Date;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteMedicineCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteTagCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateNoteCmd;
@@ -33,6 +39,7 @@ import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.MedicineItemSV;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.MedicineRecyclerViewAdapter;
+import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
@@ -56,19 +63,25 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     private AppBarSV mAppBarSv;
 
     private NoteState mNoteState;
+    private SerialBehaviorSubject<Boolean> mNoteTagShow;
     private SerialBehaviorSubject<Boolean> mMedicineListShow;
 
     private transient ExecutorService mExecutorService;
     private transient Provider mSvProvider;
+    private transient ILogger mLogger;
     private transient RxDisposer mRxDisposer;
     private transient MedicineReminderChangeNotifier mMedicineReminderChangeNotifier;
     private transient QueryNoteCmd mQueryNoteCmd;
     private transient NewNoteCmd mNewNoteCmd;
+    private transient DeleteNoteTagCmd mDeleteNoteTagCmd;
     private transient TextWatcher mEntryDateTimeTextWatcher;
     private transient TextWatcher mContentTextWatcher;
     private transient MedicineRecyclerViewAdapter mMedicineRecyclerViewAdapter;
 
+    private transient CompositeDisposable mCompositeDisposable;
+
     public NoteDetailPage() {
+        mNoteTagShow = new SerialBehaviorSubject<>(false);
         mMedicineListShow = new SerialBehaviorSubject<>(false);
     }
 
@@ -86,6 +99,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     public void provideComponent(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
         mSvProvider = provider.get(StatefulViewProvider.class);
+        mLogger = mSvProvider.get(ILogger.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mMedicineReminderChangeNotifier = mSvProvider.get(MedicineReminderChangeNotifier.class);
         mQueryNoteCmd = mSvProvider.get(QueryNoteCmd.class);
@@ -95,16 +109,17 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         } else {
             mNewNoteCmd = mSvProvider.get(NewNoteCmd.class);
         }
+        mDeleteNoteTagCmd = mSvProvider.get(DeleteNoteTagCmd.class);
         if (mNoteState == null) {
             mNoteState = new NoteState();
             if (isUpdate) {
                 mNoteState.setNoteId(getNoteId());
                 mRxDisposer.add("provideComponent_queryNoteInfo",
-                        mSvProvider.get(QueryNoteCmd.class)
+                        mQueryNoteCmd
                                 .queryNoteInfo(mNoteState)
                                 .subscribe((noteState, throwable) -> {
                                     if (throwable != null) {
-                                        mSvProvider.get(ILogger.class)
+                                        mLogger
                                                 .e(TAG, throwable.getMessage(), throwable);
                                     }
                                 })
@@ -127,6 +142,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         initTextWatcher();
         mMedicineRecyclerViewAdapter = new MedicineRecyclerViewAdapter(mNoteState,
                 this, this, this, this, mNavigator, this);
+        mCompositeDisposable = new CompositeDisposable();
     }
 
     @Override
@@ -141,8 +157,17 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         clearEntryDateTimeInput.setOnClickListener(this);
         EditText contentInput = rootLayout.findViewById(R.id.input_text_content);
         contentInput.addTextChangedListener(mContentTextWatcher);
-        Button medicineButton = rootLayout.findViewById(R.id.button_add_medicine);
-        medicineButton.setOnClickListener(this);
+        Button expandNoteTag = rootLayout.findViewById(R.id.button_expand_note_tag);
+        expandNoteTag.setOnClickListener(this);
+        View noteTagTextContainer = rootLayout.findViewById(R.id.container_note_tag_text);
+        noteTagTextContainer.setOnClickListener(this);
+        TextView noteTagTitle = rootLayout.findViewById(R.id.text_note_tag_title);
+        Button addNoteTagButton = rootLayout.findViewById(R.id.button_add_note_tag);
+        addNoteTagButton.setOnClickListener(this);
+        ChipGroup noteTagChipGroup = rootLayout.findViewById(R.id.chip_group_note_tag);
+        CompositeDisposable compositeDisposable = new CompositeDisposable();
+        Button addMedicineButton = rootLayout.findViewById(R.id.button_add_medicine);
+        addMedicineButton.setOnClickListener(this);
         Button expandMedicine = rootLayout.findViewById(R.id.button_expand_medicine);
         expandMedicine.setOnClickListener(this);
         View medicineTextContainer = rootLayout.findViewById(R.id.container_medicine_text);
@@ -157,6 +182,54 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                         .subscribe(note -> {
                             entryDateTimeInput.setText(mNoteState.getNoteEntryDateTimeDisplay());
                             contentInput.setText(mNoteState.getNoteContent());
+                        }));
+        mRxDisposer.add("createView_onNoteTagChanged",
+                mNoteState.getNoteTagSetFlow().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(noteTags -> {
+                            noteTagTitle.setText(activity.getString(R.string.title_tag, noteTags.size()));
+                            noteTagChipGroup.removeAllViews();
+                            if (!noteTags.isEmpty()) {
+                                boolean isUpdate = isUpdate();
+                                for (NoteTag noteTag : noteTags) {
+                                    Chip chip = new Chip(activity);
+                                    chip.setText(noteTag.tag);
+                                    chip.setOnCloseIconClickListener(view -> {
+                                        noteTagChipGroup.removeView(chip);
+                                        chip.setOnCloseIconClickListener(null);
+                                        TreeSet<NoteTag> noteTagSet = mNoteState.getNoteTagSet();
+                                        noteTagSet.remove(noteTag);
+                                        noteTagTitle.setText(activity.getString(R.string.title_tag, noteTagSet.size()));
+                                        if (isUpdate && noteTag.id != null) {
+                                            Context context = activity.getApplicationContext();
+                                            mCompositeDisposable.add(mDeleteNoteTagCmd.execute(noteTag)
+                                                    .observeOn(AndroidSchedulers.mainThread())
+                                                    .subscribe((deletedNoteTag, throwable) -> {
+                                                        String errorMessage = context.getString(R.string.error_failed_to_delete_note_tag);
+                                                        String successMessage = context.getString(R.string.success_deleting_note_tag);
+                                                        if (throwable != null) {
+                                                            mLogger
+                                                                    .e(TAG, errorMessage, throwable);
+                                                        } else {
+                                                            mLogger
+                                                                    .i(TAG, successMessage);
+                                                        }
+                                                    }));
+                                        }
+                                    });
+                                    chip.setCloseIconVisible(true);
+                                    noteTagChipGroup.addView(chip);
+                                }
+                            }
+                        }));
+        mRxDisposer.add("createView_onNoteTagShow",
+                mNoteTagShow.getSubject().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(aBoolean -> {
+                            if (aBoolean) {
+                                noteTagChipGroup.setVisibility(View.VISIBLE);
+                            } else {
+                                noteTagChipGroup.setVisibility(View.GONE);
+                            }
+                            expandNoteTag.setActivated(aBoolean);
                         }));
         mRxDisposer.add("createView_onMedicineListShow",
                 mMedicineListShow.getSubject().observeOn(AndroidSchedulers.mainThread())
@@ -243,6 +316,10 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
             mMedicineRecyclerViewAdapter.dispose(activity);
             mMedicineRecyclerViewAdapter = null;
         }
+        if (mCompositeDisposable != null) {
+            mCompositeDisposable.dispose();
+            mCompositeDisposable = null;
+        }
     }
 
     @Override
@@ -295,10 +372,10 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                             String errorMessage = context.getString(R.string.error_failed_to_delete_medicine);
                             String successMessage = context.getString(R.string.success_deleting_medicine);
                             if (throwable != null) {
-                                mSvProvider.get(ILogger.class)
+                                mLogger
                                         .e(TAG, errorMessage, throwable);
                             } else {
-                                mSvProvider.get(ILogger.class)
+                                mLogger
                                         .i(TAG, successMessage);
                                 mMedicineRecyclerViewAdapter.notifyItemDeleted(medicineState);
                             }
@@ -385,18 +462,18 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                                                 successMessage = context.getString(R.string.success_adding_note);
                                             }
                                             if (throwable != null) {
-                                                mSvProvider.get(ILogger.class)
+                                                mLogger
                                                         .e(TAG, errorMessage, throwable);
                                                 mNavigator.pop();
                                             } else {
-                                                mSvProvider.get(ILogger.class)
+                                                mLogger
                                                         .i(TAG, successMessage);
                                                 mNavigator.pop(Result.withNote(noteState));
                                             }
                                         }));
             } else {
                 String error = mNewNoteCmd.getValidationError();
-                mSvProvider.get(ILogger.class).i(TAG, error);
+                mLogger.i(TAG, error);
             }
         }
         return false;
@@ -453,7 +530,28 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         } else if (id == R.id.container_medicine_text ||
                 id == R.id.button_expand_medicine) {
             mMedicineListShow.onNext(!mMedicineListShow.getValue());
+        } else if (id == R.id.button_add_note_tag) {
+            NoteTagDetailSVDialog.Args args;
+            if (isUpdate()) {
+                args = NoteTagDetailSVDialog.Args.save(getNoteId());
+            } else {
+                args = NoteTagDetailSVDialog.Args.dontSave();
+            }
+            mNavigator.push(Routes.NOTE_TAG_DETAIL_DIALOG,
+                    args,
+                    (navigator, navRoute, activity, currentView) -> {
+                        NoteTagDetailSVDialog.Result result = NoteTagDetailSVDialog.Result.of(navRoute);
+                        if (result != null) {
+                            addNoteTag(result.getNoteTag());
+                        }
+                    });
+        } else if (id == R.id.container_note_tag_text || id == R.id.button_expand_note_tag) {
+            mNoteTagShow.onNext(!mNoteTagShow.getValue());
         }
+    }
+
+    private void addNoteTag(NoteTag noteTag) {
+        mNoteState.addNoteTag(noteTag);
     }
 
     private void updateEntryDateTime(Date date) {

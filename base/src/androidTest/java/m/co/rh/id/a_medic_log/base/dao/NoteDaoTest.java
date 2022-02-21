@@ -22,6 +22,8 @@ import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.entity.Note;
+import m.co.rh.id.a_medic_log.base.entity.NoteTag;
+import m.co.rh.id.a_medic_log.base.room.DbMigration;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 
@@ -45,6 +47,7 @@ public class NoteDaoTest {
                 InstrumentationRegistry.getInstrumentation().getTargetContext(),
                 AppDatabase.class,
                 TEST_DB)
+                .addMigrations(DbMigration.getAll())
                 .build();
     }
 
@@ -59,6 +62,7 @@ public class NoteDaoTest {
         MedicineDao medicineDao = appDb.medicineDao();
 
         String noteContent = "test note";
+        String noteTagTag = "sample tag";
         String medicineName = "test medicine name";
         String medicineIntakeDesc = "test medicine intake";
         String medicineReminderMessage = "test medicine reminder message";
@@ -66,6 +70,9 @@ public class NoteDaoTest {
         Note note = new Note();
         note.content = noteContent;
         noteState.updateNote(note);
+        NoteTag noteTag = new NoteTag();
+        noteTag.tag = noteTagTag;
+        noteState.updateNoteTagList(Collections.singletonList(noteTag));
         List<MedicineState> medicineStateList = new ArrayList<>();
         MedicineState medicineState = new MedicineState();
         Medicine medicine = new Medicine();
@@ -80,12 +87,16 @@ public class NoteDaoTest {
         // INSERT NOTE
         noteDao.insertNote(noteState);
         assertEquals(1, noteDao.countNote());
+        assertEquals(1, noteDao.countNoteTag());
         assertEquals(1, medicineDao.countMedicine());
         assertEquals(1, medicineDao.countMedicineReminder());
         assertEquals(0, medicineDao.countMedicineIntake());
         Note noteFromInsert = noteDao.findNoteById(noteState.getNoteId());
         assertEquals(noteContent, noteFromInsert.content);
-        List<Medicine> medicineListFromInsert = noteDao.findMedicineByNoteId(noteState.getNoteId());
+        List<NoteTag> noteTagListFromInsert = noteDao.findNoteTagsByNoteId(noteState.getNoteId());
+        assertEquals(1, noteTagListFromInsert.size());
+        assertEquals(noteTagTag, noteTagListFromInsert.get(0).tag);
+        List<Medicine> medicineListFromInsert = noteDao.findMedicinesByNoteId(noteState.getNoteId());
         assertEquals(1, medicineListFromInsert.size());
         assertEquals(medicineName, medicineListFromInsert.get(0).name);
         List<MedicineReminder> medicineReminderListFromInsert = medicineDao.findMedicineRemindersByMedicineId(
@@ -103,7 +114,11 @@ public class NoteDaoTest {
         // after that update note and add medicine
         String noteContentUpdate = noteContent + " updated ";
         String newMedicineName = "new medicine name test";
+        String newNoteTagTag = "second tag to be added";
         noteState.getNote().content = noteContentUpdate;
+        NoteTag newNoteTag = new NoteTag();
+        newNoteTag.tag = newNoteTagTag;
+        noteState.addNoteTag(newNoteTag);
         Medicine newMedicine = new Medicine();
         newMedicine.name = newMedicineName;
         MedicineState newMedicineState = new MedicineState();
@@ -112,12 +127,17 @@ public class NoteDaoTest {
         // UPDATE NOTE
         noteDao.updateNote(noteState);
         assertEquals(1, noteDao.countNote());
+        assertEquals(2, noteDao.countNoteTag());
         assertEquals(2, medicineDao.countMedicine());
         assertEquals(1, medicineDao.countMedicineReminder());
         assertEquals(1, medicineDao.countMedicineIntake());
         Note noteFromUpdate = noteDao.findNoteById(noteState.getNoteId());
         assertEquals(noteContentUpdate, noteFromUpdate.content);
-        List<Medicine> medicineListFromUpdate = noteDao.findMedicineByNoteId(noteState.getNoteId());
+        List<NoteTag> noteTagListFromUpdate = noteDao.findNoteTagsByNoteId(noteState.getNoteId());
+        assertEquals(2, noteTagListFromUpdate.size());
+        assertEquals(noteTagTag, noteTagListFromUpdate.get(0).tag);
+        assertEquals(newNoteTagTag, noteTagListFromUpdate.get(1).tag);
+        List<Medicine> medicineListFromUpdate = noteDao.findMedicinesByNoteId(noteState.getNoteId());
         assertEquals(2, medicineListFromUpdate.size());
         assertEquals(medicineName, medicineListFromUpdate.get(0).name);
         assertEquals(newMedicineName, medicineListFromUpdate.get(1).name);
@@ -135,6 +155,7 @@ public class NoteDaoTest {
         // DELETE NOTE
         noteDao.deleteNote(noteState);
         assertEquals(0, noteDao.countNote());
+        assertEquals(0, noteDao.countNoteTag());
         assertEquals(0, medicineDao.countMedicine());
         assertEquals(0, medicineDao.countMedicineReminder());
         assertEquals(0, medicineDao.countMedicineIntake());

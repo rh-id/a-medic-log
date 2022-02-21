@@ -3,14 +3,18 @@ package m.co.rh.id.a_medic_log.app.provider.command;
 import android.content.Context;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
 import m.co.rh.id.a_medic_log.base.entity.Note;
+import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.aprovider.Provider;
 
 public class PagedNoteItemsCmd {
@@ -44,14 +48,43 @@ public class PagedNoteItemsCmd {
             } else {
                 mIsLoadingSubject.onNext(true);
                 try {
+                    ArrayList<Note> resultList;
+                    Future<List<Note>> futureNoteListFromNoteTag = searchNoteTag(mSearch);
                     List<Note> noteList = mNoteDao.searchNote(mSearch);
-                    mItemsSubject.onNext(new ArrayList<>(noteList));
+                    List<Note> noteListFromNoteTag = futureNoteListFromNoteTag.get();
+                    if (!noteListFromNoteTag.isEmpty()) {
+                        Set<Note> noteResult = new LinkedHashSet<>();
+                        noteResult.addAll(noteList);
+                        noteResult.addAll(noteListFromNoteTag);
+                        resultList = new ArrayList<>(noteResult);
+                    } else {
+                        resultList = new ArrayList<>(noteList);
+                    }
+                    mItemsSubject.onNext(resultList);
                 } catch (Throwable throwable) {
                     mItemsSubject.onError(throwable);
                 } finally {
                     mIsLoadingSubject.onNext(false);
                 }
             }
+        });
+    }
+
+    private Future<List<Note>> searchNoteTag(String search) {
+        return mExecutorService.submit(() -> {
+            List<NoteTag> noteTagList = mNoteDao.searchNoteTag(search);
+            List<Note> noteList = new ArrayList<>();
+            Set<Long> noteIds = new LinkedHashSet<>();
+            if (!noteTagList.isEmpty()) {
+                for (NoteTag noteTag : noteTagList) {
+                    noteIds.add(noteTag.noteId);
+                }
+                if (!noteIds.isEmpty()) {
+                    List<Note> notes = mNoteDao.findNoteByIds(noteIds);
+                    noteList.addAll(notes);
+                }
+            }
+            return noteList;
         });
     }
 

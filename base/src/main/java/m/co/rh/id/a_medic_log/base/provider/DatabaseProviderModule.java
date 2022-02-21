@@ -10,6 +10,7 @@ import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
 import m.co.rh.id.a_medic_log.base.repository.AndroidNotificationRepo;
+import m.co.rh.id.a_medic_log.base.room.DbMigration;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
@@ -35,6 +36,7 @@ public class DatabaseProviderModule implements ProviderModule {
         providerRegistry.registerAsync(AppDatabase.class, () ->
                 Room.databaseBuilder(appContext,
                         AppDatabase.class, mDbName)
+                        .addMigrations(DbMigration.getAll())
                         .build());
         // register Dao separately to decouple from AppDatabase
         providerRegistry.registerAsync(ProfileDao.class, () -> provider.get(AppDatabase.class)

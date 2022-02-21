@@ -104,4 +104,13 @@
     <string name="reminder_days_is_required">Reminder days is required</string>
     <string name="form_description">Description</string>
     <string name="form_message">Message</string>
+    <string name="tag_is_required">Tag is required</string>
+    <string name="ok" translatable="false">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="form_tag">Tag</string>
+    <string name="error_failed_to_add_tag">Failed to add tag</string>
+    <string name="success_adding_tag">Tag added</string>
+    <string name="title_tag">Tag (%d)</string>
+    <string name="error_failed_to_delete_note_tag">Failed to delete note tag</string>
+    <string name="success_deleting_note_tag">Note tag deleted</string>
 </resources>

@@ -1,28 +1,29 @@
 package m.co.rh.id.a_medic_log.base.state;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
-import java.util.List;
+import java.util.TreeSet;
 
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.base.entity.Note;
+import m.co.rh.id.a_medic_log.base.entity.NoteTag;
+import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 
 public class NoteState implements Serializable, Cloneable {
-    private transient BehaviorSubject<Note> mNoteSubject;
-    private transient BehaviorSubject<ArrayList<MedicineState>> mMedicineListSubject;
-    private transient DateFormat mDateFormat;
+    private SerialBehaviorSubject<Note> mNoteSubject;
+    private SerialBehaviorSubject<TreeSet<NoteTag>> mNoteTagSetSubject;
+    private SerialBehaviorSubject<ArrayList<MedicineState>> mMedicineListSubject;
+    private DateFormat mDateFormat;
 
     public NoteState() {
-        mNoteSubject = BehaviorSubject.createDefault(new Note());
-        mMedicineListSubject = BehaviorSubject.createDefault(new ArrayList<>());
+        mNoteSubject = new SerialBehaviorSubject<>(new Note());
+        mMedicineListSubject = new SerialBehaviorSubject<>(new ArrayList<>());
+        mNoteTagSetSubject = new SerialBehaviorSubject<>(new TreeSet<>());
         mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
     }
 
@@ -57,6 +58,14 @@ public class NoteState implements Serializable, Cloneable {
         return mNoteSubject.getValue();
     }
 
+    public void updateNoteTagSet(Collection<NoteTag> noteTags) {
+        mNoteTagSetSubject.onNext(new TreeSet<>(noteTags));
+    }
+
+    public TreeSet<NoteTag> getNoteTagSet() {
+        return mNoteTagSetSubject.getValue();
+    }
+
     public ArrayList<MedicineState> getMedicineList() {
         return mMedicineListSubject.getValue();
     }
@@ -85,34 +94,29 @@ public class NoteState implements Serializable, Cloneable {
     }
 
     public Flowable<Note> getNoteFlow() {
-        return Flowable.fromObservable(mNoteSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mNoteSubject.getSubject(), BackpressureStrategy.BUFFER);
+    }
+
+    public Flowable<TreeSet<NoteTag>> getNoteTagSetFlow() {
+        return Flowable.fromObservable(mNoteTagSetSubject.getSubject(), BackpressureStrategy.BUFFER);
     }
 
     public Flowable<ArrayList<MedicineState>> getMedicineListFlow() {
-        return Flowable.fromObservable(mMedicineListSubject, BackpressureStrategy.BUFFER);
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeObject(mNoteSubject.getValue());
-        out.writeObject(mMedicineListSubject.getValue());
-        out.writeObject(mDateFormat);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        Note note = (Note) in.readObject();
-        ArrayList<MedicineState> medicineStates = (ArrayList<MedicineState>) in.readObject();
-        mDateFormat = (DateFormat) in.readObject();
-        mNoteSubject = BehaviorSubject.createDefault(note);
-        mMedicineListSubject = BehaviorSubject.createDefault(medicineStates);
+        return Flowable.fromObservable(mMedicineListSubject.getSubject(), BackpressureStrategy.BUFFER);
     }
 
     public void updateNote(Note note) {
         mNoteSubject.onNext(note);
     }
 
-    public void updateMedicineStates(List<MedicineState> medicineStates) {
+    public void updateMedicineStates(Collection<MedicineState> medicineStates) {
         mMedicineListSubject.onNext(new ArrayList<>(medicineStates));
+    }
+
+    public void addNoteTag(NoteTag newNoteTag) {
+        TreeSet<NoteTag> noteTags = mNoteTagSetSubject.getValue();
+        noteTags.add(newNoteTag);
+        mNoteTagSetSubject.onNext(noteTags);
     }
 
     public Long getNoteId() {
@@ -131,9 +135,20 @@ public class NoteState implements Serializable, Cloneable {
             note = note.clone();
         }
         noteState.updateNote(note);
+        TreeSet<NoteTag> noteTags = mNoteTagSetSubject.getValue();
+        if (noteTags != null && !noteTags.isEmpty()) {
+            TreeSet<NoteTag> noteTagsClone = new TreeSet<>();
+            for (NoteTag noteTag : noteTags) {
+                noteTagsClone.add(noteTag.clone());
+            }
+            noteTags = noteTagsClone;
+        } else {
+            noteTags = new TreeSet<>();
+        }
+        noteState.updateNoteTagSet(noteTags);
         ArrayList<MedicineState> medicineStates = mMedicineListSubject.getValue();
         if (medicineStates != null && !medicineStates.isEmpty()) {
-            ArrayList<MedicineState> medicineStatesClone = new ArrayList<>();
+            ArrayList<MedicineState> medicineStatesClone = new ArrayList<>(medicineStates.size());
             for (MedicineState medicineState : medicineStates) {
                 medicineStatesClone.add(medicineState.clone());
             }

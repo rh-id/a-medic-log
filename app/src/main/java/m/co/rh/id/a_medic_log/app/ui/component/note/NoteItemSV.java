@@ -7,8 +7,12 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.TreeSet;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -16,9 +20,12 @@ import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
+import m.co.rh.id.a_medic_log.app.provider.notifier.NoteTagChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.page.NoteDetailPage;
 import m.co.rh.id.a_medic_log.base.entity.Note;
+import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
@@ -33,20 +40,26 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
     @NavInject
     private transient INavigator mNavigator;
     private transient Provider mSvProvider;
+    private transient ILogger mLogger;
+    private transient RxDisposer mRxDisposer;
+    private transient NoteTagChangeNotifier mNoteTagChangeNotifier;
+    private transient QueryNoteCmd mQueryNoteCmd;
     private SerialBehaviorSubject<Note> mNoteSubject;
+    private SerialBehaviorSubject<TreeSet<NoteTag>> mNoteTagSetSubject;
     private DateFormat mDateFormat;
 
     public NoteItemSV() {
         mNoteSubject = new SerialBehaviorSubject<>(new Note());
+        mNoteTagSetSubject = new SerialBehaviorSubject<>(new TreeSet<>());
         mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
     }
 
     @Override
     public void provideComponent(Provider provider) {
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-        }
         mSvProvider = provider.get(StatefulViewProvider.class);
+        mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mNoteTagChangeNotifier = mSvProvider.get(NoteTagChangeNotifier.class);
+        mQueryNoteCmd = mSvProvider.get(QueryNoteCmd.class);
     }
 
     @Override
@@ -60,14 +73,73 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
         buttonDelete.setOnClickListener(this);
         TextView textEntryDate = rootLayout.findViewById(R.id.text_entry_date);
         TextView textContent = rootLayout.findViewById(R.id.text_content);
-        mSvProvider.get(RxDisposer.class).add("createView_onChangeNote",
+        ChipGroup noteTagChipGroup = rootLayout.findViewById(R.id.chip_group_note_tag);
+        mRxDisposer.add("crateView_onNoteTagSetChanged",
+                mNoteTagSetSubject.getSubject()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(noteTags -> {
+                            noteTagChipGroup.removeAllViews();
+                            if (!noteTags.isEmpty()) {
+                                for (NoteTag noteTag : noteTags) {
+                                    Chip chip = new Chip(activity);
+                                    chip.setText(noteTag.tag);
+                                    chip.setClickable(false);
+                                    noteTagChipGroup.addView(chip);
+                                }
+                                noteTagChipGroup.setVisibility(View.VISIBLE);
+                            } else {
+                                noteTagChipGroup.setVisibility(View.GONE);
+                            }
+                        }));
+        mRxDisposer.add("createView_onNoteChanged",
                 mNoteSubject.getSubject()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(note -> {
                             textEntryDate.setText(mDateFormat.format(note.entryDateTime));
                             textContent.setText(note.content);
+                            if (note.id != null) {
+                                refreshNoteTagSet(note.id);
+                            }
+                        }));
+        mRxDisposer.add("createView_onNoteTagAdded",
+                mNoteTagChangeNotifier.getAddedNoteTag()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(noteTag -> {
+                            Note note = mNoteSubject.getValue();
+                            if (noteTag.noteId.equals(note.id)) {
+                                TreeSet<NoteTag> noteTagTreeSet = mNoteTagSetSubject.getValue();
+                                if (noteTagTreeSet.add(noteTag)) {
+                                    mNoteTagSetSubject.onNext(noteTagTreeSet);
+                                }
+                            }
+                        }));
+        mRxDisposer.add("createView_onNoteTagDeleted",
+                mNoteTagChangeNotifier.getDeletedNoteTag()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(noteTag -> {
+                            Note note = mNoteSubject.getValue();
+                            if (noteTag.noteId.equals(note.id)) {
+                                TreeSet<NoteTag> noteTagTreeSet = mNoteTagSetSubject.getValue();
+                                if (noteTagTreeSet.remove(noteTag)) {
+                                    mNoteTagSetSubject.onNext(noteTagTreeSet);
+                                }
+                            }
                         }));
         return rootLayout;
+    }
+
+    private void refreshNoteTagSet(long noteId) {
+        mRxDisposer.add("refreshNoteTagSet",
+                mQueryNoteCmd.queryNoteTag(noteId)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe((noteTags, throwable) -> {
+                            if (throwable == null) {
+                                mNoteTagSetSubject.onNext(noteTags);
+                            } else {
+                                mLogger.e(TAG, throwable.getMessage(), throwable);
+                            }
+                        })
+        );
     }
 
     @Override

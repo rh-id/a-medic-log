@@ -8,6 +8,7 @@ public class Routes {
     public static final String PROFILE_DETAIL_PAGE = "/profiles/detail";
     public static final String NOTES_PAGE = "/notes";
     public static final String NOTE_DETAIL_PAGE = "/notes/detail";
+    public static final String NOTE_TAG_DETAIL_DIALOG = "/noteTags/detailDialog";
     public static final String MEDICINE_DETAIL_PAGE = "/medicines/detail";
     public static final String MEDICINE_REMINDER_DETAIL_PAGE = "/medicines/reminders/detail";
     public static final String MEDICINE_INTAKES_PAGE = "/medicineIntakes";
