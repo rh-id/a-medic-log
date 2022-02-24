@@ -72,7 +72,7 @@ public class NoteDaoTest {
         noteState.updateNote(note);
         NoteTag noteTag = new NoteTag();
         noteTag.tag = noteTagTag;
-        noteState.updateNoteTagList(Collections.singletonList(noteTag));
+        noteState.updateNoteTagSet(Collections.singletonList(noteTag));
         List<MedicineState> medicineStateList = new ArrayList<>();
         MedicineState medicineState = new MedicineState();
         Medicine medicine = new Medicine();
