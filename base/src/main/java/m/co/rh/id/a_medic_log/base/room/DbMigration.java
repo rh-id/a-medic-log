@@ -15,8 +15,7 @@ public class DbMigration {
                     "`note_tag` " +
                     "(`id` INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     "`note_id` INTEGER, " +
-                    "`tag` TEXT, " +
-                    "`created_date_time` INTEGER)");
+                    "`tag` TEXT)");
         }
     };
 }
