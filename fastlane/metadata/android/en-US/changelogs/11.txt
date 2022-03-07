@@ -1,0 +1,4 @@
+Release 1.2.0+11
+
+Feature:
+* Add attachment section to note to allow adding image files
