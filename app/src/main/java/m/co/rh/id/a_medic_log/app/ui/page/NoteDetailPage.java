@@ -30,18 +30,23 @@ import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteMedicineCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteAttachmentCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteTagCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineReminderChangeNotifier;
+import m.co.rh.id.a_medic_log.app.provider.notifier.NoteAttachmentFileChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.MedicineItemSV;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.MedicineRecyclerViewAdapter;
+import m.co.rh.id.a_medic_log.app.ui.component.note.attachment.NoteAttachmentItemSV;
+import m.co.rh.id.a_medic_log.app.ui.component.note.attachment.NoteAttachmentRecyclerViewAdapter;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
+import m.co.rh.id.a_medic_log.base.state.NoteAttachmentState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
@@ -54,7 +59,7 @@ import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
-public class NoteDetailPage extends StatefulView<Activity> implements RequireNavigator, RequireNavRoute, RequireComponent<Provider>, Toolbar.OnMenuItemClickListener, View.OnClickListener, MedicineItemSV.OnMedicineIntakeListClick, MedicineItemSV.OnEditClick, MedicineItemSV.OnDeleteClick, MedicineItemSV.OnAddMedicineIntakeClick {
+public class NoteDetailPage extends StatefulView<Activity> implements RequireNavigator, RequireNavRoute, RequireComponent<Provider>, Toolbar.OnMenuItemClickListener, View.OnClickListener, MedicineItemSV.MedicineItemOnMedicineIntakeListClick, MedicineItemSV.MedicineItemOnEditClick, MedicineItemSV.MedicineItemOnDeleteClick, MedicineItemSV.MedicineItemOnAddMedicineIntakeClick, NoteAttachmentItemSV.NoteAttachmentItemOnEditClick, NoteAttachmentItemSV.NoteAttachmentItemOnDeleteClick {
 
     private static final String TAG = NoteDetailPage.class.getName();
     private transient INavigator mNavigator;
@@ -65,24 +70,29 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     private NoteState mNoteState;
     private SerialBehaviorSubject<Boolean> mNoteTagShow;
     private SerialBehaviorSubject<Boolean> mMedicineListShow;
+    private SerialBehaviorSubject<Boolean> mAttachmentShow;
 
     private transient ExecutorService mExecutorService;
     private transient Provider mSvProvider;
     private transient ILogger mLogger;
     private transient RxDisposer mRxDisposer;
     private transient MedicineReminderChangeNotifier mMedicineReminderChangeNotifier;
+    private transient NoteAttachmentFileChangeNotifier mNoteAttachmentFileChangeNotifier;
     private transient QueryNoteCmd mQueryNoteCmd;
     private transient NewNoteCmd mNewNoteCmd;
     private transient DeleteNoteTagCmd mDeleteNoteTagCmd;
+    private transient DeleteNoteAttachmentCmd mDeleteNoteAttachmentCmd;
     private transient TextWatcher mEntryDateTimeTextWatcher;
     private transient TextWatcher mContentTextWatcher;
     private transient MedicineRecyclerViewAdapter mMedicineRecyclerViewAdapter;
+    private transient NoteAttachmentRecyclerViewAdapter mNoteAttachmentRecyclerViewAdapter;
 
     private transient CompositeDisposable mCompositeDisposable;
 
     public NoteDetailPage() {
         mNoteTagShow = new SerialBehaviorSubject<>(false);
         mMedicineListShow = new SerialBehaviorSubject<>(false);
+        mAttachmentShow = new SerialBehaviorSubject<>(false);
     }
 
     @Override
@@ -102,6 +112,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         mLogger = mSvProvider.get(ILogger.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mMedicineReminderChangeNotifier = mSvProvider.get(MedicineReminderChangeNotifier.class);
+        mNoteAttachmentFileChangeNotifier = mSvProvider.get(NoteAttachmentFileChangeNotifier.class);
         mQueryNoteCmd = mSvProvider.get(QueryNoteCmd.class);
         boolean isUpdate = isUpdate();
         if (isUpdate) {
@@ -110,6 +121,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
             mNewNoteCmd = mSvProvider.get(NewNoteCmd.class);
         }
         mDeleteNoteTagCmd = mSvProvider.get(DeleteNoteTagCmd.class);
+        mDeleteNoteAttachmentCmd = mSvProvider.get(DeleteNoteAttachmentCmd.class);
         if (mNoteState == null) {
             mNoteState = new NoteState();
             if (isUpdate) {
@@ -142,6 +154,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         initTextWatcher();
         mMedicineRecyclerViewAdapter = new MedicineRecyclerViewAdapter(mNoteState,
                 this, this, this, this, mNavigator, this);
+        mNoteAttachmentRecyclerViewAdapter = new NoteAttachmentRecyclerViewAdapter(mNoteState, this, this, mNavigator, this);
         mCompositeDisposable = new CompositeDisposable();
     }
 
@@ -165,7 +178,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         Button addNoteTagButton = rootLayout.findViewById(R.id.button_add_note_tag);
         addNoteTagButton.setOnClickListener(this);
         ChipGroup noteTagChipGroup = rootLayout.findViewById(R.id.chip_group_note_tag);
-        CompositeDisposable compositeDisposable = new CompositeDisposable();
+        // medicine
         Button addMedicineButton = rootLayout.findViewById(R.id.button_add_medicine);
         addMedicineButton.setOnClickListener(this);
         Button expandMedicine = rootLayout.findViewById(R.id.button_expand_medicine);
@@ -176,6 +189,17 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         RecyclerView medicineRecyclerView = rootLayout.findViewById(R.id.recyclerView_medicine);
         medicineRecyclerView.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL));
         medicineRecyclerView.setAdapter(mMedicineRecyclerViewAdapter);
+        // attachment
+        Button addAttachmentButton = rootLayout.findViewById(R.id.button_add_attachment);
+        addAttachmentButton.setOnClickListener(this);
+        Button expandAttachment = rootLayout.findViewById(R.id.button_expand_attachment);
+        expandAttachment.setOnClickListener(this);
+        View attachmentTextContainer = rootLayout.findViewById(R.id.container_attachment_text);
+        attachmentTextContainer.setOnClickListener(this);
+        TextView attachmentTitle = rootLayout.findViewById(R.id.text_attachment_title);
+        RecyclerView attachmentRecyclerView = rootLayout.findViewById(R.id.recyclerView_attachment);
+        attachmentRecyclerView.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL));
+        attachmentRecyclerView.setAdapter(mNoteAttachmentRecyclerViewAdapter);
         mRxDisposer.add("createView_onNoteChanged",
                 mNoteState.getNoteFlow()
                         .observeOn(AndroidSchedulers.mainThread())
@@ -250,6 +274,23 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                             mMedicineRecyclerViewAdapter.notifyItemRefreshed();
                         })
         );
+        mRxDisposer.add("createView_onAttachmentChanged",
+                mNoteState.getNoteAttachmentStatesFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(noteAttachmentStates -> {
+                            attachmentTitle.setText(activity.getString(R.string.title_attachment, noteAttachmentStates.size()));
+                            mNoteAttachmentRecyclerViewAdapter.notifyItemRefreshed();
+                        }));
+        mRxDisposer.add("createView_onAttachmentShow",
+                mAttachmentShow.getSubject().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(aBoolean -> {
+                            if (aBoolean) {
+                                attachmentRecyclerView.setVisibility(View.VISIBLE);
+                            } else {
+                                attachmentRecyclerView.setVisibility(View.GONE);
+                            }
+                            expandAttachment.setActivated(aBoolean);
+                        }));
         mRxDisposer
                 .add("createView_onEntryDateTimeValidation",
                         mNewNoteCmd.getEntryDateTimeValid()
@@ -268,6 +309,24 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                                 contentInput.setError(error);
                             } else {
                                 contentInput.setError(null);
+                            }
+                        }));
+        mRxDisposer.add("createView_onNoteAttachmentFileAdded",
+                mNoteAttachmentFileChangeNotifier.getAddedNoteAttachmentFile()
+                        .observeOn(Schedulers.from(mExecutorService))
+                        .subscribe(noteAttachmentFile ->
+                        {
+                            if (isUpdate()) {
+                                mQueryNoteCmd.queryNoteAttachmentInfo(mNoteState);
+                            }
+                        }));
+        mRxDisposer.add("createView_onNoteAttachmentFileDeleted",
+                mNoteAttachmentFileChangeNotifier.getDeletedNoteAttachmentFile()
+                        .observeOn(Schedulers.from(mExecutorService))
+                        .subscribe(noteAttachmentFile ->
+                        {
+                            if (isUpdate()) {
+                                mQueryNoteCmd.queryNoteAttachmentInfo(mNoteState);
                             }
                         }));
         mRxDisposer.add("createView_onMedicineReminderAdded",
@@ -316,6 +375,10 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
             mMedicineRecyclerViewAdapter.dispose(activity);
             mMedicineRecyclerViewAdapter = null;
         }
+        if (mNoteAttachmentRecyclerViewAdapter != null) {
+            mNoteAttachmentRecyclerViewAdapter.dispose(activity);
+            mNoteAttachmentRecyclerViewAdapter = null;
+        }
         if (mCompositeDisposable != null) {
             mCompositeDisposable.dispose();
             mCompositeDisposable = null;
@@ -323,7 +386,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     }
 
     @Override
-    public void onEditClick(MedicineState medicineState) {
+    public void medicineItem_onEditClick(MedicineState medicineState) {
         MedicineDetailPage.Args args;
         MedicineState medicineStateArgs = medicineState.clone();
         if (isUpdate()) {
@@ -342,7 +405,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     }
 
     @Override
-    public void onDeleteClick(MedicineState medicineState) {
+    public void medicineItem_onDeleteClick(MedicineState medicineState) {
         if (isUpdate()) {
             Context context = mSvProvider.getContext();
             String title = context.getString(R.string.title_confirm);
@@ -384,7 +447,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     }
 
     @Override
-    public void onAddMedicineIntakeClick(MedicineState medicineState) {
+    public void medicineItem_onAddMedicineIntakeClick(MedicineState medicineState) {
         Long medicineId = medicineState.getMedicineId();
         if (medicineId != null) {
             mNavigator.push(Routes.MEDICINE_INTAKE_DETAIL_PAGE,
@@ -393,12 +456,79 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     }
 
     @Override
-    public void onMedicineIntakeListClick(MedicineState medicineState) {
+    public void medicineItem_onMedicineIntakeListClick(MedicineState medicineState) {
         Long medicineId = medicineState.getMedicineId();
         if (medicineId != null) {
             mNavigator.push(Routes.MEDICINE_INTAKES_PAGE,
                     MedicineIntakeListPage.Args.with(medicineId));
         }
+    }
+
+
+    @Override
+    public void noteAttachment_onEditClick(NoteAttachmentState noteAttachmentState) {
+        NoteAttachmentDetailPage.Args args;
+        if (isUpdate()) {
+            args = NoteAttachmentDetailPage.Args.forUpdate(noteAttachmentState.clone());
+        } else {
+            args = NoteAttachmentDetailPage.Args.forEdit(noteAttachmentState.clone());
+        }
+        mNavigator.push(Routes.NOTE_ATTACHMENT_DETAIL_PAGE,
+                args,
+                (navigator, navRoute, activity, currentView) -> {
+                    NoteAttachmentDetailPage.Result result = NoteAttachmentDetailPage.Result.of(navRoute);
+                    if (result != null) {
+                        updateNoteAttachmentState(result.getNoteAttachmentState());
+                    }
+                });
+    }
+
+    @Override
+    public void noteAttachment_onDeleteClick(NoteAttachmentState noteAttachmentState) {
+        if (isUpdate()) {
+            Context context = mSvProvider.getContext();
+            String title = context.getString(R.string.title_confirm);
+            String content = context.getString(R.string.confirm_delete_attachment);
+            NavExtDialogConfig navExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
+            mNavigator.push(navExtDialogConfig.getRoutePath(NavExtDialogConfig.ROUTE_CONFIRM),
+                    navExtDialogConfig.args_confirmDialog(title, content),
+                    (navigator, navRoute, activity, currentView) -> {
+                        Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
+                        Boolean result = provider.get(NavExtDialogConfig.class).result_confirmDialog(navRoute);
+                        if (result != null && result) {
+                            deleteNoteAttachment(noteAttachmentState);
+                        }
+                    });
+        } else {
+            mNoteAttachmentRecyclerViewAdapter.notifyItemDeleted(noteAttachmentState);
+        }
+    }
+
+    private void updateNoteAttachmentState(NoteAttachmentState noteAttachmentState) {
+        mNoteAttachmentRecyclerViewAdapter.notifyItemUpdated(noteAttachmentState);
+    }
+
+    private void deleteNoteAttachment(NoteAttachmentState noteAttachmentState) {
+        mRxDisposer.add("deleteNoteAttachment", mDeleteNoteAttachmentCmd
+                .execute(noteAttachmentState)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((note, throwable) -> {
+                    Context deleteContext = mSvProvider.getContext();
+                    if (throwable != null) {
+                        mLogger
+                                .e(TAG,
+                                        deleteContext.getString(
+                                                R.string.error_deleting_note_attachment),
+                                        throwable);
+                    } else {
+                        mLogger
+                                .i(TAG,
+                                        deleteContext.getString(
+                                                R.string.success_deleting_note_attachment));
+                        mNoteAttachmentRecyclerViewAdapter.notifyItemDeleted(noteAttachmentState);
+                    }
+                })
+        );
     }
 
     private void initTextWatcher() {
@@ -547,7 +677,27 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                     });
         } else if (id == R.id.container_note_tag_text || id == R.id.button_expand_note_tag) {
             mNoteTagShow.onNext(!mNoteTagShow.getValue());
+        } else if (id == R.id.button_add_attachment) {
+            NoteAttachmentDetailPage.Args args;
+            if (isUpdate()) {
+                args = NoteAttachmentDetailPage.Args.save(getNoteId());
+            } else {
+                args = NoteAttachmentDetailPage.Args.dontSave();
+            }
+            mNavigator.push(Routes.NOTE_ATTACHMENT_DETAIL_PAGE, args,
+                    (navigator, navRoute, activity, currentView) -> {
+                        NoteAttachmentDetailPage.Result result = NoteAttachmentDetailPage.Result.of(navRoute);
+                        if (result != null) {
+                            addNoteAttachment(result.getNoteAttachmentState());
+                        }
+                    });
+        } else if (id == R.id.container_attachment_text || id == R.id.button_expand_attachment) {
+            mAttachmentShow.onNext(!mAttachmentShow.getValue());
         }
+    }
+
+    private void addNoteAttachment(NoteAttachmentState noteAttachmentState) {
+        mNoteState.addNoteAttachmentState(noteAttachmentState);
     }
 
     private void addNoteTag(NoteTag noteTag) {

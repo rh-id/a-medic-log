@@ -12,13 +12,15 @@ import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.entity.Note;
+import m.co.rh.id.a_medic_log.base.entity.NoteAttachment;
+import m.co.rh.id.a_medic_log.base.entity.NoteAttachmentFile;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 
-@Database(entities = {Profile.class, Note.class, NoteTag.class,
-        Medicine.class, MedicineReminder.class, MedicineIntake.class
+@Database(entities = {Profile.class, Note.class, NoteTag.class, NoteAttachment.class,
+        NoteAttachmentFile.class, Medicine.class, MedicineReminder.class, MedicineIntake.class
         , AndroidNotification.class},
-        version = 2)
+        version = 3)
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ProfileDao profileDao();

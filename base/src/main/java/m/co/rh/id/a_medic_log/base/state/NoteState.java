@@ -17,6 +17,7 @@ import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 public class NoteState implements Serializable, Cloneable {
     private SerialBehaviorSubject<Note> mNoteSubject;
     private SerialBehaviorSubject<TreeSet<NoteTag>> mNoteTagSetSubject;
+    private SerialBehaviorSubject<ArrayList<NoteAttachmentState>> mNoteAttachmentsSubject;
     private SerialBehaviorSubject<ArrayList<MedicineState>> mMedicineListSubject;
     private DateFormat mDateFormat;
 
@@ -24,6 +25,7 @@ public class NoteState implements Serializable, Cloneable {
         mNoteSubject = new SerialBehaviorSubject<>(new Note());
         mMedicineListSubject = new SerialBehaviorSubject<>(new ArrayList<>());
         mNoteTagSetSubject = new SerialBehaviorSubject<>(new TreeSet<>());
+        mNoteAttachmentsSubject = new SerialBehaviorSubject<>(new ArrayList<>());
         mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
     }
 
@@ -64,6 +66,37 @@ public class NoteState implements Serializable, Cloneable {
 
     public TreeSet<NoteTag> getNoteTagSet() {
         return mNoteTagSetSubject.getValue();
+    }
+
+    public void updateNoteAttachments(Collection<NoteAttachmentState> noteAttachmentStates) {
+        mNoteAttachmentsSubject.onNext(new ArrayList<>(noteAttachmentStates));
+    }
+
+    public ArrayList<NoteAttachmentState> getNoteAttachmentStates() {
+        return mNoteAttachmentsSubject.getValue();
+    }
+
+    public Flowable<ArrayList<NoteAttachmentState>> getNoteAttachmentStatesFlow() {
+        return Flowable.fromObservable(mNoteAttachmentsSubject.getSubject(), BackpressureStrategy.BUFFER);
+    }
+
+    public void addNoteAttachmentState(NoteAttachmentState noteAttachmentState) {
+        ArrayList<NoteAttachmentState> noteAttachmentStates = getNoteAttachmentStates();
+        noteAttachmentStates.add(noteAttachmentState);
+        mNoteAttachmentsSubject.onNext(noteAttachmentStates);
+    }
+
+    public void updateNoteAttachmentState(int index, NoteAttachmentState noteAttachmentState) {
+        ArrayList<NoteAttachmentState> noteAttachmentStates = getNoteAttachmentStates();
+        noteAttachmentStates.remove(index);
+        noteAttachmentStates.add(index, noteAttachmentState);
+        mNoteAttachmentsSubject.onNext(noteAttachmentStates);
+    }
+
+    public void removeNoteAttachmentState(int index) {
+        ArrayList<NoteAttachmentState> noteAttachmentStates = getNoteAttachmentStates();
+        noteAttachmentStates.remove(index);
+        mNoteAttachmentsSubject.onNext(noteAttachmentStates);
     }
 
     public ArrayList<MedicineState> getMedicineList() {

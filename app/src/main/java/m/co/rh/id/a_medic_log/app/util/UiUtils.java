@@ -11,12 +11,14 @@ import android.view.View;
 
 import java.io.File;
 
+import m.co.rh.id.a_medic_log.app.constants.Constants;
+
 public class UiUtils {
     public static void shareFile(Context context, File file, String chooserMessage) {
         Uri fileUri = androidx.core.content.
                 FileProvider.getUriForFile(
                 context,
-                "m.co.rh.id.a_medic_log.fileprovider",
+                Constants.FILE_PROVIDER_AUTHORITY,
                 file);
         Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND);

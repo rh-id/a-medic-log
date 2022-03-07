@@ -2,14 +2,22 @@ package m.co.rh.id.a_medic_log.base.provider;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
+
+import androidx.exifinterface.media.ExifInterface;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.UUID;
 
 import m.co.rh.id.alogger.ILogger;
@@ -26,14 +34,21 @@ public class FileHelper {
     private ProviderValue<ILogger> mLogger;
     private File mLogFile;
     private File mTempFileRoot;
+    private File mNoteAttachmentFileImageParent;
+    private File mNoteAttachmentFileThumbnailParent;
 
     public FileHelper(Provider provider, Context context) {
         mAppContext = context.getApplicationContext();
         mLogger = provider.lazyGet(ILogger.class);
         File cacheDir = context.getCacheDir();
+        File fileDir = context.getFilesDir();
         mLogFile = new File(cacheDir, "alogger/app.log");
         mTempFileRoot = new File(cacheDir, "/tmp");
         mTempFileRoot.mkdirs();
+        mNoteAttachmentFileImageParent = new File(fileDir, "app/note/attachment/image");
+        mNoteAttachmentFileImageParent.mkdirs();
+        mNoteAttachmentFileThumbnailParent = new File(fileDir, "app/note/attachment/image/thumbnail");
+        mNoteAttachmentFileThumbnailParent.mkdirs();
     }
 
     public File createTempFile(String fileName) throws IOException {
@@ -92,5 +107,145 @@ public class FileHelper {
 
     public File getLogFile() {
         return mLogFile;
+    }
+
+    public File createNoteAttachmentImage(Uri inUri, String fileName) throws IOException {
+        File outFile = new File(mNoteAttachmentFileImageParent, fileName);
+        try {
+            outFile.createNewFile();
+            copyImage(inUri, outFile);
+            return outFile;
+        } catch (Exception e) {
+            outFile.delete();
+            throw e;
+        }
+    }
+
+    public File getNoteAttachmentImage(String fileName) {
+        return new File(mNoteAttachmentFileImageParent, fileName);
+    }
+
+    public File createNoteAttachmentThumbnail(Uri content, String fileName) throws IOException {
+        File outFile = new File(mNoteAttachmentFileThumbnailParent, fileName);
+        try {
+            outFile.createNewFile();
+            copyImage(content, outFile, 320, 180);
+            return outFile;
+        } catch (Exception e) {
+            outFile.delete();
+            throw e;
+        }
+    }
+
+    public File getNoteAttachmentThumbnail(String fileName) {
+        return new File(mNoteAttachmentFileThumbnailParent, fileName);
+    }
+
+    public void deleteNoteAttachmentImage(String fileName) {
+        if (fileName != null && !fileName.isEmpty()) {
+            File file = new File(mNoteAttachmentFileImageParent, fileName);
+            file.delete();
+            File thumbnail = new File(mNoteAttachmentFileThumbnailParent, fileName);
+            thumbnail.delete();
+        }
+    }
+
+    public File createImageTempFile() throws IOException {
+        File parent = new File(mTempFileRoot, UUID.randomUUID().toString());
+        parent.mkdirs();
+        File tmpFile = new File(parent, UUID.randomUUID().toString() + ".jpg");
+        tmpFile.createNewFile();
+        return tmpFile;
+    }
+
+    public File createImageTempFile(Uri content) throws IOException {
+        File outFile = createImageTempFile();
+        try {
+            copyImage(content, outFile);
+            return outFile;
+        } catch (Exception e) {
+            outFile.delete();
+            throw e;
+        }
+    }
+
+    private void copyImage(Uri content, File outFile) throws IOException {
+        copyImage(content, outFile, 1280, 720);
+    }
+
+    private void copyImage(Uri content, File outFile, int width, int height) throws IOException {
+        ContentResolver contentResolver = mAppContext.getContentResolver();
+        FileDescriptor fd = contentResolver.openFileDescriptor(
+                content, "r").getFileDescriptor();
+        InputStream fis = new FileInputStream(fd);
+        BitmapFactory.Options bmOptions = getBitmapOptionForCompression(fis, width, height);
+        OutputStream fileOutputStream = new BufferedOutputStream(
+                new FileOutputStream(outFile), 10240);
+        Bitmap bitmap = processExifAttr(mAppContext, content, bmOptions);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream);
+        fileOutputStream.flush();
+        fileOutputStream.close();
+    }
+
+    private BitmapFactory.Options getBitmapOptionForCompression(InputStream fis, int width, int height) {
+        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+        bmOptions.inJustDecodeBounds = true;
+        BitmapFactory.decodeStream(fis, null, bmOptions);
+        int inWidth = bmOptions.outWidth;
+        int inHeight = bmOptions.outHeight;
+        int outWidth = width;
+        int outHeight = height;
+        if (inHeight > inWidth) {
+            outHeight = width;
+            outWidth = height;
+        }
+        int scaleFactor = Math.max(1, Math.min(inWidth / outWidth, inHeight / outHeight));
+        bmOptions.inJustDecodeBounds = false;
+        bmOptions.inSampleSize = scaleFactor;
+        return bmOptions;
+    }
+
+    private Bitmap processExifAttr(Context context, Uri imageUri, BitmapFactory.Options bmOptions) throws IOException {
+        ContentResolver contentResolver = context.getContentResolver();
+        FileDescriptor fd = contentResolver.openFileDescriptor(
+                imageUri, "r").getFileDescriptor();
+        ExifInterface exifInterface = new ExifInterface(fd);
+        int rotation = getRotation(exifInterface);
+
+        // get fd again
+        fd = contentResolver.openFileDescriptor(
+                imageUri, "r").getFileDescriptor();
+        Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fd, null, bmOptions);
+        if (rotation != 0) {
+            Matrix matrix = new Matrix();
+            matrix.setRotate(rotation);
+            bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(),
+                    matrix, true);
+        }
+        return bitmap;
+    }
+
+    private int getRotation(ExifInterface exifInterface) {
+        int rotation = 0;
+        int exifRotation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_UNDEFINED);
+
+        if (exifRotation != ExifInterface.ORIENTATION_UNDEFINED) {
+            switch (exifRotation) {
+                case ExifInterface.ORIENTATION_ROTATE_180:
+                    rotation = 180;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_270:
+                    rotation = 270;
+                    break;
+                case ExifInterface.ORIENTATION_ROTATE_90:
+                    rotation = 90;
+                    break;
+            }
+        }
+        return rotation;
+    }
+
+    public File getNoteAttachmentImageParent() {
+        return mNoteAttachmentFileImageParent;
     }
 }

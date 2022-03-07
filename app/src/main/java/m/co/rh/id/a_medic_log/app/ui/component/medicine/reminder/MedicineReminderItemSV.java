@@ -42,7 +42,6 @@ public class MedicineReminderItemSV extends StatefulView<Activity> implements Re
 
     @Override
     protected View createView(Activity activity, ViewGroup container) {
-        // TODO show medicine reminder days
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.item_medicine_reminder, container, false);
         rootLayout.findViewById(R.id.root_layout).setOnClickListener(this);
         TextView startDateText = rootLayout.findViewById(R.id.text_start_date);

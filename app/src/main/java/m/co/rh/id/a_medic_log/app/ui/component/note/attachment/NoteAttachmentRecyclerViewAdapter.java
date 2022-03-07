@@ -1,4 +1,4 @@
-package m.co.rh.id.a_medic_log.app.ui.component.medicine;
+package m.co.rh.id.a_medic_log.app.ui.component.note.attachment;
 
 import android.app.Activity;
 import android.view.View;
@@ -11,37 +11,31 @@ import java.util.ArrayList;
 import java.util.List;
 
 import m.co.rh.id.a_medic_log.R;
-import m.co.rh.id.a_medic_log.base.state.MedicineState;
+import m.co.rh.id.a_medic_log.base.state.NoteAttachmentState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.component.INavigator;
 
 @SuppressWarnings("rawtypes")
-public class MedicineRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class NoteAttachmentRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public static final int VIEW_TYPE_ITEM = 0;
     public static final int VIEW_TYPE_EMPTY_TEXT = 1;
 
     private NoteState mNoteState;
-    private MedicineItemSV.MedicineItemOnMedicineIntakeListClick mMedicineItemOnMedicineIntakeListClick;
-    private MedicineItemSV.MedicineItemOnEditClick mMedicineItemOnEditClick;
-    private MedicineItemSV.MedicineItemOnDeleteClick mMedicineItemOnDeleteClick;
-    private MedicineItemSV.MedicineItemOnAddMedicineIntakeClick mMedicineItemOnAddMedicineIntakeClick;
+    NoteAttachmentItemSV.NoteAttachmentItemOnEditClick mNoteAttachmentItemOnEditClick;
+    NoteAttachmentItemSV.NoteAttachmentItemOnDeleteClick mNoteAttachmentItemOnDeleteClick;
     private final INavigator mNavigator;
     private final StatefulView mParentStatefulView;
     private final List<StatefulView> mCreatedSvList;
 
-    public MedicineRecyclerViewAdapter(NoteState noteState,
-                                       MedicineItemSV.MedicineItemOnMedicineIntakeListClick medicineItemOnMedicineIntakeListClick,
-                                       MedicineItemSV.MedicineItemOnEditClick medicineItemOnEditClick,
-                                       MedicineItemSV.MedicineItemOnDeleteClick medicineItemOnDeleteClickClick,
-                                       MedicineItemSV.MedicineItemOnAddMedicineIntakeClick medicineItemOnAddMedicineIntakeClick,
-                                       INavigator navigator, StatefulView parentStatefulView
+    public NoteAttachmentRecyclerViewAdapter(NoteState noteState,
+                                             NoteAttachmentItemSV.NoteAttachmentItemOnEditClick noteAttachmentItemOnEditClick,
+                                             NoteAttachmentItemSV.NoteAttachmentItemOnDeleteClick noteAttachmentItemOnDeleteClick,
+                                             INavigator navigator, StatefulView parentStatefulView
     ) {
         mNoteState = noteState;
-        mMedicineItemOnMedicineIntakeListClick = medicineItemOnMedicineIntakeListClick;
-        mMedicineItemOnEditClick = medicineItemOnEditClick;
-        mMedicineItemOnDeleteClick = medicineItemOnDeleteClickClick;
-        mMedicineItemOnAddMedicineIntakeClick = medicineItemOnAddMedicineIntakeClick;
+        mNoteAttachmentItemOnEditClick = noteAttachmentItemOnEditClick;
+        mNoteAttachmentItemOnDeleteClick = noteAttachmentItemOnDeleteClick;
         mNavigator = navigator;
         mParentStatefulView = parentStatefulView;
         mCreatedSvList = new ArrayList<>();
@@ -55,11 +49,9 @@ public class MedicineRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
             View view = activity.getLayoutInflater().inflate(R.layout.no_record, parent, false);
             return new EmptyViewHolder(view);
         } else {
-            MedicineItemSV itemSV = new MedicineItemSV();
-            itemSV.setOnMedicineIntakeListClick(mMedicineItemOnMedicineIntakeListClick);
-            itemSV.setOnEditClick(mMedicineItemOnEditClick);
-            itemSV.setOnDeleteClick(mMedicineItemOnDeleteClick);
-            itemSV.setOnAddMedicineIntakeClick(mMedicineItemOnAddMedicineIntakeClick);
+            NoteAttachmentItemSV itemSV = new NoteAttachmentItemSV();
+            itemSV.setNoteAttachmentItemOnEditClick(mNoteAttachmentItemOnEditClick);
+            itemSV.setNoteAttachmentItemOnDeleteClick(mNoteAttachmentItemOnDeleteClick);
             mNavigator.injectRequired(mParentStatefulView, itemSV);
             View view = itemSV.buildView(activity, parent);
             mCreatedSvList.add(itemSV);
@@ -70,8 +62,8 @@ public class MedicineRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         if (holder instanceof ItemViewHolder) {
-            ArrayList<MedicineState> itemArrayList = mNoteState.getMedicineList();
-            MedicineState item = itemArrayList.get(position);
+            ArrayList<NoteAttachmentState> itemArrayList = mNoteState.getNoteAttachmentStates();
+            NoteAttachmentState item = itemArrayList.get(position);
             ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
             itemViewHolder.setItem(item);
         }
@@ -82,7 +74,7 @@ public class MedicineRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
         if (isEmpty()) {
             return 1;
         }
-        return mNoteState.getMedicineList().size();
+        return mNoteState.getNoteAttachmentStates().size();
     }
 
     @Override
@@ -94,37 +86,36 @@ public class MedicineRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
     }
 
     private boolean isEmpty() {
-        if (mNoteState == null) {
+        if (mNoteState == null || mNoteState.getNoteAttachmentStates() == null) {
             return true;
         }
-        return mNoteState.getMedicineList().size() == 0;
+        return mNoteState.getNoteAttachmentStates().size() == 0;
     }
 
-    public void notifyItemAdded(MedicineState item) {
+    public void notifyItemAdded(NoteAttachmentState item) {
         int existingIdx = findItem(item);
         if (existingIdx == -1) {
-            mNoteState.addMedicineList(item);
-            ArrayList<MedicineState> items = mNoteState.getMedicineList();
-            if (items.size() == 1) {
-                notifyItemChanged(0);
-            } else {
-                notifyItemInserted(getItemCount() - 1);
-            }
+            mNoteState.getNoteAttachmentStates()
+                    .add(0, item);
+            notifyItemInserted(0);
         }
     }
 
-    public void notifyItemUpdated(MedicineState item) {
+    public void notifyItemUpdated(NoteAttachmentState item) {
         int existingIdx = findItem(item);
         if (existingIdx != -1) {
-            mNoteState.updateMedicineList(existingIdx, item);
+            ArrayList<NoteAttachmentState> items = mNoteState.getNoteAttachmentStates();
+            items.remove(existingIdx);
+            items.add(existingIdx, item);
             notifyItemChanged(existingIdx);
         }
     }
 
-    public void notifyItemDeleted(MedicineState item) {
+    public void notifyItemDeleted(NoteAttachmentState item) {
         int removedIdx = findItem(item);
         if (removedIdx != -1) {
-            mNoteState.removeMedicineList(removedIdx);
+            mNoteState.getNoteAttachmentStates()
+                    .remove(removedIdx);
             notifyItemRemoved(removedIdx);
         }
     }
@@ -139,14 +130,13 @@ public class MedicineRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
         }
     }
 
-    private int findItem(MedicineState item) {
-        ArrayList<MedicineState> items =
-                mNoteState.getMedicineList();
+    private int findItem(NoteAttachmentState item) {
+        ArrayList<NoteAttachmentState> items =
+                mNoteState.getNoteAttachmentStates();
         int size = items.size();
         int removedIdx = -1;
         for (int i = 0; i < size; i++) {
-            if (item.getMedicine().createdDateTime.equals(
-                    items.get(i).getMedicine().createdDateTime)) {
+            if (item.getNoteAttachmentCreatedDateTime().equals(items.get(i).getNoteAttachmentCreatedDateTime())) {
                 removedIdx = i;
                 break;
             }
@@ -159,19 +149,19 @@ public class MedicineRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVi
     }
 
     protected static class ItemViewHolder extends RecyclerView.ViewHolder {
-        private MedicineItemSV mItemSV;
+        private NoteAttachmentItemSV mItemSV;
 
-        public ItemViewHolder(@NonNull View itemView, MedicineItemSV itemSV) {
+        public ItemViewHolder(@NonNull View itemView, NoteAttachmentItemSV itemSV) {
             super(itemView);
             mItemSV = itemSV;
         }
 
-        public void setItem(MedicineState medicineState) {
-            mItemSV.setMedicineState(medicineState);
+        public void setItem(NoteAttachmentState noteAttachmentState) {
+            mItemSV.setNoteAttachmentState(noteAttachmentState);
         }
 
-        public MedicineState getItem() {
-            return mItemSV.getMedicineState();
+        public NoteAttachmentState getItem() {
+            return mItemSV.getNoteAttachmentState();
         }
     }
 

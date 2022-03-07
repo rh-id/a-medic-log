@@ -9,6 +9,8 @@ import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,11 +37,23 @@ public class NoteDaoTest {
     @Rule
     public MigrationTestHelper helper;
 
+    private AppDatabase mAppDatabase;
+
     @SuppressWarnings("deprecation")
     public NoteDaoTest() {
         helper = new MigrationTestHelper(InstrumentationRegistry.getInstrumentation(),
                 AppDatabase.class.getCanonicalName(),
                 new FrameworkSQLiteOpenHelperFactory());
+    }
+
+    @Before
+    public void init() {
+        mAppDatabase = createAppDb();
+    }
+
+    @After
+    public void cleanup() {
+        deleteAppDb();
     }
 
     private AppDatabase createAppDb() {
@@ -57,9 +71,8 @@ public class NoteDaoTest {
 
     @Test
     public void insertUpdateDelete_noteState() {
-        AppDatabase appDb = createAppDb();
-        NoteDao noteDao = appDb.noteDao();
-        MedicineDao medicineDao = appDb.medicineDao();
+        NoteDao noteDao = mAppDatabase.noteDao();
+        MedicineDao medicineDao = mAppDatabase.medicineDao();
 
         String noteContent = "test note";
         String noteTagTag = "sample tag";
@@ -111,36 +124,24 @@ public class NoteDaoTest {
         medicineIntake.description = medicineIntakeDesc;
         medicineDao.insert(medicineIntake);
 
-        // after that update note and add medicine
+        // after that update note
         String noteContentUpdate = noteContent + " updated ";
-        String newMedicineName = "new medicine name test";
-        String newNoteTagTag = "second tag to be added";
         noteState.getNote().content = noteContentUpdate;
-        NoteTag newNoteTag = new NoteTag();
-        newNoteTag.tag = newNoteTagTag;
-        noteState.addNoteTag(newNoteTag);
-        Medicine newMedicine = new Medicine();
-        newMedicine.name = newMedicineName;
-        MedicineState newMedicineState = new MedicineState();
-        newMedicineState.updateMedicine(newMedicine);
-        noteState.addMedicineList(newMedicineState);
         // UPDATE NOTE
         noteDao.updateNote(noteState);
         assertEquals(1, noteDao.countNote());
-        assertEquals(2, noteDao.countNoteTag());
-        assertEquals(2, medicineDao.countMedicine());
+        assertEquals(1, noteDao.countNoteTag());
+        assertEquals(1, medicineDao.countMedicine());
         assertEquals(1, medicineDao.countMedicineReminder());
         assertEquals(1, medicineDao.countMedicineIntake());
         Note noteFromUpdate = noteDao.findNoteById(noteState.getNoteId());
         assertEquals(noteContentUpdate, noteFromUpdate.content);
         List<NoteTag> noteTagListFromUpdate = noteDao.findNoteTagsByNoteId(noteState.getNoteId());
-        assertEquals(2, noteTagListFromUpdate.size());
+        assertEquals(1, noteTagListFromUpdate.size());
         assertEquals(noteTagTag, noteTagListFromUpdate.get(0).tag);
-        assertEquals(newNoteTagTag, noteTagListFromUpdate.get(1).tag);
         List<Medicine> medicineListFromUpdate = noteDao.findMedicinesByNoteId(noteState.getNoteId());
-        assertEquals(2, medicineListFromUpdate.size());
+        assertEquals(1, medicineListFromUpdate.size());
         assertEquals(medicineName, medicineListFromUpdate.get(0).name);
-        assertEquals(newMedicineName, medicineListFromUpdate.get(1).name);
         List<MedicineReminder> medicineReminderListFromUpdate = medicineDao.findMedicineRemindersByMedicineId(
                 medicineListFromUpdate.get(0).id
         );
@@ -159,7 +160,5 @@ public class NoteDaoTest {
         assertEquals(0, medicineDao.countMedicine());
         assertEquals(0, medicineDao.countMedicineReminder());
         assertEquals(0, medicineDao.countMedicineIntake());
-
-        deleteAppDb();
     }
 }

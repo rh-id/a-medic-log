@@ -5,12 +5,16 @@ import android.content.Context;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteMedicineIntakeCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteMedicineReminderCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteAttachmentCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteAttachmentFileCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteTagCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteProfileCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineIntakeCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineReminderCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.NewNoteAttachmentCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.NewNoteAttachmentFileCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteTagCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewProfileCmd;
@@ -22,6 +26,7 @@ import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineIntakeCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineReminderCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.UpdateNoteAttachmentCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateProfileCmd;
 import m.co.rh.id.aprovider.Provider;
@@ -54,6 +59,11 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerLazy(UpdateMedicineIntakeCmd.class, () -> new UpdateMedicineIntakeCmd(context, provider));
         providerRegistry.registerLazy(DeleteMedicineIntakeCmd.class, () -> new DeleteMedicineIntakeCmd(context, provider));
         providerRegistry.registerLazy(PagedMedicineIntakeItemsCmd.class, () -> new PagedMedicineIntakeItemsCmd(context, provider));
+        providerRegistry.registerLazy(NewNoteAttachmentCmd.class, () -> new NewNoteAttachmentCmd(context, provider));
+        providerRegistry.registerLazy(UpdateNoteAttachmentCmd.class, () -> new UpdateNoteAttachmentCmd(context, provider));
+        providerRegistry.registerLazy(DeleteNoteAttachmentCmd.class, () -> new DeleteNoteAttachmentCmd(provider));
+        providerRegistry.registerLazy(NewNoteAttachmentFileCmd.class, () -> new NewNoteAttachmentFileCmd(provider));
+        providerRegistry.registerLazy(DeleteNoteAttachmentFileCmd.class, () -> new DeleteNoteAttachmentFileCmd(provider));
     }
 
     @Override

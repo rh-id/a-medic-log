@@ -11,8 +11,11 @@ import m.co.rh.id.a_medic_log.base.dao.NoteDao;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.entity.Note;
+import m.co.rh.id.a_medic_log.base.entity.NoteAttachment;
+import m.co.rh.id.a_medic_log.base.entity.NoteAttachmentFile;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
+import m.co.rh.id.a_medic_log.base.state.NoteAttachmentState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.aprovider.Provider;
 
@@ -45,6 +48,7 @@ public class QueryNoteCmd {
             noteState.updateNote(note);
             List<NoteTag> noteTags = mNoteDao.findNoteTagsByNoteId(noteId);
             noteState.updateNoteTagSet(noteTags);
+            queryNoteAttachmentStateList(noteState);
             queryMedicineStateList(noteState);
             return noteState;
         }));
@@ -64,6 +68,29 @@ public class QueryNoteCmd {
             }
             noteState.updateMedicineStates(medicineStates);
         }
+    }
+
+    private void queryNoteAttachmentStateList(NoteState noteState) {
+        Long noteId = noteState.getNoteId();
+        List<NoteAttachment> noteAttachments = mNoteDao.findNoteAttachmentsByNoteId(noteId);
+        if (!noteAttachments.isEmpty()) {
+            List<NoteAttachmentState> noteAttachmentStates = new ArrayList<>();
+            for (NoteAttachment noteAttachment : noteAttachments) {
+                List<NoteAttachmentFile> noteAttachmentFiles = mNoteDao.findNoteAttachmentFilesByAttachmentId(noteAttachment.id);
+                NoteAttachmentState noteAttachmentState = new NoteAttachmentState();
+                noteAttachmentState.updateNoteAttachment(noteAttachment);
+                noteAttachmentState.updateNoteAttachmentFileList(noteAttachmentFiles);
+                noteAttachmentStates.add(noteAttachmentState);
+            }
+            noteState.updateNoteAttachments(noteAttachmentStates);
+        }
+    }
+
+    public Single<List<NoteAttachmentState>> queryNoteAttachmentInfo(NoteState noteState) {
+        return Single.fromFuture(mExecutorService.submit(() -> {
+            queryNoteAttachmentStateList(noteState);
+            return noteState.getNoteAttachmentStates();
+        }));
     }
 
     public Single<List<MedicineState>> queryMedicineInfo(NoteState noteState) {

@@ -113,4 +113,17 @@
     <string name="title_tag">Tag (%d)</string>
     <string name="error_failed_to_delete_note_tag">Failed to delete note tag</string>
     <string name="success_deleting_note_tag">Note tag deleted</string>
+    <string name="error_deleting_note_attachment">Error deleting note attachment</string>
+    <string name="success_deleting_note_attachment">Note attachment deleted</string>
+    <string name="title_attachment">Attachment (%d)</string>
+    <string name="title_add_note_attachment">Add Note Attachment</string>
+    <string name="success_adding_note_attachment">Note attachment added</string>
+    <string name="confirm_delete_attachment">Delete attachment?</string>
+    <string name="success_updating_note_attachment">Note attachment updated</string>
+    <string name="title_update_note_attachment">Update Note Attachment</string>
+    <string name="add_image">Add image</string>
+    <string name="add_photo">Add photo</string>
+    <string name="title_files">Files</string>
+    <string name="error_deleting_note_attachment_file">Error deleting note attachment file</string>
+    <string name="share_image">Share image</string>
 </resources>

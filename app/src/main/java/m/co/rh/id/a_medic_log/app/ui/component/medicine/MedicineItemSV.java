@@ -50,10 +50,10 @@ public class MedicineItemSV extends StatefulView<Activity> implements RequireCom
     private OptionalBehaviorSubject<MedicineIntake> mLastMedicineIntakeSubject;
     private DateFormat mDateTimeFormat;
     private DateFormat mTimeFormat;
-    private transient OnMedicineIntakeListClick mOnMedicineIntakeListClick;
-    private transient OnEditClick mOnEditClick;
-    private transient OnDeleteClick mOnDeleteClick;
-    private transient OnAddMedicineIntakeClick mOnAddMedicineIntakeClick;
+    private transient MedicineItemOnMedicineIntakeListClick mMedicineItemOnMedicineIntakeListClick;
+    private transient MedicineItemOnEditClick mMedicineItemOnEditClick;
+    private transient MedicineItemOnDeleteClick mMedicineItemOnDeleteClick;
+    private transient MedicineItemOnAddMedicineIntakeClick mMedicineItemOnAddMedicineIntakeClick;
 
     public MedicineItemSV() {
         mMedicineStateSubject = new SerialBehaviorSubject<>(new MedicineState());
@@ -198,24 +198,24 @@ public class MedicineItemSV extends StatefulView<Activity> implements RequireCom
             mSvProvider.dispose();
             mSvProvider = null;
         }
-        mOnEditClick = null;
-        mOnDeleteClick = null;
+        mMedicineItemOnEditClick = null;
+        mMedicineItemOnDeleteClick = null;
     }
 
     @Override
     public void onClick(View view) {
         int id = view.getId();
         if (id == R.id.root_layout) {
-            if (mOnMedicineIntakeListClick != null) {
-                mOnMedicineIntakeListClick.onMedicineIntakeListClick(mMedicineStateSubject.getValue());
+            if (mMedicineItemOnMedicineIntakeListClick != null) {
+                mMedicineItemOnMedicineIntakeListClick.medicineItem_onMedicineIntakeListClick(mMedicineStateSubject.getValue());
             }
         } else if (id == R.id.button_edit) {
-            if (mOnEditClick != null) {
-                mOnEditClick.onEditClick(mMedicineStateSubject.getValue());
+            if (mMedicineItemOnEditClick != null) {
+                mMedicineItemOnEditClick.medicineItem_onEditClick(mMedicineStateSubject.getValue());
             }
         } else if (id == R.id.button_delete) {
-            if (mOnDeleteClick != null) {
-                mOnDeleteClick.onDeleteClick(mMedicineStateSubject.getValue());
+            if (mMedicineItemOnDeleteClick != null) {
+                mMedicineItemOnDeleteClick.medicineItem_onDeleteClick(mMedicineStateSubject.getValue());
             }
         } else if (id == R.id.button_more_action) {
             PopupMenu popup = new PopupMenu(view.getContext(), view);
@@ -229,19 +229,19 @@ public class MedicineItemSV extends StatefulView<Activity> implements RequireCom
     public boolean onMenuItemClick(MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.menu_add_medicine_intake) {
-            if (mOnAddMedicineIntakeClick != null) {
-                mOnAddMedicineIntakeClick.onAddMedicineIntakeClick(mMedicineStateSubject.getValue());
+            if (mMedicineItemOnAddMedicineIntakeClick != null) {
+                mMedicineItemOnAddMedicineIntakeClick.medicineItem_onAddMedicineIntakeClick(mMedicineStateSubject.getValue());
             }
         }
         return false;
     }
 
-    public void setOnEditClick(OnEditClick onEditClick) {
-        mOnEditClick = onEditClick;
+    public void setOnEditClick(MedicineItemOnEditClick medicineItemOnEditClick) {
+        mMedicineItemOnEditClick = medicineItemOnEditClick;
     }
 
-    public void setOnDeleteClick(OnDeleteClick onDeleteClick) {
-        mOnDeleteClick = onDeleteClick;
+    public void setOnDeleteClick(MedicineItemOnDeleteClick medicineItemOnDeleteClick) {
+        mMedicineItemOnDeleteClick = medicineItemOnDeleteClick;
     }
 
     public void setMedicineState(MedicineState medicineState) {
@@ -252,27 +252,27 @@ public class MedicineItemSV extends StatefulView<Activity> implements RequireCom
         return mMedicineStateSubject.getValue();
     }
 
-    public void setOnAddMedicineIntakeClick(OnAddMedicineIntakeClick onAddMedicineIntakeClick) {
-        mOnAddMedicineIntakeClick = onAddMedicineIntakeClick;
+    public void setOnAddMedicineIntakeClick(MedicineItemOnAddMedicineIntakeClick medicineItemOnAddMedicineIntakeClick) {
+        mMedicineItemOnAddMedicineIntakeClick = medicineItemOnAddMedicineIntakeClick;
     }
 
-    public void setOnMedicineIntakeListClick(OnMedicineIntakeListClick onMedicineIntakeListClick) {
-        mOnMedicineIntakeListClick = onMedicineIntakeListClick;
+    public void setOnMedicineIntakeListClick(MedicineItemOnMedicineIntakeListClick medicineItemOnMedicineIntakeListClick) {
+        mMedicineItemOnMedicineIntakeListClick = medicineItemOnMedicineIntakeListClick;
     }
 
-    public interface OnMedicineIntakeListClick {
-        void onMedicineIntakeListClick(MedicineState medicineState);
+    public interface MedicineItemOnMedicineIntakeListClick {
+        void medicineItem_onMedicineIntakeListClick(MedicineState medicineState);
     }
 
-    public interface OnEditClick {
-        void onEditClick(MedicineState medicineState);
+    public interface MedicineItemOnEditClick {
+        void medicineItem_onEditClick(MedicineState medicineState);
     }
 
-    public interface OnDeleteClick {
-        void onDeleteClick(MedicineState medicineState);
+    public interface MedicineItemOnDeleteClick {
+        void medicineItem_onDeleteClick(MedicineState medicineState);
     }
 
-    public interface OnAddMedicineIntakeClick {
-        void onAddMedicineIntakeClick(MedicineState medicineState);
+    public interface MedicineItemOnAddMedicineIntakeClick {
+        void medicineItem_onAddMedicineIntakeClick(MedicineState medicineState);
     }
 }
