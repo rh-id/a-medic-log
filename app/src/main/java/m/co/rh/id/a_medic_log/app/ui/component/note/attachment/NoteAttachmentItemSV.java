@@ -1,17 +1,25 @@
 package m.co.rh.id.a_medic_log.app.ui.component.note.attachment;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import androidx.core.content.FileProvider;
 import androidx.recyclerview.widget.RecyclerView;
+
+import java.util.ArrayList;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import m.co.rh.id.a_medic_log.R;
+import m.co.rh.id.a_medic_log.app.constants.Constants;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
+import m.co.rh.id.a_medic_log.base.entity.NoteAttachmentFile;
+import m.co.rh.id.a_medic_log.base.provider.FileHelper;
 import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.a_medic_log.base.state.NoteAttachmentState;
 import m.co.rh.id.anavigator.StatefulView;
@@ -26,6 +34,7 @@ public class NoteAttachmentItemSV extends StatefulView<Activity> implements Requ
     private transient INavigator mNavigator;
     private transient Provider mSvProvider;
     private transient RxDisposer mRxDisposer;
+    private transient FileHelper mFileHelper;
     private SerialBehaviorSubject<NoteAttachmentState> mNoteAttachmentStateSubject;
 
     private transient NoteAttachmentItemOnEditClick mNoteAttachmentItemOnEditClick;
@@ -45,6 +54,7 @@ public class NoteAttachmentItemSV extends StatefulView<Activity> implements Requ
     public void provideComponent(Provider provider) {
         mSvProvider = provider.get(StatefulViewProvider.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mFileHelper = mSvProvider.get(FileHelper.class);
     }
 
     @Override
@@ -52,10 +62,12 @@ public class NoteAttachmentItemSV extends StatefulView<Activity> implements Requ
         ViewGroup rootLayout = (ViewGroup) activity.getLayoutInflater().inflate(
                 R.layout.item_note_attachment, container, false);
         rootLayout.setOnClickListener(this);
+        Button buttonShare = rootLayout.findViewById(R.id.button_share);
         Button buttonEdit = rootLayout.findViewById(R.id.button_edit);
         Button buttonDelete = rootLayout.findViewById(R.id.button_delete);
         buttonEdit.setOnClickListener(this);
         buttonDelete.setOnClickListener(this);
+        buttonShare.setOnClickListener(this);
         TextView nameText = rootLayout.findViewById(R.id.text_name);
         RecyclerView noteAttachmentFileRecyclerView = rootLayout.findViewById(R.id.recyclerView_note_attachment_file);
         mRxDisposer.add("createView_onNoteAttachmentChanged",
@@ -115,6 +127,29 @@ public class NoteAttachmentItemSV extends StatefulView<Activity> implements Requ
             if (mNoteAttachmentItemOnDeleteClick != null) {
                 mNoteAttachmentItemOnDeleteClick.noteAttachment_onDeleteClick(mNoteAttachmentStateSubject.getValue());
             }
+        } else if (id == R.id.button_share) {
+            Activity activity = mNavigator.getActivity();
+            NoteAttachmentState noteAttachmentState = mNoteAttachmentStateSubject.getValue();
+            String text = noteAttachmentState.getName();
+            ArrayList<NoteAttachmentFile> attachmentFiles = noteAttachmentState.getNoteAttachmentFiles();
+            ArrayList<Uri> imageUris = new ArrayList<>();
+            if (!attachmentFiles.isEmpty()) {
+                for (NoteAttachmentFile noteAttachmentFile : attachmentFiles) {
+                    Uri fileUri =
+                            FileProvider.getUriForFile(
+                                    activity,
+                                    Constants.FILE_PROVIDER_AUTHORITY,
+                                    mFileHelper.getNoteAttachmentImage(noteAttachmentFile.fileName));
+                    imageUris.add(fileUri);
+                }
+            }
+            Intent sendIntent = new Intent();
+            sendIntent.setAction(Intent.ACTION_SEND_MULTIPLE);
+            sendIntent.putExtra(Intent.EXTRA_TEXT, text);
+            sendIntent.setType("image/*");
+            sendIntent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, imageUris);
+            Intent shareIntent = Intent.createChooser(sendIntent, null);
+            activity.startActivity(shareIntent);
         }
     }
 
