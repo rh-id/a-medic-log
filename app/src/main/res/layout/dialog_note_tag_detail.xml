@@ -13,10 +13,14 @@
         android:layout_margin="@dimen/text_margin"
         android:hint="@string/form_tag">
 
-        <com.google.android.material.textfield.TextInputEditText
+        <AutoCompleteTextView
             android:id="@+id/input_text_tag"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:paddingStart="@dimen/text_margin"
+            android:paddingTop="24sp"
+            android:paddingEnd="@dimen/text_margin"
+            android:paddingBottom="16sp"
             android:maxLines="10" />
     </com.google.android.material.textfield.TextInputLayout>
 

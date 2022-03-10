@@ -6,16 +6,20 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
-import android.widget.EditText;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.function.Function;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteTagCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
+import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.alogger.ILogger;
@@ -34,8 +38,10 @@ public class NoteTagDetailSVDialog extends StatefulViewDialog<Activity> implemen
     private transient Provider mSvProvider;
     private transient ILogger mLogger;
     private transient RxDisposer mRxDisposer;
+    private transient QueryNoteCmd mQueryNoteCmd;
     private transient NewNoteTagCmd mNewNoteTagCmd;
     private transient TextWatcher mTagTextWatcher;
+    private transient Function<String, Collection<String>> mSuggestionQuery;
 
     @Override
     public void provideNavRoute(NavRoute navRoute) {
@@ -47,6 +53,7 @@ public class NoteTagDetailSVDialog extends StatefulViewDialog<Activity> implemen
         mSvProvider = provider.get(StatefulViewProvider.class);
         mLogger = mSvProvider.get(ILogger.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mQueryNoteCmd = mSvProvider.get(QueryNoteCmd.class);
         mNewNoteTagCmd = mSvProvider.get(NewNoteTagCmd.class);
         if (mNoteTag == null) {
             NoteTag noteTag = new NoteTag();
@@ -74,13 +81,18 @@ public class NoteTagDetailSVDialog extends StatefulViewDialog<Activity> implemen
                 mNewNoteTagCmd.valid(noteTag);
             }
         };
+        mSuggestionQuery = s ->
+                mQueryNoteCmd.searchNoteTag(s).blockingGet();
     }
 
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.dialog_note_tag_detail, container, false);
-        EditText tagTextInput = rootLayout.findViewById(R.id.input_text_tag);
+        AutoCompleteTextView tagTextInput = rootLayout.findViewById(R.id.input_text_tag);
         tagTextInput.addTextChangedListener(mTagTextWatcher);
+        tagTextInput.setThreshold(1);
+        tagTextInput.setAdapter(new SuggestionAdapter
+                (activity, android.R.layout.select_dialog_item, mSuggestionQuery));
         Button okButton = rootLayout.findViewById(R.id.button_ok);
         okButton.setOnClickListener(this);
         Button cancelButton = rootLayout.findViewById(R.id.button_cancel);

@@ -1,6 +1,7 @@
 package m.co.rh.id.a_medic_log.app.provider.command;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
@@ -104,6 +105,20 @@ public class QueryNoteCmd {
         return Single.fromFuture(mExecutorService.submit(() -> {
             List<NoteTag> noteTags = mNoteDao.findNoteTagsByNoteId(noteId);
             return new TreeSet<>(noteTags);
+        }));
+    }
+
+    public Single<LinkedHashSet<String>> searchNoteTag(String search) {
+        return Single.fromFuture(mExecutorService.submit(() ->
+        {
+            LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>();
+            List<NoteTag> noteTags = mNoteDao.searchNoteTag(search);
+            if (!noteTags.isEmpty()) {
+                for (NoteTag noteTag : noteTags) {
+                    linkedHashSet.add(noteTag.tag);
+                }
+            }
+            return linkedHashSet;
         }));
     }
 }
