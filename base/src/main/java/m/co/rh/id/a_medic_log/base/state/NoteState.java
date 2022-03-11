@@ -152,6 +152,10 @@ public class NoteState implements Serializable, Cloneable {
         mNoteTagSetSubject.onNext(noteTags);
     }
 
+    public Long getProfileId() {
+        return getNote().profileId;
+    }
+
     public Long getNoteId() {
         return getNote().id;
     }

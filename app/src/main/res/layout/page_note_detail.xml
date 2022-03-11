@@ -190,7 +190,7 @@
                             android:layout_height="wrap_content"
                             android:orientation="horizontal"
                             app:layout_constraintBottom_toBottomOf="parent"
-                            app:layout_constraintEnd_toStartOf="@id/button_add_medicine"
+                            app:layout_constraintEnd_toStartOf="@id/button_share_medicine"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent">
 
@@ -217,6 +217,20 @@
                                 android:textStyle="bold" />
 
                         </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/button_share_medicine"
+                            style="@style/Theme.Amediclog.BorderlessMenuButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="0dp"
+                            app:icon="@drawable/ic_share_black"
+                            app:iconPadding="0dp"
+                            app:iconSize="@dimen/icon_size"
+                            app:iconTint="@color/daynight_black_white"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@id/button_add_medicine"
+                            app:layout_constraintTop_toTopOf="parent" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/button_add_medicine"

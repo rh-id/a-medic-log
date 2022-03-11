@@ -126,4 +126,5 @@
     <string name="title_files">Files</string>
     <string name="error_deleting_note_attachment_file">Error deleting note attachment file</string>
     <string name="share_image">Share image</string>
+    <string name="share_text">Share text</string>
 </resources>

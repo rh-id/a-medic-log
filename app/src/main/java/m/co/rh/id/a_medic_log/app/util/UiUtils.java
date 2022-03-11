@@ -16,6 +16,16 @@ import java.io.File;
 import m.co.rh.id.a_medic_log.app.constants.Constants;
 
 public class UiUtils {
+    public static void shareText(Context context, String textBody, String chooserMessage) {
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND);
+        shareIntent.putExtra(Intent.EXTRA_TEXT, textBody);
+        shareIntent.setType("text/plain");
+        shareIntent = Intent.createChooser(shareIntent, chooserMessage);
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        context.startActivity(shareIntent);
+    }
+
     public static void shareFile(Context context, File file, String chooserMessage) {
         shareFile(context, file, chooserMessage, "*/*");
     }

@@ -9,12 +9,14 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
+import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.entity.NoteAttachment;
 import m.co.rh.id.a_medic_log.base.entity.NoteAttachmentFile;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
+import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.a_medic_log.base.state.NoteAttachmentState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
@@ -22,11 +24,13 @@ import m.co.rh.id.aprovider.Provider;
 
 public class QueryNoteCmd {
     protected ExecutorService mExecutorService;
+    protected ProfileDao mProfileDao;
     protected NoteDao mNoteDao;
     protected MedicineDao mMedicineDao;
 
     public QueryNoteCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
+        mProfileDao = provider.get(ProfileDao.class);
         mNoteDao = provider.get(NoteDao.class);
         mMedicineDao = provider.get(MedicineDao.class);
     }
@@ -119,6 +123,36 @@ public class QueryNoteCmd {
                 }
             }
             return linkedHashSet;
+        }));
+    }
+
+    public Single<String> createShareMedicineText(NoteState mNoteState) {
+        return Single.fromFuture(mExecutorService.submit(() -> {
+            Long profileId = mNoteState.getProfileId();
+            Profile profile;
+            if (profileId != null) {
+                profile = mProfileDao.findProfileById(profileId);
+            } else {
+                profile = null;
+            }
+            StringBuilder stringBuilder = new StringBuilder();
+            if (profile != null) {
+                stringBuilder.append(profile.name);
+                stringBuilder.append(" ");
+            }
+            stringBuilder.append(mNoteState.getNoteEntryDateTimeDisplay());
+            List<MedicineState> medicineStates = mNoteState.getMedicineList();
+            if (!medicineStates.isEmpty()) {
+                stringBuilder.append("\n\n");
+                int size = medicineStates.size();
+                for (int i = 0; i < size; i++, stringBuilder.append("\n")) {
+                    stringBuilder.append(i + 1);
+                    stringBuilder.append(". ");
+                    MedicineState medicineState = medicineStates.get(i);
+                    stringBuilder.append(medicineState.getMedicineName());
+                }
+            }
+            return stringBuilder.toString();
         }));
     }
 }

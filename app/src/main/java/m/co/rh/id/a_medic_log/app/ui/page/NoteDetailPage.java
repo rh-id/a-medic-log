@@ -43,6 +43,7 @@ import m.co.rh.id.a_medic_log.app.ui.component.medicine.MedicineItemSV;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.MedicineRecyclerViewAdapter;
 import m.co.rh.id.a_medic_log.app.ui.component.note.attachment.NoteAttachmentItemSV;
 import m.co.rh.id.a_medic_log.app.ui.component.note.attachment.NoteAttachmentRecyclerViewAdapter;
+import m.co.rh.id.a_medic_log.app.util.UiUtils;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
@@ -179,6 +180,8 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         addNoteTagButton.setOnClickListener(this);
         ChipGroup noteTagChipGroup = rootLayout.findViewById(R.id.chip_group_note_tag);
         // medicine
+        Button shareMedicineButton = rootLayout.findViewById(R.id.button_share_medicine);
+        shareMedicineButton.setOnClickListener(this);
         Button addMedicineButton = rootLayout.findViewById(R.id.button_add_medicine);
         addMedicineButton.setOnClickListener(this);
         Button expandMedicine = rootLayout.findViewById(R.id.button_expand_medicine);
@@ -270,7 +273,13 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(medicineStates ->
                         {
-                            medicineTitle.setText(activity.getString(R.string.title_medicine, medicineStates.size()));
+                            int size = medicineStates.size();
+                            medicineTitle.setText(activity.getString(R.string.title_medicine, size));
+                            if (size > 0) {
+                                shareMedicineButton.setVisibility(View.VISIBLE);
+                            } else {
+                                shareMedicineButton.setVisibility(View.GONE);
+                            }
                             mMedicineRecyclerViewAdapter.notifyItemRefreshed();
                         })
         );
@@ -642,6 +651,21 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                     });
         } else if (id == R.id.button_clear_entry_date_time) {
             updateEntryDateTime(null);
+        } else if (id == R.id.button_share_medicine) {
+            mRxDisposer.add("onClick_shareMedicine",
+                    mQueryNoteCmd.createShareMedicineText(mNoteState)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe((s, throwable) -> {
+                                if (throwable != null) {
+                                    Throwable cause = throwable.getCause();
+                                    if (cause == null) cause = throwable;
+                                    mLogger.e(TAG, cause.getMessage(), cause);
+                                } else {
+                                    Context context = mSvProvider.getContext();
+                                    UiUtils.shareText(context, s, context.getString(R.string.share_text));
+                                }
+                            })
+            );
         } else if (id == R.id.button_add_medicine) {
             MedicineDetailPage.Args args;
             if (isUpdate()) {
