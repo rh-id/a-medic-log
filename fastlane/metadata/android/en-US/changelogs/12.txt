@@ -1,0 +1,8 @@
+Release 1.2.1+12
+
+Feature:
+* Add share button on note attachment and medicine
+* Add donation menu
+
+Fixes:
+* Incorrect file type when sharing image which cause unsupported app included in app selection
