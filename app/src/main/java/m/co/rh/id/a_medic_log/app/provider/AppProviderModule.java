@@ -23,6 +23,7 @@ import m.co.rh.id.a_medic_log.app.provider.notifier.NoteAttachmentFileChangeNoti
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteTagChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.ProfileChangeNotifier;
+import m.co.rh.id.a_medic_log.app.ui.page.DonationPage;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineDetailPage;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineIntakeDetailPage;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineIntakeListPage;
@@ -95,6 +96,7 @@ public class AppProviderModule implements ProviderModule {
             return new SplashPage();
         });
         navMap.put(Routes.SETTINGS_PAGE, (args, activity) -> new SettingsPage());
+        navMap.put(Routes.DONATION_PAGE, (args, activity) -> new DonationPage());
         navMap.put(Routes.PROFILES_PAGE, (args, activity) -> new ProfileListPage());
         navMap.put(Routes.PROFILE_SELECT_DIALOG, (args, activity) -> new ProfileSelectSVDialog());
         navMap.put(Routes.PROFILE_DETAIL_PAGE, (args, activity) -> new ProfileDetailPage());

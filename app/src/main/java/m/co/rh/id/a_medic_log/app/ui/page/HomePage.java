@@ -74,6 +74,8 @@ public class HomePage extends StatefulView<Activity> implements Externalizable, 
         menuProfiles.setOnClickListener(this);
         View menuSettings = view.findViewById(R.id.menu_settings);
         menuSettings.setOnClickListener(this);
+        View menuDonations = view.findViewById(R.id.menu_donation);
+        menuDonations.setOnClickListener(this);
         mDrawerLayout = view.findViewById(R.id.drawer);
         mDrawerLayout.addDrawerListener(this);
         if (mOnNavigationClicked == null) {
@@ -178,6 +180,8 @@ public class HomePage extends StatefulView<Activity> implements Externalizable, 
             mNavigator.push(Routes.PROFILES_PAGE);
         } else if (id == R.id.menu_settings) {
             mNavigator.push(Routes.SETTINGS_PAGE);
+        } else if (id == R.id.menu_donation) {
+            mNavigator.push(Routes.DONATION_PAGE);
         } else if (id == R.id.button_add_profile) {
             mNavigator.push(Routes.PROFILE_DETAIL_PAGE);
         } else if (id == R.id.button_add_note) {

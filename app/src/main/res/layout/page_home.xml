@@ -76,6 +76,14 @@
                 android:layout_height="wrap_content"
                 android:text="@string/title_settings"
                 app:icon="@drawable/ic_settings_black" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/menu_donation"
+                style="@style/Theme.Amediclog.BorderlessMenuButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/buy_developer_a_coffee"
+                app:icon="@drawable/ic_coffee_black" />
         </androidx.appcompat.widget.LinearLayoutCompat>
     </androidx.drawerlayout.widget.DrawerLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
