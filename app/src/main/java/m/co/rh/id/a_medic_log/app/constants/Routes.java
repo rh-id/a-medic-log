@@ -3,7 +3,7 @@ package m.co.rh.id.a_medic_log.app.constants;
 public class Routes {
     public static final String HOME_PAGE = "/";
     public static final String SETTINGS_PAGE = "/settings";
-    public static final String DONATION_PAGE = "/donations";
+    public static final String DONATIONS_PAGE = "/donations";
     public static final String PROFILES_PAGE = "/profiles";
     public static final String PROFILE_SELECT_DIALOG = "/profiles/selectDialog";
     public static final String PROFILE_DETAIL_PAGE = "/profiles/detail";
