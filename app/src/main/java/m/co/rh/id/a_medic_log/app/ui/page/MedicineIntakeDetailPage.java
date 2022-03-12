@@ -227,7 +227,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
         int id = view.getId();
         if (id == R.id.input_text_taken_date_time) {
             NavExtDialogConfig navExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
-            mNavigator.push(navExtDialogConfig.getRoutePath(NavExtDialogConfig.ROUTE_DATE_TIME_PICKER),
+            mNavigator.push(navExtDialogConfig.route_dateTimePickerDialog(),
                     navExtDialogConfig.args_dateTimePickerDialog(true, mMedicineIntakeSubject.getValue().takenDateTime),
                     (navigator, navRoute, activity, currentView) -> {
                         Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();

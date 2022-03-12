@@ -187,7 +187,7 @@ public class MedicineIntakeListSV extends StatefulView<Activity> implements Requ
         String title = context.getString(R.string.title_confirm);
         String content = context.getString(R.string.confirm_delete_medicine_intake, medicineIntake.description);
         NavExtDialogConfig navExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
-        mNavigator.push(navExtDialogConfig.getRoutePath(NavExtDialogConfig.ROUTE_CONFIRM),
+        mNavigator.push(navExtDialogConfig.route_confirmDialog(),
                 navExtDialogConfig.args_confirmDialog(title, content),
                 (navigator, navRoute, activity, currentView) -> {
                     Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();

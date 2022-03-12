@@ -177,7 +177,7 @@ public class ProfileItemSV extends StatefulView<Activity> implements RequireComp
             String title = context.getString(R.string.title_confirm);
             String content = context.getString(R.string.confirm_delete_profile, mProfile.name);
             NavExtDialogConfig navExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
-            mNavigator.push(navExtDialogConfig.getRoutePath(NavExtDialogConfig.ROUTE_CONFIRM),
+            mNavigator.push(navExtDialogConfig.route_confirmDialog(),
                     navExtDialogConfig.args_confirmDialog(title, content),
                     (navigator, navRoute, activity, currentView) -> {
                         Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();

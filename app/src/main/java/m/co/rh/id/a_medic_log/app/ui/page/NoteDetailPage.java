@@ -420,7 +420,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
             String title = context.getString(R.string.title_confirm);
             String content = context.getString(R.string.confirm_delete_medicine, medicineState.getMedicineName());
             NavExtDialogConfig navExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
-            mNavigator.push(navExtDialogConfig.getRoutePath(NavExtDialogConfig.ROUTE_CONFIRM),
+            mNavigator.push(navExtDialogConfig.route_confirmDialog(),
                     navExtDialogConfig.args_confirmDialog(title, content),
                     (navigator, navRoute, activity, currentView) -> {
                         Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
@@ -499,7 +499,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
             String title = context.getString(R.string.title_confirm);
             String content = context.getString(R.string.confirm_delete_attachment);
             NavExtDialogConfig navExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
-            mNavigator.push(navExtDialogConfig.getRoutePath(NavExtDialogConfig.ROUTE_CONFIRM),
+            mNavigator.push(navExtDialogConfig.route_confirmDialog(),
                     navExtDialogConfig.args_confirmDialog(title, content),
                     (navigator, navRoute, activity, currentView) -> {
                         Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
@@ -639,7 +639,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         int id = view.getId();
         if (id == R.id.input_text_entry_date_time) {
             NavExtDialogConfig navExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
-            mNavigator.push(navExtDialogConfig.getRoutePath(NavExtDialogConfig.ROUTE_DATE_TIME_PICKER),
+            mNavigator.push(navExtDialogConfig.route_dateTimePickerDialog(),
                     navExtDialogConfig.args_dateTimePickerDialog(true, mNoteState.getNoteEntryDateTime()),
                     (navigator, navRoute, activity, currentView) -> {
                         Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
