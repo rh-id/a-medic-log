@@ -19,7 +19,7 @@ import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteProfileCmd;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
-import m.co.rh.id.a_medic_log.app.ui.page.NoteListPage;
+import m.co.rh.id.a_medic_log.app.ui.page.NotesPage;
 import m.co.rh.id.a_medic_log.app.ui.page.ProfileDetailPage;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.alogger.ILogger;
@@ -162,7 +162,7 @@ public class ProfileItemSV extends StatefulView<Activity> implements RequireComp
                 }
             } else {
                 mNavigator.push(Routes.NOTES_PAGE,
-                        NoteListPage.Args.withProfileId(mProfile.id));
+                        NotesPage.Args.withProfileId(mProfile.id));
             }
         } else if (id == R.id.button_edit) {
             mNavigator.push(Routes.PROFILE_DETAIL_PAGE, ProfileDetailPage.Args.forUpdate(mProfile.clone()),

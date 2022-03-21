@@ -30,8 +30,8 @@ import m.co.rh.id.a_medic_log.app.ui.page.MedicineIntakeListPage;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineReminderDetailPage;
 import m.co.rh.id.a_medic_log.app.ui.page.NoteAttachmentDetailPage;
 import m.co.rh.id.a_medic_log.app.ui.page.NoteDetailPage;
-import m.co.rh.id.a_medic_log.app.ui.page.NoteListPage;
 import m.co.rh.id.a_medic_log.app.ui.page.NoteTagDetailSVDialog;
+import m.co.rh.id.a_medic_log.app.ui.page.NotesPage;
 import m.co.rh.id.a_medic_log.app.ui.page.ProfileDetailPage;
 import m.co.rh.id.a_medic_log.app.ui.page.ProfileSelectSVDialog;
 import m.co.rh.id.a_medic_log.app.ui.page.ProfilesPage;
@@ -100,7 +100,7 @@ public class AppProviderModule implements ProviderModule {
         navMap.put(Routes.PROFILES_PAGE, (args, activity) -> new ProfilesPage());
         navMap.put(Routes.PROFILE_SELECT_DIALOG, (args, activity) -> new ProfileSelectSVDialog());
         navMap.put(Routes.PROFILE_DETAIL_PAGE, (args, activity) -> new ProfileDetailPage());
-        navMap.put(Routes.NOTES_PAGE, (args, activity) -> new NoteListPage());
+        navMap.put(Routes.NOTES_PAGE, (args, activity) -> new NotesPage());
         navMap.put(Routes.NOTE_DETAIL_PAGE, (args, activity) -> new NoteDetailPage());
         navMap.put(Routes.NOTE_TAG_DETAIL_DIALOG, (args, activity) -> new NoteTagDetailSVDialog());
         navMap.put(Routes.NOTE_ATTACHMENT_DETAIL_PAGE, (args, activity) -> new NoteAttachmentDetailPage());

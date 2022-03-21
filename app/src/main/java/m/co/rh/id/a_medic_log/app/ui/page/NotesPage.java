@@ -22,7 +22,7 @@ import m.co.rh.id.anavigator.component.RequireNavRoute;
 import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.aprovider.Provider;
 
-public class NoteListPage extends StatefulView<Activity> implements RequireNavigator, RequireNavRoute, RequireComponent<Provider>, Toolbar.OnMenuItemClickListener {
+public class NotesPage extends StatefulView<Activity> implements RequireNavigator, RequireNavRoute, RequireComponent<Provider>, Toolbar.OnMenuItemClickListener {
     private transient INavigator mNavigator;
     private transient NavRoute mNavRoute;
     @NavInject
@@ -44,9 +44,9 @@ public class NoteListPage extends StatefulView<Activity> implements RequireNavig
     public void provideComponent(Provider provider) {
         Activity activity = mNavigator.getActivity();
         if (mAppBarSV == null) {
-            mAppBarSV = new AppBarSV(R.menu.page_profile_list);
+            mAppBarSV = new AppBarSV(R.menu.page_notes);
         }
-        mAppBarSV.setTitle(activity.getString(R.string.title_note_list));
+        mAppBarSV.setTitle(activity.getString(R.string.title_notes));
         mAppBarSV.setMenuItemListener(this);
         if (mNoteListSV == null) {
             mNoteListSV = new NoteListSV(getProfileId());
@@ -56,7 +56,7 @@ public class NoteListPage extends StatefulView<Activity> implements RequireNavig
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         ViewGroup rootLayout = (ViewGroup) activity.getLayoutInflater()
-                .inflate(R.layout.page_note_list, container, false);
+                .inflate(R.layout.page_notes, container, false);
         ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSV.buildView(activity, rootLayout));
         ViewGroup containerContent = rootLayout.findViewById(R.id.container_content);

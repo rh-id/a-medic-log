@@ -33,7 +33,7 @@
     <string name="confirm_delete_note">Delete note?</string>
     <string name="error_deleting_note">Error deleting note</string>
     <string name="success_deleting_note">Note deleted</string>
-    <string name="title_note_list">Note List</string>
+    <string name="title_notes">Notes</string>
     <string name="title_select_profile">Select Profile</string>
     <string name="title_add_note">Add Note</string>
     <string name="content_is_required">Content is required</string>
