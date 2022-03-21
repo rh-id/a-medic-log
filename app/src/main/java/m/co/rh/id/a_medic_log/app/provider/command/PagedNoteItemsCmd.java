@@ -125,7 +125,12 @@ public class PagedNoteItemsCmd {
     }
 
     private ArrayList<Note> loadItems() {
-        List<Note> noteList = mNoteDao.loadNotesWithLimit(mProfileId, mLimit);
+        List<Note> noteList;
+        if (mProfileId != null) {
+            noteList = mNoteDao.findNotesByProfileIdWithLimit(mProfileId, mLimit);
+        } else {
+            noteList = mNoteDao.findNotesWithLimit(mLimit);
+        }
         return new ArrayList<>(noteList);
     }
 
@@ -145,7 +150,7 @@ public class PagedNoteItemsCmd {
         mLimit = 20;
     }
 
-    public void loadWithProfileId(long profileId) {
+    public void loadWithProfileId(Long profileId) {
         mProfileId = profileId;
         refresh();
     }

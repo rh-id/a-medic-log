@@ -13,6 +13,7 @@ import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.note.NoteListSV;
+import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -68,8 +69,7 @@ public class NotesPage extends StatefulView<Activity> implements RequireNavigato
     public boolean onMenuItemClick(MenuItem menuItem) {
         int menuId = menuItem.getItemId();
         if (menuId == R.id.menu_add) {
-            mNavigator.push(Routes.NOTE_DETAIL_PAGE,
-                    NoteDetailPage.Args.withProfileId(getProfileId()));
+            addNoteWorkFlow(mNavigator, getProfileId());
             return true;
         }
         return false;
@@ -94,6 +94,24 @@ public class NotesPage extends StatefulView<Activity> implements RequireNavigato
             return args.mProfileId;
         }
         return null;
+    }
+
+
+    public static void addNoteWorkFlow(INavigator iNavigator, Long profileId) {
+        if (profileId == null) {
+            iNavigator.push(Routes.PROFILE_SELECT_DIALOG,
+                    (navigator, navRoute, activity, currentView) -> {
+                        ProfileSelectSVDialog.Result result = ProfileSelectSVDialog.Result.of(navRoute);
+                        if (result != null) {
+                            Profile profile = result.getSelectedProfile().get(0);
+                            navigator.push(Routes.NOTE_DETAIL_PAGE,
+                                    NoteDetailPage.Args.withProfileId(profile.id));
+                        }
+                    });
+        } else {
+            iNavigator.push(Routes.NOTE_DETAIL_PAGE,
+                    NoteDetailPage.Args.withProfileId(profileId));
+        }
     }
 
     public static class Args implements Serializable {

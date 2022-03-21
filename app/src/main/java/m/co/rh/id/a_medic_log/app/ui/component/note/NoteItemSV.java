@@ -21,11 +21,13 @@ import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.QueryProfileCmd;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteTagChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.page.NoteDetailPage;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
+import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
@@ -44,11 +46,14 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
     private transient RxDisposer mRxDisposer;
     private transient NoteTagChangeNotifier mNoteTagChangeNotifier;
     private transient QueryNoteCmd mQueryNoteCmd;
+    private transient QueryProfileCmd mQueryProfileCmd;
+    private SerialBehaviorSubject<Profile> mProfileSubject;
     private SerialBehaviorSubject<Note> mNoteSubject;
     private SerialBehaviorSubject<TreeSet<NoteTag>> mNoteTagSetSubject;
     private DateFormat mDateFormat;
 
     public NoteItemSV() {
+        mProfileSubject = new SerialBehaviorSubject<>(new Profile());
         mNoteSubject = new SerialBehaviorSubject<>(new Note());
         mNoteTagSetSubject = new SerialBehaviorSubject<>(new TreeSet<>());
         mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
@@ -60,6 +65,7 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mNoteTagChangeNotifier = mSvProvider.get(NoteTagChangeNotifier.class);
         mQueryNoteCmd = mSvProvider.get(QueryNoteCmd.class);
+        mQueryProfileCmd = mSvProvider.get(QueryProfileCmd.class);
     }
 
     @Override
@@ -74,6 +80,18 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
         TextView textEntryDate = rootLayout.findViewById(R.id.text_entry_date);
         TextView textContent = rootLayout.findViewById(R.id.text_content);
         ChipGroup noteTagChipGroup = rootLayout.findViewById(R.id.chip_group_note_tag);
+        ViewGroup containerProfileDisplay = rootLayout.findViewById(R.id.container_profile_display);
+        TextView textProfileName = rootLayout.findViewById(R.id.text_profile_name);
+        mRxDisposer.add("createView_onProfileChanged", mProfileSubject.getSubject()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(profile -> {
+                    if (profile.name != null) {
+                        containerProfileDisplay.setVisibility(View.VISIBLE);
+                        textProfileName.setText(profile.name);
+                    } else {
+                        containerProfileDisplay.setVisibility(View.GONE);
+                    }
+                }));
         mRxDisposer.add("crateView_onNoteTagSetChanged",
                 mNoteTagSetSubject.getSubject()
                         .observeOn(AndroidSchedulers.mainThread())
@@ -98,6 +116,7 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
                             textEntryDate.setText(mDateFormat.format(note.entryDateTime));
                             textContent.setText(note.content);
                             if (note.id != null) {
+                                refreshProfile(note.profileId);
                                 refreshNoteTagSet(note.id);
                             }
                         }));
@@ -126,6 +145,22 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
                             }
                         }));
         return rootLayout;
+    }
+
+    private void refreshProfile(Long profileId) {
+        if (profileId != null) {
+            mRxDisposer.add("refreshProfile",
+                    mQueryProfileCmd.findProfileById(profileId)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe((profile, throwable) -> {
+                                if (throwable == null) {
+                                    mProfileSubject.onNext(profile);
+                                } else {
+                                    mLogger.e(TAG, throwable.getMessage(), throwable);
+                                }
+                            })
+            );
+        }
     }
 
     private void refreshNoteTagSet(long noteId) {

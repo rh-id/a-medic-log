@@ -48,6 +48,37 @@
         app:layout_constraintTop_toBottomOf="@id/text_content" />
 
     <LinearLayout
+        android:id="@+id/container_profile_display"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/text_margin"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/container_action_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/chip_group_note_tag">
+
+        <ImageView
+            android:id="@+id/image_profile"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/text_margin"
+            app:srcCompat="@drawable/ic_person_black"
+            app:tint="@color/daynight_black_white" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/text_profile_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textSize="18sp"
+            tools:text="John Doe" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/container_action_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"

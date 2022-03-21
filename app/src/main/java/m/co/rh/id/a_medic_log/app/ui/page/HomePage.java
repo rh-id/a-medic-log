@@ -24,7 +24,6 @@ import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
-import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -59,9 +58,6 @@ public class HomePage extends StatefulView<Activity> implements Externalizable, 
 
     @Override
     public void provideComponent(Provider provider) {
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-        }
         mSvProvider = provider.get(StatefulViewProvider.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mAppNotificationHandler = mSvProvider.get(AppNotificationHandler.class);
@@ -72,6 +68,8 @@ public class HomePage extends StatefulView<Activity> implements Externalizable, 
         View view = activity.getLayoutInflater().inflate(R.layout.page_home, container, false);
         View menuProfiles = view.findViewById(R.id.menu_profiles);
         menuProfiles.setOnClickListener(this);
+        View menuNotes = view.findViewById(R.id.menu_notes);
+        menuNotes.setOnClickListener(this);
         View menuSettings = view.findViewById(R.id.menu_settings);
         menuSettings.setOnClickListener(this);
         View menuDonations = view.findViewById(R.id.menu_donation);
@@ -178,6 +176,8 @@ public class HomePage extends StatefulView<Activity> implements Externalizable, 
         int id = view.getId();
         if (id == R.id.menu_profiles) {
             mNavigator.push(Routes.PROFILES_PAGE);
+        } else if (id == R.id.menu_notes) {
+            mNavigator.push(Routes.NOTES_PAGE);
         } else if (id == R.id.menu_settings) {
             mNavigator.push(Routes.SETTINGS_PAGE);
         } else if (id == R.id.menu_donation) {
@@ -185,15 +185,7 @@ public class HomePage extends StatefulView<Activity> implements Externalizable, 
         } else if (id == R.id.button_add_profile) {
             mNavigator.push(Routes.PROFILE_DETAIL_PAGE);
         } else if (id == R.id.button_add_note) {
-            mNavigator.push(Routes.PROFILE_SELECT_DIALOG,
-                    (navigator, navRoute, activity, currentView) -> {
-                        ProfileSelectSVDialog.Result result = ProfileSelectSVDialog.Result.of(navRoute);
-                        if (result != null) {
-                            Profile profile = result.getSelectedProfile().get(0);
-                            navigator.push(Routes.NOTE_DETAIL_PAGE,
-                                    NoteDetailPage.Args.withProfileId(profile.id));
-                        }
-                    });
+            NotesPage.addNoteWorkFlow(mNavigator, null);
         }
     }
 }

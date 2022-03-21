@@ -70,6 +70,14 @@
                 app:icon="@drawable/ic_person_black" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/menu_notes"
+                style="@style/Theme.Amediclog.BorderlessMenuButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/title_notes"
+                app:icon="@drawable/ic_menu_book_black" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/menu_settings"
                 style="@style/Theme.Amediclog.BorderlessMenuButton"
                 android:layout_width="match_parent"

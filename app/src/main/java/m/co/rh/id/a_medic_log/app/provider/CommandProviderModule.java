@@ -23,6 +23,7 @@ import m.co.rh.id.a_medic_log.app.provider.command.PagedNoteItemsCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.PagedProfileItemsCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.QueryProfileCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineIntakeCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineReminderCmd;
@@ -41,6 +42,7 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerLazy(UpdateProfileCmd.class, () -> new UpdateProfileCmd(context, provider));
         providerRegistry.registerLazy(DeleteProfileCmd.class, () -> new DeleteProfileCmd(context, provider));
         providerRegistry.registerLazy(PagedProfileItemsCmd.class, () -> new PagedProfileItemsCmd(context, provider));
+        providerRegistry.registerLazy(QueryProfileCmd.class, () -> new QueryProfileCmd(provider));
         providerRegistry.registerLazy(DeleteNoteCmd.class, () -> new DeleteNoteCmd(context, provider));
         providerRegistry.registerLazy(PagedNoteItemsCmd.class, () -> new PagedNoteItemsCmd(context, provider));
         providerRegistry.registerLazy(NewNoteCmd.class, () -> new NewNoteCmd(context, provider));

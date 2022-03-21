@@ -32,7 +32,7 @@ import m.co.rh.id.aprovider.Provider;
 public class NoteListSV extends StatefulView<Activity> implements RequireNavigator, RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = NoteListSV.class.getName();
 
-    private long mProfileId;
+    private Long mProfileId;
     private transient INavigator mNavigator;
     private transient Provider mSvProvider;
     private transient NoteChangeNotifier mNoteChangeNotifier;
@@ -43,7 +43,7 @@ public class NoteListSV extends StatefulView<Activity> implements RequireNavigat
     private transient NoteRecyclerViewAdapter mNoteRecyclerViewAdapter;
     private transient RecyclerView.OnScrollListener mOnScrollListener;
 
-    public NoteListSV(long profileId) {
+    public NoteListSV(Long profileId) {
         mProfileId = profileId;
     }
 
