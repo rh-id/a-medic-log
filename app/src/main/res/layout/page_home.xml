@@ -66,7 +66,7 @@
                 style="@style/Theme.Amediclog.BorderlessMenuButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/title_profile_list"
+                android:text="@string/title_profiles"
                 app:icon="@drawable/ic_person_black" />
 
             <com.google.android.material.button.MaterialButton

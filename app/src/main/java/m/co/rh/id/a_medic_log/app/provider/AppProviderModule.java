@@ -33,8 +33,8 @@ import m.co.rh.id.a_medic_log.app.ui.page.NoteDetailPage;
 import m.co.rh.id.a_medic_log.app.ui.page.NoteListPage;
 import m.co.rh.id.a_medic_log.app.ui.page.NoteTagDetailSVDialog;
 import m.co.rh.id.a_medic_log.app.ui.page.ProfileDetailPage;
-import m.co.rh.id.a_medic_log.app.ui.page.ProfileListPage;
 import m.co.rh.id.a_medic_log.app.ui.page.ProfileSelectSVDialog;
+import m.co.rh.id.a_medic_log.app.ui.page.ProfilesPage;
 import m.co.rh.id.a_medic_log.app.ui.page.SettingsPage;
 import m.co.rh.id.a_medic_log.app.ui.page.SplashPage;
 import m.co.rh.id.a_medic_log.app.ui.page.common.CreateFileSVDialog;
@@ -97,7 +97,7 @@ public class AppProviderModule implements ProviderModule {
         });
         navMap.put(Routes.SETTINGS_PAGE, (args, activity) -> new SettingsPage());
         navMap.put(Routes.DONATIONS_PAGE, (args, activity) -> new DonationsPage());
-        navMap.put(Routes.PROFILES_PAGE, (args, activity) -> new ProfileListPage());
+        navMap.put(Routes.PROFILES_PAGE, (args, activity) -> new ProfilesPage());
         navMap.put(Routes.PROFILE_SELECT_DIALOG, (args, activity) -> new ProfileSelectSVDialog());
         navMap.put(Routes.PROFILE_DETAIL_PAGE, (args, activity) -> new ProfileDetailPage());
         navMap.put(Routes.NOTES_PAGE, (args, activity) -> new NoteListPage());

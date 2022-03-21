@@ -28,7 +28,7 @@
     <string name="success_deleting_profile">Delete %s</string>
     <string name="search_desc">Search: </string>
     <string name="hint_type_to_search">Type here to search</string>
-    <string name="title_profile_list">Profile List</string>
+    <string name="title_profiles">Profiles</string>
     <string name="title_update_profile">Update Profile</string>
     <string name="confirm_delete_note">Delete note?</string>
     <string name="error_deleting_note">Error deleting note</string>

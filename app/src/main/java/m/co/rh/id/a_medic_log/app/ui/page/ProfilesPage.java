@@ -15,7 +15,7 @@ import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
 
-public class ProfileListPage extends StatefulView<Activity> implements Toolbar.OnMenuItemClickListener {
+public class ProfilesPage extends StatefulView<Activity> implements Toolbar.OnMenuItemClickListener {
     @NavInject
     private transient INavigator mNavigator;
     @NavInject
@@ -23,17 +23,17 @@ public class ProfileListPage extends StatefulView<Activity> implements Toolbar.O
     @NavInject
     private ProfileListSV mProfileListSV;
 
-    public ProfileListPage() {
-        mAppBarSV = new AppBarSV(R.menu.page_profile_list);
+    public ProfilesPage() {
+        mAppBarSV = new AppBarSV(R.menu.page_profiles);
         mProfileListSV = new ProfileListSV();
     }
 
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         ViewGroup rootLayout = (ViewGroup) activity.getLayoutInflater()
-                .inflate(R.layout.page_profile_list, container, false);
+                .inflate(R.layout.page_profiles, container, false);
         ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
-        mAppBarSV.setTitle(activity.getString(R.string.title_profile_list));
+        mAppBarSV.setTitle(activity.getString(R.string.title_profiles));
         mAppBarSV.setMenuItemListener(this);
         containerAppBar.addView(mAppBarSV.buildView(activity, rootLayout));
         ViewGroup containerContent = rootLayout.findViewById(R.id.container_content);
