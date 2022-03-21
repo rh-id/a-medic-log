@@ -1,0 +1,7 @@
+Release 1.2.2+13
+
+Feature:
+* Add notes menu on navigation drawer for easy access
+
+Fixes:
+* Incorrect menu for Notes UI
