@@ -19,6 +19,7 @@
             android:name=".app.MainActivity"
             android:configChanges="uiMode|locale|layoutDirection|orientation|screenSize|screenLayout|density|colorMode|fontScale|fontWeightAdjustment|keyboard|keyboardHidden|smallestScreenSize"
             android:exported="true"
+            android:windowSoftInputMode="adjustResize"
             android:hardwareAccelerated="true"
             android:launchMode="singleTop"
             android:theme="@style/Theme.Amediclog.NoActionBar">
