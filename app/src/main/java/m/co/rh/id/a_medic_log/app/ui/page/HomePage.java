@@ -23,8 +23,11 @@ import m.co.rh.id.a_medic_log.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.dao.NoteDao;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
+import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.alogger.ILogger;
+import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
@@ -45,6 +48,10 @@ public class HomePage extends StatefulView<Activity> implements Externalizable, 
 
     // component
     private transient Provider mSvProvider;
+    private transient ExecutorService mExecutorService;
+    private transient MedicineDao mMedicineDao;
+    private transient NoteDao mNoteDao;
+    private transient Handler mHandler;
     private transient RxDisposer mRxDisposer;
     private transient AppNotificationHandler mAppNotificationHandler;
 
@@ -59,6 +66,10 @@ public class HomePage extends StatefulView<Activity> implements Externalizable, 
     @Override
     public void provideComponent(Provider provider) {
         mSvProvider = provider.get(StatefulViewProvider.class);
+        mExecutorService = mSvProvider.get(ExecutorService.class);
+        mMedicineDao = mSvProvider.get(MedicineDao.class);
+        mNoteDao = mSvProvider.get(NoteDao.class);
+        mHandler = mSvProvider.get(Handler.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mAppNotificationHandler = mSvProvider.get(AppNotificationHandler.class);
     }
@@ -96,13 +107,34 @@ public class HomePage extends StatefulView<Activity> implements Externalizable, 
         addNoteButton.setOnClickListener(this);
         mRxDisposer.add("createView_onMedicineReminderNotification",
                 mAppNotificationHandler.getMedicineReminderFlow()
-                        .observeOn(Schedulers.from(mSvProvider.get(ExecutorService.class)))
+                        .observeOn(Schedulers.from(mExecutorService))
                         .subscribe(medicineReminder -> {
-                            Medicine medicine = mSvProvider.get(MedicineDao.class)
+                            Medicine medicine = mMedicineDao
                                     .findMedicineById(medicineReminder.medicineId);
-                            mSvProvider.get(Handler.class)
-                                    .post(() -> mNavigator.push(Routes.NOTE_DETAIL_PAGE,
-                                            NoteDetailPage.Args.forUpdate(medicine.noteId)));
+                            Note note = mNoteDao
+                                    .findNoteById(medicine.noteId);
+                            mHandler
+                                    .post(() -> {
+                                        Long profileId = note.profileId;
+                                        NavRoute navRoute = mNavigator.getCurrentRoute();
+                                        if (!navRoute.getRouteName().equals(Routes.NOTES_PAGE)) {
+                                            mNavigator.push(Routes.NOTES_PAGE,
+                                                    NotesPage.Args.withProfileId(profileId));
+                                        } else {
+                                            NotesPage.Args args = NotesPage.Args.of(navRoute);
+                                            if (args != null) {
+                                                if (!profileId.equals(args.getProfileId())) {
+                                                    mNavigator.push(Routes.NOTES_PAGE,
+                                                            NotesPage.Args.withProfileId(profileId));
+                                                }
+                                            } else {
+                                                mNavigator.push(Routes.NOTES_PAGE,
+                                                        NotesPage.Args.withProfileId(profileId));
+                                            }
+                                        }
+                                        mNavigator.push(Routes.NOTE_DETAIL_PAGE,
+                                                NoteDetailPage.Args.forUpdate(medicine.noteId));
+                                    });
                         }));
         return view;
     }

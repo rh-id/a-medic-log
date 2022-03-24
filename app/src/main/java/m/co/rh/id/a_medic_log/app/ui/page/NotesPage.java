@@ -136,5 +136,9 @@ public class NotesPage extends StatefulView<Activity> implements RequireNavigato
         }
 
         private Long mProfileId;
+
+        public Long getProfileId() {
+            return mProfileId;
+        }
     }
 }
