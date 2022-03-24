@@ -232,7 +232,6 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
                                         if (throwable != null) {
                                             mSvProvider.get(ILogger.class)
                                                     .e(TAG, errorMessage, throwable);
-                                            mNavigator.pop();
                                         } else {
                                             mSvProvider.get(ILogger.class)
                                                     .i(TAG, successMessage);

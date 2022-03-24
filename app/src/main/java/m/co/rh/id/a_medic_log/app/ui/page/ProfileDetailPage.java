@@ -178,7 +178,6 @@ public class ProfileDetailPage extends StatefulView<Activity> implements Require
                                             if (throwable != null) {
                                                 mSvProvider.get(ILogger.class)
                                                         .e(TAG, errorMessage, throwable);
-                                                mNavigator.pop();
                                             } else {
                                                 mSvProvider.get(ILogger.class)
                                                         .i(TAG, successMessage);

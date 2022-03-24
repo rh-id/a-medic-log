@@ -603,7 +603,6 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                                             if (throwable != null) {
                                                 mLogger
                                                         .e(TAG, errorMessage, throwable);
-                                                mNavigator.pop();
                                             } else {
                                                 mLogger
                                                         .i(TAG, successMessage);

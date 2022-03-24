@@ -231,7 +231,6 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
                                         if (throwable != null) {
                                             mSvProvider.get(ILogger.class)
                                                     .e(TAG, errorMessage, throwable);
-                                            mNavigator.pop();
                                         } else {
                                             mSvProvider.get(ILogger.class)
                                                     .i(TAG, successMessage);

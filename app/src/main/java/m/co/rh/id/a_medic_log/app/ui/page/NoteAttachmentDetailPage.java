@@ -178,7 +178,6 @@ public class NoteAttachmentDetailPage extends StatefulView<Activity> implements 
                                     .subscribe((noteAttachmentState, throwable) -> {
                                         if (throwable != null) {
                                             mLogger.e(TAG, throwable.getMessage(), throwable);
-                                            mNavigator.pop();
                                         } else {
                                             Context context = mSvProvider.getContext();
                                             if (isUpdate()) {
