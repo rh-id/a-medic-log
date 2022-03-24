@@ -56,10 +56,13 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
     private transient NavRoute mNavRoute;
     private transient ExecutorService mExecutorService;
     private transient Provider mSvProvider;
+    private transient ILogger mLogger;
     private transient RxDisposer mRxDisposer;
     private transient MedicineReminderChangeNotifier mMedicineReminderChangeNotifier;
     private transient NewMedicineCmd mNewMedicineCmd;
     private transient QueryMedicineCmd mQueryMedicineCmd;
+    private transient UpdateMedicineReminderCmd mUpdateMedicineReminderCmd;
+    private transient DeleteMedicineReminderCmd mDeleteMedicineReminderCmd;
     private transient MedicineReminderRecyclerViewAdapter mMedicineReminderRecyclerViewAdapter;
     private transient ArrayAdapter<String> mSuggestionAdapter;
     private transient Function<String, Collection<String>> mSuggestionQuery;
@@ -87,6 +90,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
         boolean isUpdate = isUpdate();
         mExecutorService = provider.get(ExecutorService.class);
         mSvProvider = provider.get(StatefulViewProvider.class);
+        mLogger = mSvProvider.get(ILogger.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mMedicineReminderChangeNotifier = mSvProvider.get(MedicineReminderChangeNotifier.class);
         if (isUpdate) {
@@ -95,6 +99,8 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
             mNewMedicineCmd = mSvProvider.get(NewMedicineCmd.class);
         }
         mQueryMedicineCmd = mSvProvider.get(QueryMedicineCmd.class);
+        mUpdateMedicineReminderCmd = mSvProvider.get(UpdateMedicineReminderCmd.class);
+        mDeleteMedicineReminderCmd = mSvProvider.get(DeleteMedicineReminderCmd.class);
         if (mAppBarSv == null) {
             mAppBarSv = new AppBarSV(R.menu.page_medicine_detail);
         }
@@ -230,17 +236,17 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
                                             if (cause == null) {
                                                 cause = throwable;
                                             }
-                                            mSvProvider.get(ILogger.class)
+                                            mLogger
                                                     .e(TAG, cause.getMessage(), cause);
                                         } else {
-                                            mSvProvider.get(ILogger.class)
+                                            mLogger
                                                     .i(TAG, successMessage);
                                             mNavigator.pop(Result.with(mMedicineState));
                                         }
                                     }));
                 } else {
                     String error = mNewMedicineCmd.getValidationError();
-                    mSvProvider.get(ILogger.class).i(TAG, error);
+                    mLogger.i(TAG, error);
                 }
             } else {
                 mNavigator.pop(Result.with(mMedicineState));
@@ -281,10 +287,9 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
         // save only if this is update medicine AND save flag enabled
         if (isUpdate() && shouldSave()) {
             Context context = mSvProvider.getContext();
-            UpdateMedicineReminderCmd updateMedicineReminderCmd = mSvProvider.get(UpdateMedicineReminderCmd.class);
-            if (updateMedicineReminderCmd.valid(medicineReminder)) {
+            if (mUpdateMedicineReminderCmd.valid(medicineReminder)) {
                 mRxDisposer.add("onEnableSwitchClick_saveMedicineReminder",
-                        updateMedicineReminderCmd.execute(medicineReminder)
+                        mUpdateMedicineReminderCmd.execute(medicineReminder)
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe((medicineState, throwable) -> {
                                     String successMessage = context.getString(R.string.success_updating_medicine_reminder);
@@ -293,18 +298,17 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
                                         if (cause == null) {
                                             cause = throwable;
                                         }
-                                        mSvProvider.get(ILogger.class)
+                                        mLogger
                                                 .e(TAG, cause.getMessage(), cause);
                                     } else {
-                                        mSvProvider.get(ILogger.class)
+                                        mLogger
                                                 .i(TAG, successMessage);
                                     }
                                 }));
             } else {
-                String error = updateMedicineReminderCmd.getValidationError();
-                mSvProvider.get(ILogger.class).i(TAG, error);
+                String error = mUpdateMedicineReminderCmd.getValidationError();
+                mLogger.i(TAG, error);
             }
-            mSvProvider.get(UpdateMedicineReminderCmd.class).execute(medicineReminder);
         } else {
             mMedicineReminderRecyclerViewAdapter.notifyItemUpdated(medicineReminder);
         }
@@ -358,7 +362,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
     private void confirmDeleteMedicineReminder(MedicineReminder medicineReminder) {
         Context context = mSvProvider.getContext();
         mRxDisposer.add("confirmDeleteMedicineReminder_deleteMedicineReminderCmd",
-                mSvProvider.get(DeleteMedicineReminderCmd.class)
+                mDeleteMedicineReminderCmd
                         .execute(medicineReminder)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe((note, throwable) -> {
@@ -368,10 +372,10 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
                                 if (cause == null) {
                                     cause = throwable;
                                 }
-                                mSvProvider.get(ILogger.class)
+                                mLogger
                                         .e(TAG, cause.getMessage(), cause);
                             } else {
-                                mSvProvider.get(ILogger.class)
+                                mLogger
                                         .i(TAG, successMessage);
                             }
                         })

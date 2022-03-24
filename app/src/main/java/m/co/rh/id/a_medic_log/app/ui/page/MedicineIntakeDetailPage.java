@@ -47,6 +47,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
     private transient INavigator mNavigator;
     private transient NavRoute mNavRoute;
     private transient Provider mSvProvider;
+    private transient ILogger mLogger;
     private transient RxDisposer mRxDisposer;
     private transient NewMedicineIntakeCmd mNewMedicineIntakeCmd;
     private transient QueryMedicineCmd mQueryMedicineCmd;
@@ -81,6 +82,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
     public void provideComponent(Provider provider) {
         boolean isUpdate = isUpdate();
         mSvProvider = provider.get(StatefulViewProvider.class);
+        mLogger = mSvProvider.get(ILogger.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         if (isUpdate) {
             mNewMedicineIntakeCmd = mSvProvider.get(UpdateMedicineIntakeCmd.class);
@@ -204,10 +206,10 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
                                         if (cause == null) {
                                             cause = throwable;
                                         }
-                                        mSvProvider.get(ILogger.class)
+                                        mLogger
                                                 .e(TAG, cause.getMessage(), cause);
                                     } else {
-                                        mSvProvider.get(ILogger.class)
+                                        mLogger
                                                 .i(TAG, successMessage);
                                         mNavigator.pop(Result.with(medicineIntake));
                                     }
@@ -215,7 +217,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
                 );
             } else {
                 String error = mNewMedicineIntakeCmd.getValidationError();
-                mSvProvider.get(ILogger.class).i(TAG, error);
+                mLogger.i(TAG, error);
             }
             return true;
         }

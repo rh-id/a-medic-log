@@ -45,6 +45,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
     private transient INavigator mNavigator;
     private transient NavRoute mNavRoute;
     private transient Provider mSvProvider;
+    private transient ILogger mLogger;
     private transient RxDisposer mRxDisposer;
     private transient NewMedicineReminderCmd mNewMedicineReminderCmd;
 
@@ -72,6 +73,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
     public void provideComponent(Provider provider) {
         boolean isUpdate = isUpdate();
         mSvProvider = provider.get(StatefulViewProvider.class);
+        mLogger = mSvProvider.get(ILogger.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         if (isUpdate) {
             mNewMedicineReminderCmd = mSvProvider.get(UpdateMedicineReminderCmd.class);
@@ -231,24 +233,24 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
                                             if (cause == null) {
                                                 cause = throwable;
                                             }
-                                            mSvProvider.get(ILogger.class)
+                                            mLogger
                                                     .e(TAG, cause.getMessage(), cause);
                                         } else {
-                                            mSvProvider.get(ILogger.class)
+                                            mLogger
                                                     .i(TAG, successMessage);
                                             mNavigator.pop(Result.with(medicineReminder));
                                         }
                                     }));
                 } else {
                     String error = mNewMedicineReminderCmd.getValidationError();
-                    mSvProvider.get(ILogger.class).i(TAG, error);
+                    mLogger.i(TAG, error);
                 }
             } else {
                 if (mNewMedicineReminderCmd.valid(medicineReminder)) {
                     mNavigator.pop(Result.with(medicineReminder));
                 } else {
                     String error = mNewMedicineReminderCmd.getValidationError();
-                    mSvProvider.get(ILogger.class).i(TAG, error);
+                    mLogger.i(TAG, error);
                 }
             }
             return true;

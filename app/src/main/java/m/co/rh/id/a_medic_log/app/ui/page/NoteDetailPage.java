@@ -83,6 +83,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     private transient NewNoteCmd mNewNoteCmd;
     private transient DeleteNoteTagCmd mDeleteNoteTagCmd;
     private transient DeleteNoteAttachmentCmd mDeleteNoteAttachmentCmd;
+    private transient DeleteMedicineCmd mDeleteMedicineCmd;
     private transient TextWatcher mEntryDateTimeTextWatcher;
     private transient TextWatcher mContentTextWatcher;
     private transient MedicineRecyclerViewAdapter mMedicineRecyclerViewAdapter;
@@ -123,6 +124,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         }
         mDeleteNoteTagCmd = mSvProvider.get(DeleteNoteTagCmd.class);
         mDeleteNoteAttachmentCmd = mSvProvider.get(DeleteNoteAttachmentCmd.class);
+        mDeleteMedicineCmd = mSvProvider.get(DeleteMedicineCmd.class);
         if (mNoteState == null) {
             mNoteState = new NoteState();
             if (isUpdate) {
@@ -440,7 +442,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     private void confirmDeleteMedicine(MedicineState medicineState) {
         Context context = mSvProvider.getContext();
         mRxDisposer.add("confirmDeleteMedicine_deleteMedicineCmd",
-                mSvProvider.get(DeleteMedicineCmd.class)
+                mDeleteMedicineCmd
                         .execute(medicineState)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe((note, throwable) -> {
