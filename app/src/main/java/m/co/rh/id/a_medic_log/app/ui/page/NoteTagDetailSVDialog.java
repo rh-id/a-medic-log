@@ -129,11 +129,13 @@ public class NoteTagDetailSVDialog extends StatefulViewDialog<Activity> implemen
                     mRxDisposer.add("onClick_newNoteTag", mNewNoteTagCmd.execute(mNoteTag.getValue())
                             .subscribe((noteTag, throwable) -> {
                                 Context context = mSvProvider.getContext();
-                                String error = context.getString(R.string.error_failed_to_add_tag);
                                 String success = context.getString(R.string.success_adding_tag);
                                 if (throwable != null) {
-                                    mLogger.e(TAG, error, throwable);
-                                    getNavigator().pop();
+                                    Throwable cause = throwable.getCause();
+                                    if (cause == null) {
+                                        cause = throwable;
+                                    }
+                                    mLogger.e(TAG, cause.getMessage(), cause);
                                 } else {
                                     mLogger.i(TAG, success);
                                     getNavigator().pop(Result.with(noteTag));

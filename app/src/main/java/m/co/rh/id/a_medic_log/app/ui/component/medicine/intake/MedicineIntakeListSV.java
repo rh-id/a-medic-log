@@ -205,11 +205,14 @@ public class MedicineIntakeListSV extends StatefulView<Activity> implements Requ
                         .execute(medicineIntake)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe((note, throwable) -> {
-                            String errorMessage = context.getString(R.string.error_failed_to_delete_medicine_intake);
                             String successMessage = context.getString(R.string.success_deleting_medicine_intake);
                             if (throwable != null) {
+                                Throwable cause = throwable.getCause();
+                                if (cause == null) {
+                                    cause = throwable;
+                                }
                                 mSvProvider.get(ILogger.class)
-                                        .e(TAG, errorMessage, throwable);
+                                        .e(TAG, cause.getMessage(), cause);
                             } else {
                                 mSvProvider.get(ILogger.class)
                                         .i(TAG, successMessage);

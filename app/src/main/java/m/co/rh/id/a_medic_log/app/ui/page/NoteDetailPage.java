@@ -231,11 +231,14 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                                             mCompositeDisposable.add(mDeleteNoteTagCmd.execute(noteTag)
                                                     .observeOn(AndroidSchedulers.mainThread())
                                                     .subscribe((deletedNoteTag, throwable) -> {
-                                                        String errorMessage = context.getString(R.string.error_failed_to_delete_note_tag);
                                                         String successMessage = context.getString(R.string.success_deleting_note_tag);
                                                         if (throwable != null) {
+                                                            Throwable cause = throwable.getCause();
+                                                            if (cause == null) {
+                                                                cause = throwable;
+                                                            }
                                                             mLogger
-                                                                    .e(TAG, errorMessage, throwable);
+                                                                    .e(TAG, cause.getMessage(), cause);
                                                         } else {
                                                             mLogger
                                                                     .i(TAG, successMessage);
@@ -441,11 +444,14 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                         .execute(medicineState)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe((note, throwable) -> {
-                            String errorMessage = context.getString(R.string.error_failed_to_delete_medicine);
                             String successMessage = context.getString(R.string.success_deleting_medicine);
                             if (throwable != null) {
+                                Throwable cause = throwable.getCause();
+                                if (cause == null) {
+                                    cause = throwable;
+                                }
                                 mLogger
-                                        .e(TAG, errorMessage, throwable);
+                                        .e(TAG, cause.getMessage(), cause);
                             } else {
                                 mLogger
                                         .i(TAG, successMessage);

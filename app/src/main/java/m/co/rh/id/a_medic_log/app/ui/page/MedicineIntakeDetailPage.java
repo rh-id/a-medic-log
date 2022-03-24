@@ -193,18 +193,19 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
                         mNewMedicineIntakeCmd.execute(medicineIntake)
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe((medicineIntake1, throwable) -> {
-                                    String errorMessage;
                                     String successMessage;
                                     if (isUpdate) {
-                                        errorMessage = context.getString(R.string.error_failed_to_update_medicine_intake);
                                         successMessage = context.getString(R.string.success_updating_medicine_intake);
                                     } else {
-                                        errorMessage = context.getString(R.string.error_failed_to_add_medicine_intake);
                                         successMessage = context.getString(R.string.success_adding_medicine_intake);
                                     }
                                     if (throwable != null) {
+                                        Throwable cause = throwable.getCause();
+                                        if (cause == null) {
+                                            cause = throwable;
+                                        }
                                         mSvProvider.get(ILogger.class)
-                                                .e(TAG, errorMessage, throwable);
+                                                .e(TAG, cause.getMessage(), cause);
                                     } else {
                                         mSvProvider.get(ILogger.class)
                                                 .i(TAG, successMessage);

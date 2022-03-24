@@ -220,18 +220,19 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
                             mNewMedicineReminderCmd.execute(medicineReminder)
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe((medicineState, throwable) -> {
-                                        String errorMessage;
                                         String successMessage;
                                         if (isUpdate) {
-                                            errorMessage = context.getString(R.string.error_failed_to_update_medicine_reminder);
                                             successMessage = context.getString(R.string.success_updating_medicine_reminder);
                                         } else {
-                                            errorMessage = context.getString(R.string.error_failed_to_add_medicine_reminder);
                                             successMessage = context.getString(R.string.success_adding_medicine_reminder);
                                         }
                                         if (throwable != null) {
+                                            Throwable cause = throwable.getCause();
+                                            if (cause == null) {
+                                                cause = throwable;
+                                            }
                                             mSvProvider.get(ILogger.class)
-                                                    .e(TAG, errorMessage, throwable);
+                                                    .e(TAG, cause.getMessage(), cause);
                                         } else {
                                             mSvProvider.get(ILogger.class)
                                                     .i(TAG, successMessage);

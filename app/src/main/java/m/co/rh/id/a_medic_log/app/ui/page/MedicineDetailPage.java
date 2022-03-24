@@ -219,18 +219,19 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
                             mNewMedicineCmd.execute(mMedicineState)
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe((medicineState, throwable) -> {
-                                        String errorMessage;
                                         String successMessage;
                                         if (isUpdate) {
-                                            errorMessage = context.getString(R.string.error_failed_to_update_medicine);
                                             successMessage = context.getString(R.string.success_updating_medicine);
                                         } else {
-                                            errorMessage = context.getString(R.string.error_failed_to_add_medicine);
                                             successMessage = context.getString(R.string.success_adding_medicine);
                                         }
                                         if (throwable != null) {
+                                            Throwable cause = throwable.getCause();
+                                            if (cause == null) {
+                                                cause = throwable;
+                                            }
                                             mSvProvider.get(ILogger.class)
-                                                    .e(TAG, errorMessage, throwable);
+                                                    .e(TAG, cause.getMessage(), cause);
                                         } else {
                                             mSvProvider.get(ILogger.class)
                                                     .i(TAG, successMessage);
@@ -286,11 +287,14 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
                         updateMedicineReminderCmd.execute(medicineReminder)
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe((medicineState, throwable) -> {
-                                    String errorMessage = context.getString(R.string.error_failed_to_update_medicine_reminder);
                                     String successMessage = context.getString(R.string.success_updating_medicine_reminder);
                                     if (throwable != null) {
+                                        Throwable cause = throwable.getCause();
+                                        if (cause == null) {
+                                            cause = throwable;
+                                        }
                                         mSvProvider.get(ILogger.class)
-                                                .e(TAG, errorMessage, throwable);
+                                                .e(TAG, cause.getMessage(), cause);
                                     } else {
                                         mSvProvider.get(ILogger.class)
                                                 .i(TAG, successMessage);
@@ -358,11 +362,14 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
                         .execute(medicineReminder)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe((note, throwable) -> {
-                            String errorMessage = context.getString(R.string.error_failed_to_delete_medicine_reminder);
                             String successMessage = context.getString(R.string.success_deleting_medicine_reminder);
                             if (throwable != null) {
+                                Throwable cause = throwable.getCause();
+                                if (cause == null) {
+                                    cause = throwable;
+                                }
                                 mSvProvider.get(ILogger.class)
-                                        .e(TAG, errorMessage, throwable);
+                                        .e(TAG, cause.getMessage(), cause);
                             } else {
                                 mSvProvider.get(ILogger.class)
                                         .i(TAG, successMessage);
