@@ -1,0 +1,11 @@
+Release 1.2.3+14
+
+Improvement:
+* Update error message when failed to perform add,update,delete
+* Medicine reminder notification clicked will open notes -> note update page
+
+Fixes:
+* Fix medicine reminder update
+* When there is an error saving data, should not go back to previous page
+* Soft keyboard not adjusted properly on medicine reminder and intake page
+* Remove unnecessary ACCESS_NETWORK_STATE permission
