@@ -26,7 +26,6 @@
     <string name="confirm_delete_profile">Delete profile %s ?</string>
     <string name="error_deleting_profile">Error deleting profile</string>
     <string name="success_deleting_profile">Delete %s</string>
-    <string name="search_desc">Search: </string>
     <string name="hint_type_to_search">Type here to search</string>
     <string name="title_profiles">Profiles</string>
     <string name="title_update_profile">Update Profile</string>
