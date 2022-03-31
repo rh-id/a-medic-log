@@ -161,6 +161,10 @@ public class NoteAttachmentDetailPage extends StatefulView<Activity> implements 
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
+        if (mAppBarSV != null) {
+            mAppBarSV.dispose(activity);
+            mAppBarSV = null;
+        }
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;

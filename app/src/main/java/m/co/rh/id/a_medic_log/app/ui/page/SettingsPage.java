@@ -56,6 +56,8 @@ public class SettingsPage extends StatefulView<Activity> {
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
+        mAppBarSV.dispose(activity);
+        mAppBarSV = null;
         if (mStatefulViews != null && !mStatefulViews.isEmpty()) {
             for (StatefulView statefulView : mStatefulViews) {
                 statefulView.dispose(activity);

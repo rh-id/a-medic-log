@@ -37,7 +37,7 @@ public class ProfileDetailPage extends StatefulView<Activity> implements Require
     private transient INavigator mNavigator;
     private transient NavRoute mNavRoute;
     @NavInject
-    private AppBarSV mAppBarSv;
+    private AppBarSV mAppBarSV;
 
     private Profile mProfile;
     private transient Provider mSvProvider;
@@ -46,7 +46,7 @@ public class ProfileDetailPage extends StatefulView<Activity> implements Require
     private transient TextWatcher mAboutTextWatcher;
 
     public ProfileDetailPage() {
-        mAppBarSv = new AppBarSV(R.menu.page_profile_detail);
+        mAppBarSV = new AppBarSV(R.menu.page_profile_detail);
     }
 
     @Override
@@ -78,13 +78,13 @@ public class ProfileDetailPage extends StatefulView<Activity> implements Require
         initTextWatcher();
         ViewGroup rootLayout = (ViewGroup) activity.getLayoutInflater().inflate(R.layout.page_profile_detail, container, false);
         if (isUpdate()) {
-            mAppBarSv.setTitle(activity.getString(R.string.title_update_profile));
+            mAppBarSV.setTitle(activity.getString(R.string.title_update_profile));
         } else {
-            mAppBarSv.setTitle(activity.getString(R.string.title_add_profile));
+            mAppBarSV.setTitle(activity.getString(R.string.title_add_profile));
         }
-        mAppBarSv.setMenuItemListener(this);
+        mAppBarSV.setMenuItemListener(this);
         ViewGroup appBarContainer = rootLayout.findViewById(R.id.container_app_bar);
-        appBarContainer.addView(mAppBarSv.buildView(activity, appBarContainer));
+        appBarContainer.addView(mAppBarSV.buildView(activity, appBarContainer));
         EditText nameInput = rootLayout.findViewById(R.id.input_text_name);
         nameInput.setText(mProfile.name);
         nameInput.addTextChangedListener(mNameTextWatcher);
@@ -107,6 +107,10 @@ public class ProfileDetailPage extends StatefulView<Activity> implements Require
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
+        if (mAppBarSV != null) {
+            mAppBarSV.dispose(activity);
+            mAppBarSV = null;
+        }
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;

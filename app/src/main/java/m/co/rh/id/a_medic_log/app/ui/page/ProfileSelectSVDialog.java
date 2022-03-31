@@ -20,10 +20,10 @@ public class ProfileSelectSVDialog extends StatefulViewDialog<Activity> implemen
     @NavInject
     private transient INavigator mNavigator;
     @NavInject
-    private ProfileListSV mProfileListSv;
+    private ProfileListSV mProfileListSV;
 
     public ProfileSelectSVDialog() {
-        mProfileListSv = new ProfileListSV(ProfileListSV.ListMode.selectMode());
+        mProfileListSV = new ProfileListSV(ProfileListSV.ListMode.selectMode());
     }
 
     @Override
@@ -31,7 +31,7 @@ public class ProfileSelectSVDialog extends StatefulViewDialog<Activity> implemen
         ViewGroup rootLayout = (ViewGroup) activity.getLayoutInflater()
                 .inflate(R.layout.dialog_profile_select, container, false);
         ViewGroup containerContent = rootLayout.findViewById(R.id.container_content);
-        containerContent.addView(mProfileListSv.buildView(activity, rootLayout));
+        containerContent.addView(mProfileListSV.buildView(activity, rootLayout));
         Button buttonCancel = rootLayout.findViewById(R.id.button_cancel);
         buttonCancel.setOnClickListener(this);
         Button buttonOk = rootLayout.findViewById(R.id.button_ok);
@@ -45,8 +45,17 @@ public class ProfileSelectSVDialog extends StatefulViewDialog<Activity> implemen
         if (viewId == R.id.button_cancel) {
             getNavigator().pop();
         } else if (viewId == R.id.button_ok) {
-            ArrayList<Profile> selectedProfile = mProfileListSv.getSelectedProfile();
+            ArrayList<Profile> selectedProfile = mProfileListSV.getSelectedProfile();
             getNavigator().pop(Result.selectedProfile(selectedProfile));
+        }
+    }
+
+    @Override
+    public void dispose(Activity activity) {
+        super.dispose(activity);
+        if (mProfileListSV != null) {
+            mProfileListSV.dispose(activity);
+            mProfileListSV = null;
         }
     }
 

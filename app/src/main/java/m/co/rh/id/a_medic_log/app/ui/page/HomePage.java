@@ -43,7 +43,6 @@ public class HomePage extends StatefulView<Activity> implements Externalizable, 
     @NavInject
     private AppBarSV mAppBarSV;
     private boolean mIsDrawerOpen;
-    private transient Runnable mPendingDialogCmd;
     private transient long mLastBackPressMilis;
 
     // component
@@ -142,7 +141,6 @@ public class HomePage extends StatefulView<Activity> implements Externalizable, 
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
-        mPendingDialogCmd = null;
         mAppBarSV.dispose(activity);
         mAppBarSV = null;
         if (mSvProvider != null) {
