@@ -128,6 +128,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.page_medicine_detail, container, false);
+        rootLayout.post(rootLayout::clearFocus);
         ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSv.buildView(activity, container));
         mSuggestionAdapter = new SuggestionAdapter

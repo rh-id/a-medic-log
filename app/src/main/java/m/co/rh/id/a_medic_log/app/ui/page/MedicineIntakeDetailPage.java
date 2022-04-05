@@ -118,6 +118,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.page_medicine_intake_detail, container, false);
+        rootLayout.post(rootLayout::clearFocus);
         ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSv.buildView(activity, container));
         EditText inputTakenDateTime = rootLayout.findViewById(R.id.input_text_taken_date_time);
