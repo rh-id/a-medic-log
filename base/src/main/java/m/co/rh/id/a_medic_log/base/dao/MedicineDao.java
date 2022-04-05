@@ -49,6 +49,9 @@ public abstract class MedicineDao {
     @Query("SELECT * FROM medicine WHERE name LIKE '%'||:search||'%' ORDER BY created_date_time DESC")
     public abstract List<Medicine> searchMedicineName(String search);
 
+    @Query("SELECT * FROM medicine_reminder WHERE message LIKE '%'||:search||'%' ORDER BY created_date_time DESC")
+    public abstract List<MedicineReminder> searchMedicineReminderMessage(String search);
+
     @Query("SELECT COUNT(*) FROM medicine")
     public abstract int countMedicine();
 

@@ -7,6 +7,8 @@ import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -17,16 +19,20 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.function.Function;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineReminderCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.QueryMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineReminderCmd;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
+import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.alogger.ILogger;
@@ -48,6 +54,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
     private transient ILogger mLogger;
     private transient RxDisposer mRxDisposer;
     private transient NewMedicineReminderCmd mNewMedicineReminderCmd;
+    private transient QueryMedicineCmd mQueryMedicineCmd;
 
     @NavInject
     private AppBarSV mAppBarSv;
@@ -58,6 +65,8 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
 
     private transient TextWatcher mStartDateTimeTextWatcher;
     private transient TextWatcher mMessageTextWatcher;
+    private transient ArrayAdapter<String> mSuggestionMessageAdapter;
+    private transient Function<String, Collection<String>> mSuggestionMessageQuery;
 
     @Override
     public void provideNavigator(INavigator navigator) {
@@ -80,6 +89,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
         } else {
             mNewMedicineReminderCmd = mSvProvider.get(NewMedicineReminderCmd.class);
         }
+        mQueryMedicineCmd = mSvProvider.get(QueryMedicineCmd.class);
         if (mAppBarSv == null) {
             mAppBarSv = new AppBarSV(R.menu.page_medicine_reminder_detail);
         }
@@ -92,6 +102,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
         }
         mAppBarSv.setMenuItemListener(this);
         initTextWatcher();
+        mSuggestionMessageQuery = s -> mQueryMedicineCmd.searchMedicineReminderMessage(s).blockingGet();
     }
 
     @Override
@@ -106,13 +117,18 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.page_medicine_reminder_detail, container, false);
+        rootLayout.post(rootLayout::clearFocus);
         ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSv.buildView(activity, container));
         EditText inputStartDateTime = rootLayout.findViewById(R.id.input_text_start_date_time);
         inputStartDateTime.setOnClickListener(this);
         inputStartDateTime.addTextChangedListener(mStartDateTimeTextWatcher);
-        EditText inputMessage = rootLayout.findViewById(R.id.input_text_message);
+        mSuggestionMessageAdapter = new SuggestionAdapter
+                (activity, android.R.layout.select_dialog_item, mSuggestionMessageQuery);
+        AutoCompleteTextView inputMessage = rootLayout.findViewById(R.id.input_text_message);
         inputMessage.addTextChangedListener(mMessageTextWatcher);
+        inputMessage.setThreshold(1);
+        inputMessage.setAdapter(mSuggestionMessageAdapter);
         TextView reminderDaysText = rootLayout.findViewById(R.id.text_reminder_days);
         Button reminderDaysMon = rootLayout.findViewById(R.id.reminder_days_mon);
         reminderDaysMon.setOnClickListener(this);
