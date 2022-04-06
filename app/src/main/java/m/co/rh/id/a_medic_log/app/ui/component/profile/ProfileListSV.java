@@ -134,7 +134,10 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireNavi
                 .add("createView_onItemAdded",
                         mSvProvider.get(ProfileChangeNotifier.class).getAddedProfile()
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(mProfileRecyclerViewAdapter::notifyItemAdded));
+                                .subscribe(profile -> {
+                                    mProfileRecyclerViewAdapter.notifyItemAdded(profile);
+                                    recyclerView.scrollToPosition(0);
+                                }));
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onItemUpdated",
                         mSvProvider.get(ProfileChangeNotifier.class).getUpdatedProfile()

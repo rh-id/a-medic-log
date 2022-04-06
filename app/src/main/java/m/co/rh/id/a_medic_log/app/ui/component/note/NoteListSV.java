@@ -127,7 +127,10 @@ public class NoteListSV extends StatefulView<Activity> implements RequireNavigat
                 .add("createView_onItemAdded",
                         mNoteChangeNotifier.getAddedNote()
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(noteState -> mNoteRecyclerViewAdapter.notifyItemAdded(noteState.getNote())));
+                                .subscribe(noteState -> {
+                                    mNoteRecyclerViewAdapter.notifyItemAdded(noteState.getNote());
+                                    recyclerView.scrollToPosition(0);
+                                }));
         mRxDisposer
                 .add("createView_onItemUpdated",
                         mNoteChangeNotifier.getUpdatedNote()
