@@ -1,0 +1,8 @@
+Release 1.2.5+16
+
+Features:
+* Add autocomplete for medicine reminder message
+
+Fixes:
+* Fix add new record on profile and note list
+* Autocomplete should not show when user open update page
