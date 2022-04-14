@@ -174,7 +174,7 @@ public class ProfileDetailPage extends StatefulView<Activity> implements Require
                                             String successMessage;
                                             if (isUpdate()) {
                                                 errorMessage = context.getString(R.string.error_failed_to_update_profile);
-                                                successMessage = context.getString(R.string.success_updating_new_profile, mProfile.name);
+                                                successMessage = context.getString(R.string.success_updating_profile, mProfile.name);
                                             } else {
                                                 errorMessage = context.getString(R.string.error_failed_to_add_profile);
                                                 successMessage = context.getString(R.string.success_adding_new_profile, mProfile.name);

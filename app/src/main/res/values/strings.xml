@@ -21,7 +21,7 @@
     <string name="error_failed_to_add_profile">Failed to add profile</string>
     <string name="success_adding_new_profile">New profile added %s</string>
     <string name="error_failed_to_update_profile">Failed to update profile</string>
-    <string name="success_updating_new_profile">New profile updated %s</string>
+    <string name="success_updating_profile">Profile updated %s</string>
     <string name="title_confirm">Confirm</string>
     <string name="confirm_delete_profile">Delete profile %s ?</string>
     <string name="error_deleting_profile">Error deleting profile</string>
