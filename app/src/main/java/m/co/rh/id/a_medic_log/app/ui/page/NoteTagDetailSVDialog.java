@@ -11,6 +11,7 @@ import android.widget.Button;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.function.Function;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -22,6 +23,7 @@ import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
+import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulViewDialog;
@@ -82,7 +84,20 @@ public class NoteTagDetailSVDialog extends StatefulViewDialog<Activity> implemen
             }
         };
         mSuggestionQuery = s ->
-                mQueryNoteCmd.searchNoteTag(s).blockingGet();
+        {
+            LinkedHashSet<String> linkedHashSet = mQueryNoteCmd.searchNoteTag(s).blockingGet();
+            Long noteId = getNoteId();
+            if (noteId != null) {
+                NoteState noteState = mQueryNoteCmd.queryNoteInfo(noteId).blockingGet();
+                Collection<NoteTag> noteTagSet = noteState.getNoteTagSet();
+                if (!noteTagSet.isEmpty()) {
+                    for (NoteTag noteTag : noteTagSet) {
+                        linkedHashSet.remove(noteTag.tag);
+                    }
+                }
+            }
+            return linkedHashSet;
+        };
     }
 
     @Override

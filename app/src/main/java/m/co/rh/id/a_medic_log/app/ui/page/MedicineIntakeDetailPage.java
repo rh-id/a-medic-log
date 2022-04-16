@@ -7,7 +7,6 @@ import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 
@@ -60,7 +59,6 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
 
     private transient TextWatcher mTakenDateTimeTextWatcher;
     private transient TextWatcher mDescriptionTextWatcher;
-    private transient ArrayAdapter<String> mSuggestionAdapter;
     private transient Function<String, Collection<String>> mSuggestionQuery;
 
     public MedicineIntakeDetailPage() {
@@ -124,12 +122,11 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
         EditText inputTakenDateTime = rootLayout.findViewById(R.id.input_text_taken_date_time);
         inputTakenDateTime.setOnClickListener(this);
         inputTakenDateTime.addTextChangedListener(mTakenDateTimeTextWatcher);
-        mSuggestionAdapter = new SuggestionAdapter
-                (activity, android.R.layout.select_dialog_item, mSuggestionQuery);
         AutoCompleteTextView inputDescription = rootLayout.findViewById(R.id.input_text_description);
         inputDescription.addTextChangedListener(mDescriptionTextWatcher);
         inputDescription.setThreshold(1);
-        inputDescription.setAdapter(mSuggestionAdapter);
+        inputDescription.setAdapter(new SuggestionAdapter
+                (activity, android.R.layout.select_dialog_item, mSuggestionQuery));
         mRxDisposer.add("createView_onMedicineIntakeUpdated",
                 mMedicineIntakeSubject.getSubject()
                         .observeOn(AndroidSchedulers.mainThread())
@@ -177,10 +174,6 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
         }
         mTakenDateTimeTextWatcher = null;
         mDescriptionTextWatcher = null;
-        if (mSuggestionAdapter != null) {
-            mSuggestionAdapter.clear();
-            mSuggestionAdapter = null;
-        }
         mSuggestionQuery = null;
     }
 

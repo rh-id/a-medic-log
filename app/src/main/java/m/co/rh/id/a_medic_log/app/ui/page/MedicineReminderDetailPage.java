@@ -7,7 +7,6 @@ import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -65,7 +64,6 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
 
     private transient TextWatcher mStartDateTimeTextWatcher;
     private transient TextWatcher mMessageTextWatcher;
-    private transient ArrayAdapter<String> mSuggestionMessageAdapter;
     private transient Function<String, Collection<String>> mSuggestionMessageQuery;
 
     @Override
@@ -123,12 +121,11 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
         EditText inputStartDateTime = rootLayout.findViewById(R.id.input_text_start_date_time);
         inputStartDateTime.setOnClickListener(this);
         inputStartDateTime.addTextChangedListener(mStartDateTimeTextWatcher);
-        mSuggestionMessageAdapter = new SuggestionAdapter
-                (activity, android.R.layout.select_dialog_item, mSuggestionMessageQuery);
         AutoCompleteTextView inputMessage = rootLayout.findViewById(R.id.input_text_message);
         inputMessage.addTextChangedListener(mMessageTextWatcher);
         inputMessage.setThreshold(1);
-        inputMessage.setAdapter(mSuggestionMessageAdapter);
+        inputMessage.setAdapter(new SuggestionAdapter
+                (activity, android.R.layout.select_dialog_item, mSuggestionMessageQuery));
         TextView reminderDaysText = rootLayout.findViewById(R.id.text_reminder_days);
         Button reminderDaysMon = rootLayout.findViewById(R.id.reminder_days_mon);
         reminderDaysMon.setOnClickListener(this);

@@ -7,7 +7,6 @@ import android.text.TextWatcher;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -64,7 +63,6 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
     private transient UpdateMedicineReminderCmd mUpdateMedicineReminderCmd;
     private transient DeleteMedicineReminderCmd mDeleteMedicineReminderCmd;
     private transient MedicineReminderRecyclerViewAdapter mMedicineReminderRecyclerViewAdapter;
-    private transient ArrayAdapter<String> mSuggestionAdapter;
     private transient Function<String, Collection<String>> mSuggestionQuery;
 
     @NavInject
@@ -131,12 +129,11 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
         rootLayout.post(rootLayout::clearFocus);
         ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSv.buildView(activity, container));
-        mSuggestionAdapter = new SuggestionAdapter
-                (activity, android.R.layout.select_dialog_item, mSuggestionQuery);
         AutoCompleteTextView inputName = rootLayout.findViewById(R.id.input_text_name);
         inputName.addTextChangedListener(mNameTextWatcher);
         inputName.setThreshold(1);
-        inputName.setAdapter(mSuggestionAdapter);
+        inputName.setAdapter(new SuggestionAdapter
+                (activity, android.R.layout.select_dialog_item, mSuggestionQuery));
         EditText inputDescription = rootLayout.findViewById(R.id.input_text_description);
         inputDescription.addTextChangedListener(mDescriptionTextWatcher);
         Button addMedicineReminderButton = rootLayout.findViewById(R.id.button_add_medicine_reminder);
@@ -207,10 +204,6 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
         }
         mNameTextWatcher = null;
         mDescriptionTextWatcher = null;
-        if (mSuggestionAdapter != null) {
-            mSuggestionAdapter.clear();
-            mSuggestionAdapter = null;
-        }
         mSuggestionQuery = null;
     }
 
