@@ -1,6 +1,5 @@
 package m.co.rh.id.a_medic_log.base.provider;
 
-import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -31,7 +30,7 @@ public class BaseProviderModule implements ProviderModule {
     private static final String TAG = BaseProviderModule.class.getName();
 
     @Override
-    public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
+    public void provides(ProviderRegistry providerRegistry, Provider provider) {
         // thread pool to be used throughout this app lifecycle
         providerRegistry.registerAsync(ExecutorService.class, () -> {
             ThreadPoolExecutor threadPoolExecutor =
@@ -72,7 +71,7 @@ public class BaseProviderModule implements ProviderModule {
     }
 
     @Override
-    public void dispose(Context context, Provider provider) {
+    public void dispose(Provider provider) {
         ILogger iLogger = provider.get(ILogger.class);
         ExecutorService executorService = provider.get(ExecutorService.class);
         ScheduledExecutorService scheduledExecutorService = provider.get(ScheduledExecutorService.class);

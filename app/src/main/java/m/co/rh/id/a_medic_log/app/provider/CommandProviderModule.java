@@ -1,7 +1,5 @@
 package m.co.rh.id.a_medic_log.app.provider;
 
-import android.content.Context;
-
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteMedicineIntakeCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteMedicineReminderCmd;
@@ -37,7 +35,7 @@ import m.co.rh.id.aprovider.ProviderRegistry;
 public class CommandProviderModule implements ProviderModule {
 
     @Override
-    public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
+    public void provides(ProviderRegistry providerRegistry, Provider provider) {
         providerRegistry.registerLazy(NewProfileCmd.class, () -> new NewProfileCmd(provider));
         providerRegistry.registerLazy(UpdateProfileCmd.class, () -> new UpdateProfileCmd(provider));
         providerRegistry.registerLazy(DeleteProfileCmd.class, () -> new DeleteProfileCmd(provider));
@@ -69,7 +67,7 @@ public class CommandProviderModule implements ProviderModule {
     }
 
     @Override
-    public void dispose(Context context, Provider provider) {
+    public void dispose(Provider provider) {
         // leave blank
     }
 }

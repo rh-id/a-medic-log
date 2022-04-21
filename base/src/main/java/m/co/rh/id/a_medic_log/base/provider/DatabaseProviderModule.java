@@ -1,7 +1,5 @@
 package m.co.rh.id.a_medic_log.base.provider;
 
-import android.content.Context;
-
 import androidx.room.Room;
 
 import m.co.rh.id.a_medic_log.base.AppDatabase;
@@ -31,7 +29,7 @@ public class DatabaseProviderModule implements ProviderModule {
     }
 
     @Override
-    public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
+    public void provides(ProviderRegistry providerRegistry, Provider provider) {
         providerRegistry.registerAsync(AppDatabase.class, () ->
                 Room.databaseBuilder(provider.getContext(),
                         AppDatabase.class, mDbName)
@@ -51,7 +49,7 @@ public class DatabaseProviderModule implements ProviderModule {
     }
 
     @Override
-    public void dispose(Context context, Provider provider) {
+    public void dispose(Provider provider) {
         mDbName = null;
     }
 }

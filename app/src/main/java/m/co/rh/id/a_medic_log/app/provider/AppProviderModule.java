@@ -2,7 +2,6 @@ package m.co.rh.id.a_medic_log.app.provider;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.Context;
 
 import androidx.work.WorkManager;
 
@@ -62,7 +61,7 @@ public class AppProviderModule implements ProviderModule {
     }
 
     @Override
-    public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
+    public void provides(ProviderRegistry providerRegistry, Provider provider) {
         providerRegistry.registerModule(new BaseProviderModule());
         providerRegistry.registerModule(new DatabaseProviderModule());
         providerRegistry.registerModule(new CommandProviderModule());
@@ -125,7 +124,7 @@ public class AppProviderModule implements ProviderModule {
     }
 
     @Override
-    public void dispose(Context context, Provider provider) {
+    public void dispose(Provider provider) {
         mApplication.unregisterActivityLifecycleCallbacks(mNavigator);
         mApplication.unregisterComponentCallbacks(mNavigator);
         mNavigator = null;
