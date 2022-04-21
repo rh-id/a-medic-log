@@ -27,8 +27,8 @@ public class PagedNoteItemsCmd {
     private final BehaviorSubject<ArrayList<Note>> mItemsSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
 
-    public PagedNoteItemsCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public PagedNoteItemsCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mNoteDao = provider.get(NoteDao.class);
         mItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());

@@ -32,9 +32,8 @@ public class DatabaseProviderModule implements ProviderModule {
 
     @Override
     public void provides(Context context, ProviderRegistry providerRegistry, Provider provider) {
-        Context appContext = context.getApplicationContext();
         providerRegistry.registerAsync(AppDatabase.class, () ->
-                Room.databaseBuilder(appContext,
+                Room.databaseBuilder(provider.getContext(),
                         AppDatabase.class, mDbName)
                         .addMigrations(DbMigration.getAll())
                         .build());
@@ -48,7 +47,7 @@ public class DatabaseProviderModule implements ProviderModule {
         providerRegistry.registerAsync(AndroidNotificationDao.class, () -> provider.get(AppDatabase.class)
                 .androidNotificationDao());
         providerRegistry.registerLazy(AndroidNotificationRepo.class, () ->
-                new AndroidNotificationRepo(context, provider));
+                new AndroidNotificationRepo(provider));
     }
 
     @Override

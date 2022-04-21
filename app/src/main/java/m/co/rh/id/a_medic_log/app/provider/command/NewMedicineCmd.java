@@ -23,8 +23,8 @@ public class NewMedicineCmd {
     protected ProviderValue<MedicineChangeNotifier> mMedicineChangeNotifier;
     protected BehaviorSubject<String> mNameValidSubject;
 
-    public NewMedicineCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public NewMedicineCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mMedicineDao = provider.lazyGet(MedicineDao.class);
         mMedicineChangeNotifier = provider.lazyGet(MedicineChangeNotifier.class);

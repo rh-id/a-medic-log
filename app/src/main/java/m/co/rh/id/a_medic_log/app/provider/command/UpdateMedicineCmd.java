@@ -1,15 +1,13 @@
 package m.co.rh.id.a_medic_log.app.provider.command;
 
-import android.content.Context;
-
 import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.aprovider.Provider;
 
 public class UpdateMedicineCmd extends NewMedicineCmd {
 
-    public UpdateMedicineCmd(Context context, Provider provider) {
-        super(context, provider);
+    public UpdateMedicineCmd(Provider provider) {
+        super(provider);
     }
 
     public Single<MedicineState> execute(MedicineState medicineState) {

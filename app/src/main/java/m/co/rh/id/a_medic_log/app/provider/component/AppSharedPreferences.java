@@ -20,10 +20,10 @@ public class AppSharedPreferences {
     private int mSelectedTheme;
     private String mSelectedThemeKey;
 
-    public AppSharedPreferences(Context context, Provider provider) {
+    public AppSharedPreferences(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mHandler = provider.lazyGet(Handler.class);
-        mSharedPreferences = context.getSharedPreferences(
+        mSharedPreferences = provider.getContext().getSharedPreferences(
                 SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         initValue();
     }

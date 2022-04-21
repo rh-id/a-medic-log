@@ -19,8 +19,8 @@ public class DeleteNoteCmd {
     protected ProviderValue<NoteChangeNotifier> mNoteChangeNotifier;
     protected ProviderValue<QueryNoteCmd> mNoteQueryCmd;
 
-    public DeleteNoteCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public DeleteNoteCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mNoteDao = provider.lazyGet(NoteDao.class);
         mNoteChangeNotifier = provider.lazyGet(NoteChangeNotifier.class);

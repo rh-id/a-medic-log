@@ -19,9 +19,8 @@ public class AndroidNotificationRepo {
     private AtomicInteger mRequestId;
     private String mRequestIdKey;
 
-    public AndroidNotificationRepo(Context context,
-                                   Provider provider) {
-        mSharedPreferences = context.getSharedPreferences(
+    public AndroidNotificationRepo(Provider provider) {
+        mSharedPreferences = provider.getContext().getSharedPreferences(
                 SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         mAndroidNotificationDao = provider.lazyGet(AndroidNotificationDao.class);
 

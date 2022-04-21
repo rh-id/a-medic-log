@@ -25,8 +25,8 @@ public class NewNoteCmd {
     protected BehaviorSubject<String> mEntryDateTimeValidSubject;
     protected BehaviorSubject<String> mContentValidSubject;
 
-    public NewNoteCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public NewNoteCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mNoteDao = provider.lazyGet(NoteDao.class);
         mNoteChangeNotifier = provider.lazyGet(NoteChangeNotifier.class);

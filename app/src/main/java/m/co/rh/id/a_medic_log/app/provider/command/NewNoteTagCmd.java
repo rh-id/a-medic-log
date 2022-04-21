@@ -21,8 +21,8 @@ public class NewNoteTagCmd {
     protected NoteTagChangeNotifier mNoteTagChangeNotifier;
     protected BehaviorSubject<String> mTagValidSubject;
 
-    public NewNoteTagCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public NewNoteTagCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mNoteDao = provider.get(NoteDao.class);
         mNoteTagChangeNotifier = provider.get(NoteTagChangeNotifier.class);

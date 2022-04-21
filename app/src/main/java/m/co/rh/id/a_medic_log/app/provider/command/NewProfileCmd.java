@@ -22,8 +22,8 @@ public class NewProfileCmd {
     protected ProviderValue<ProfileChangeNotifier> mProfileChangeNotifier;
     protected BehaviorSubject<String> mNameValidSubject;
 
-    public NewProfileCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public NewProfileCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mProfileDao = provider.lazyGet(ProfileDao.class);
         mProfileChangeNotifier = provider.lazyGet(ProfileChangeNotifier.class);

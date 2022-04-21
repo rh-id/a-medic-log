@@ -17,8 +17,8 @@ public class DeleteMedicineIntakeCmd {
     protected ProviderValue<MedicineDao> mMedicineDao;
     protected ProviderValue<MedicineIntakeChangeNotifier> mMedicineIntakeChangeNotifier;
 
-    public DeleteMedicineIntakeCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public DeleteMedicineIntakeCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mMedicineDao = provider.lazyGet(MedicineDao.class);
         mMedicineIntakeChangeNotifier = provider.lazyGet(MedicineIntakeChangeNotifier.class);

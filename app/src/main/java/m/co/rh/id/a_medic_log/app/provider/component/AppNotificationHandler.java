@@ -59,8 +59,8 @@ public class AppNotificationHandler {
     private final ReentrantLock mLock;
     private ReplaySubject<MedicineReminder> mMedicineReminderSubject;
 
-    public AppNotificationHandler(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public AppNotificationHandler(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mLogger = provider.lazyGet(ILogger.class);
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mAndroidNotificationRepo = provider.lazyGet(AndroidNotificationRepo.class);

@@ -1,15 +1,13 @@
 package m.co.rh.id.a_medic_log.app.provider.command;
 
-import android.content.Context;
-
 import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.aprovider.Provider;
 
 public class UpdateProfileCmd extends NewProfileCmd {
 
-    public UpdateProfileCmd(Context context, Provider provider) {
-        super(context, provider);
+    public UpdateProfileCmd(Provider provider) {
+        super(provider);
     }
 
     @Override

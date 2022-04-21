@@ -24,8 +24,8 @@ public class NewMedicineReminderCmd {
     protected BehaviorSubject<String> mMessageValidSubject;
     protected BehaviorSubject<String> mReminderDaysValidSubject;
 
-    public NewMedicineReminderCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public NewMedicineReminderCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mMedicineDao = provider.lazyGet(MedicineDao.class);
         mMedicineReminderChangeNotifier = provider.lazyGet(MedicineReminderChangeNotifier.class);

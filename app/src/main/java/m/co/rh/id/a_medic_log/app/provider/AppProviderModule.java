@@ -67,8 +67,8 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerModule(new DatabaseProviderModule());
         providerRegistry.registerModule(new CommandProviderModule());
 
-        providerRegistry.registerAsync(WorkManager.class, () -> WorkManager.getInstance(context));
-        providerRegistry.registerAsync(AppSharedPreferences.class, () -> new AppSharedPreferences(context, provider));
+        providerRegistry.registerAsync(WorkManager.class, () -> WorkManager.getInstance(provider.getContext()));
+        providerRegistry.registerAsync(AppSharedPreferences.class, () -> new AppSharedPreferences(provider));
         providerRegistry.registerAsync(ProfileChangeNotifier.class, ProfileChangeNotifier::new);
         providerRegistry.registerAsync(NoteChangeNotifier.class, NoteChangeNotifier::new);
         providerRegistry.registerAsync(NoteTagChangeNotifier.class, NoteTagChangeNotifier::new);
@@ -77,12 +77,12 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerAsync(MedicineIntakeChangeNotifier.class, MedicineIntakeChangeNotifier::new);
         providerRegistry.registerAsync(NoteAttachmentFileChangeNotifier.class, NoteAttachmentFileChangeNotifier::new);
         providerRegistry.registerAsync(FileCleanUpTask.class, () -> new FileCleanUpTask(provider));
-        providerRegistry.registerLazy(AppNotificationHandler.class, () -> new AppNotificationHandler(context, provider));
+        providerRegistry.registerLazy(AppNotificationHandler.class, () -> new AppNotificationHandler(provider));
         providerRegistry.registerPool(StatefulViewProvider.class, () -> new StatefulViewProvider(provider));
 
         providerRegistry.registerAsync(MedicineReminderEventHandler.class, () -> new MedicineReminderEventHandler(provider));
         // it is safer to register navigator last in case it needs dependency from all above, provider can be passed here
-        providerRegistry.register(NavExtDialogConfig.class, new NavExtDialogConfig(context));
+        providerRegistry.register(NavExtDialogConfig.class, new NavExtDialogConfig(provider.getContext()));
         providerRegistry.register(INavigator.class, getNavigator(provider));
     }
 

@@ -20,8 +20,8 @@ public class NewNoteAttachmentCmd {
     protected NoteDao mNoteDao;
     protected BehaviorSubject<String> mNameValidSubject;
 
-    public NewNoteAttachmentCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public NewNoteAttachmentCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mNoteDao = provider.get(NoteDao.class);
         mNameValidSubject = BehaviorSubject.create();

@@ -23,8 +23,8 @@ public class NewMedicineIntakeCmd {
     protected BehaviorSubject<String> mTakenDateTimeValidSubject;
     protected BehaviorSubject<String> mDescriptionValidSubject;
 
-    public NewMedicineIntakeCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public NewMedicineIntakeCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mMedicineDao = provider.lazyGet(MedicineDao.class);
         mMedicineIntakeChangeNotifier = provider.lazyGet(MedicineIntakeChangeNotifier.class);

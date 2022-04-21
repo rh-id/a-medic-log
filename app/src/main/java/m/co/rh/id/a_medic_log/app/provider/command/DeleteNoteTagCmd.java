@@ -16,8 +16,8 @@ public class DeleteNoteTagCmd {
     protected NoteDao mNoteDao;
     protected NoteTagChangeNotifier mNoteTagChangeNotifier;
 
-    public DeleteNoteTagCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public DeleteNoteTagCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mNoteDao = provider.get(NoteDao.class);
         mNoteTagChangeNotifier = provider.get(NoteTagChangeNotifier.class);

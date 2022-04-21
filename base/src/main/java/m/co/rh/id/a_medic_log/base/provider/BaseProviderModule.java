@@ -60,7 +60,7 @@ public class BaseProviderModule implements ProviderModule {
                 defaultLogger.e(TAG, "Error creating file logger", e);
             }
             try {
-                ILogger toastLogger = new ToastLogger(ILogger.INFO, context);
+                ILogger toastLogger = new ToastLogger(ILogger.INFO, provider.getContext());
                 loggerList.add(toastLogger);
             } catch (Throwable throwable) {
                 defaultLogger.e(TAG, "Error creating toast logger", throwable);
@@ -68,7 +68,7 @@ public class BaseProviderModule implements ProviderModule {
 
             return new CompositeLogger(loggerList);
         });
-        providerRegistry.register(FileHelper.class, new FileHelper(provider, context));
+        providerRegistry.register(FileHelper.class, new FileHelper(provider));
     }
 
     @Override

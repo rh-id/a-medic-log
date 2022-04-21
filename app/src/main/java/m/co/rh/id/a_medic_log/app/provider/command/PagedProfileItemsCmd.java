@@ -25,8 +25,8 @@ public class PagedProfileItemsCmd {
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
     private final BehaviorSubject<Set<Long>> mSelectedIdsSubject;
 
-    public PagedProfileItemsCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public PagedProfileItemsCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mProfileDao = provider.get(ProfileDao.class);
         mItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());

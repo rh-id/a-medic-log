@@ -35,13 +35,14 @@ public class NoteListSV extends StatefulView<Activity> implements RequireNavigat
     private Long mProfileId;
     private transient INavigator mNavigator;
     private transient Provider mSvProvider;
+    private transient ExecutorService mExecutorService;
     private transient NoteChangeNotifier mNoteChangeNotifier;
     private transient PagedNoteItemsCmd mPagedNoteItemsCmd;
     private transient RxDisposer mRxDisposer;
     private transient PublishSubject<String> mSearchStringSubject;
     private transient TextWatcher mSearchTextWatcher;
     private transient NoteRecyclerViewAdapter mNoteRecyclerViewAdapter;
-    private transient RecyclerView.OnScrollListener mOnScrollListener;
+    private transient RecyclerView.OnScrollListener mOnNotesScrollListener;
 
     public NoteListSV(Long profileId) {
         mProfileId = profileId;
@@ -54,45 +55,37 @@ public class NoteListSV extends StatefulView<Activity> implements RequireNavigat
 
     @Override
     public void provideComponent(Provider provider) {
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-        }
         mSvProvider = provider.get(StatefulViewProvider.class);
+        mExecutorService = mSvProvider.get(ExecutorService.class);
         mNoteChangeNotifier = mSvProvider.get(NoteChangeNotifier.class);
         mPagedNoteItemsCmd = mSvProvider.get(PagedNoteItemsCmd.class);
         mPagedNoteItemsCmd.loadWithProfileId(mProfileId);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
-        if (mSearchStringSubject == null) {
-            mSearchStringSubject = PublishSubject.create();
-        }
-        if (mSearchTextWatcher == null) {
-            mSearchTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // leave blank
-                }
+        mSearchStringSubject = PublishSubject.create();
+        mSearchTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // leave blank
+            }
 
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // leave blank
-                }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // leave blank
+            }
 
-                @Override
-                public void afterTextChanged(Editable editable) {
-                    mSearchStringSubject.onNext(editable.toString());
+            @Override
+            public void afterTextChanged(Editable editable) {
+                mSearchStringSubject.onNext(editable.toString());
+            }
+        };
+        mOnNotesScrollListener = new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    mPagedNoteItemsCmd.loadNextPage();
                 }
-            };
-        }
-        if (mOnScrollListener == null) {
-            mOnScrollListener = new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                    if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                        mPagedNoteItemsCmd.loadNextPage();
-                    }
-                }
-            };
-        }
+            }
+        };
         mNoteRecyclerViewAdapter = new NoteRecyclerViewAdapter(
                 mPagedNoteItemsCmd,
                 mNavigator, this);
@@ -108,12 +101,12 @@ public class NoteListSV extends StatefulView<Activity> implements RequireNavigat
         RecyclerView recyclerView = rootLayout.findViewById(R.id.recyclerView);
         recyclerView.setAdapter(mNoteRecyclerViewAdapter);
         recyclerView.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL));
-        recyclerView.addOnScrollListener(mOnScrollListener);
+        recyclerView.addOnScrollListener(mOnNotesScrollListener);
         mRxDisposer
                 .add("createView_onItemSearched",
                         mSearchStringSubject
                                 .debounce(700, TimeUnit.MILLISECONDS)
-                                .observeOn(Schedulers.from(mSvProvider.get(ExecutorService.class)))
+                                .observeOn(Schedulers.from(mExecutorService))
                                 .subscribe(searchString -> mPagedNoteItemsCmd
                                         .search(searchString))
                 );
@@ -166,7 +159,7 @@ public class NoteListSV extends StatefulView<Activity> implements RequireNavigat
             mNoteRecyclerViewAdapter.dispose(activity);
             mNoteRecyclerViewAdapter = null;
         }
-        mOnScrollListener = null;
+        mOnNotesScrollListener = null;
     }
 
     @Override

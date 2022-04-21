@@ -23,8 +23,8 @@ public class PagedMedicineIntakeItemsCmd {
     private final BehaviorSubject<ArrayList<MedicineIntake>> mItemsSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
 
-    public PagedMedicineIntakeItemsCmd(Context context, Provider provider) {
-        mAppContext = context.getApplicationContext();
+    public PagedMedicineIntakeItemsCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mMedicineDao = provider.get(MedicineDao.class);
         mItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
