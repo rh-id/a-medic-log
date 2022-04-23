@@ -24,16 +24,19 @@ import m.co.rh.id.a_medic_log.app.provider.command.PagedNoteItemsCmd;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.anavigator.StatefulView;
+import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.RequireComponent;
-import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.aprovider.Provider;
 
-public class NoteListSV extends StatefulView<Activity> implements RequireNavigator, RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener {
+public class NoteListSV extends StatefulView<Activity> implements RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = NoteListSV.class.getName();
 
     private Long mProfileId;
+
+    @NavInject
     private transient INavigator mNavigator;
+
     private transient Provider mSvProvider;
     private transient ExecutorService mExecutorService;
     private transient NoteChangeNotifier mNoteChangeNotifier;
@@ -46,11 +49,6 @@ public class NoteListSV extends StatefulView<Activity> implements RequireNavigat
 
     public NoteListSV(Long profileId) {
         mProfileId = profileId;
-    }
-
-    @Override
-    public void provideNavigator(INavigator navigator) {
-        mNavigator = navigator;
     }
 
     @Override

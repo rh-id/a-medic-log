@@ -30,16 +30,18 @@ import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
+import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.RequireComponent;
-import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
-public class MedicineIntakeListSV extends StatefulView<Activity> implements RequireNavigator, RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener, MedicineIntakeItemSV.OnEditClick, MedicineIntakeItemSV.OnDeleteClick {
+public class MedicineIntakeListSV extends StatefulView<Activity> implements RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener, MedicineIntakeItemSV.OnEditClick, MedicineIntakeItemSV.OnDeleteClick {
     private static final String TAG = MedicineIntakeListSV.class.getName();
 
+    @NavInject
     private transient INavigator mNavigator;
+
     private transient ExecutorService mExecutorService;
     private transient Provider mSvProvider;
     private transient RxDisposer mRxDisposer;
@@ -54,11 +56,6 @@ public class MedicineIntakeListSV extends StatefulView<Activity> implements Requ
 
     public MedicineIntakeListSV() {
         mSearchStringSubject = new SerialBehaviorSubject<>("");
-    }
-
-    @Override
-    public void provideNavigator(INavigator navigator) {
-        mNavigator = navigator;
     }
 
     @Override

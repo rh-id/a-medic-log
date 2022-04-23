@@ -27,15 +27,17 @@ import m.co.rh.id.a_medic_log.app.provider.notifier.ProfileChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.anavigator.StatefulView;
+import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.RequireComponent;
-import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.aprovider.Provider;
 
-public class ProfileListSV extends StatefulView<Activity> implements RequireNavigator, RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener {
+public class ProfileListSV extends StatefulView<Activity> implements RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener {
     private static final String TAG = ProfileListSV.class.getName();
 
+    @NavInject
     private transient INavigator mNavigator;
+
     private transient Provider mSvProvider;
     private transient PublishSubject<String> mSearchStringSubject;
     private transient TextWatcher mSearchTextWatcher;
@@ -45,6 +47,7 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireNavi
     private ListMode mListMode;
 
     public ProfileListSV() {
+        this(null);
     }
 
     public ProfileListSV(ListMode listMode) {
@@ -52,48 +55,36 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireNavi
     }
 
     @Override
-    public void provideNavigator(INavigator navigator) {
-        mNavigator = navigator;
-    }
-
-    @Override
     public void provideComponent(Provider provider) {
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-        }
         mSvProvider = provider.get(StatefulViewProvider.class);
         mSvProvider.get(PagedProfileItemsCmd.class).refresh();
         if (mSearchStringSubject == null) {
             mSearchStringSubject = PublishSubject.create();
         }
-        if (mSearchTextWatcher == null) {
-            mSearchTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // leave blank
-                }
+        mSearchTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // leave blank
+            }
 
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // leave blank
-                }
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // leave blank
+            }
 
-                @Override
-                public void afterTextChanged(Editable editable) {
-                    mSearchStringSubject.onNext(editable.toString());
+            @Override
+            public void afterTextChanged(Editable editable) {
+                mSearchStringSubject.onNext(editable.toString());
+            }
+        };
+        mOnScrollListener = new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    mSvProvider.get(PagedProfileItemsCmd.class).loadNextPage();
                 }
-            };
-        }
-        if (mOnScrollListener == null) {
-            mOnScrollListener = new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                    if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                        mSvProvider.get(PagedProfileItemsCmd.class).loadNextPage();
-                    }
-                }
-            };
-        }
+            }
+        };
         ProfileItemSV.ListMode listMode = null;
         if (mListMode != null) {
             if (mListMode.mSelectMode == ListMode.SELECT_MODE) {
