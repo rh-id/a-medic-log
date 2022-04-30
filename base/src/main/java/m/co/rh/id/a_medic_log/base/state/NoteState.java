@@ -8,11 +8,11 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.TreeSet;
 
+import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
-import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 
 public class NoteState implements Serializable, Cloneable {
     private SerialBehaviorSubject<Note> mNoteSubject;

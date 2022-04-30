@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 
+import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import m.co.rh.id.a_medic_log.base.entity.NoteAttachment;
 import m.co.rh.id.a_medic_log.base.entity.NoteAttachmentFile;
-import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 
 public class NoteAttachmentState implements Serializable, Cloneable {
     private SerialBehaviorSubject<NoteAttachment> mNoteAttachmentSubject;

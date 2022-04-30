@@ -23,6 +23,8 @@ import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
+import co.rh.id.lib.rx3_utils.subject.SerialOptionalBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
@@ -32,8 +34,6 @@ import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineIntakeChangeNotifier
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
-import m.co.rh.id.a_medic_log.base.rx.OptionalBehaviorSubject;
-import m.co.rh.id.a_medic_log.base.rx.SerialBehaviorSubject;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.component.RequireComponent;
@@ -47,7 +47,7 @@ public class MedicineItemSV extends StatefulView<Activity> implements RequireCom
     private transient MedicineIntakeChangeNotifier mMedicineIntakeChangeNotifier;
     private transient QueryMedicineCmd mQueryMedicineCmd;
     private SerialBehaviorSubject<MedicineState> mMedicineStateSubject;
-    private OptionalBehaviorSubject<MedicineIntake> mLastMedicineIntakeSubject;
+    private SerialOptionalBehaviorSubject<MedicineIntake> mLastMedicineIntakeSubject;
     private DateFormat mDateTimeFormat;
     private DateFormat mTimeFormat;
     private transient MedicineItemOnMedicineIntakeListClick mMedicineItemOnMedicineIntakeListClick;
@@ -57,7 +57,7 @@ public class MedicineItemSV extends StatefulView<Activity> implements RequireCom
 
     public MedicineItemSV() {
         mMedicineStateSubject = new SerialBehaviorSubject<>(new MedicineState());
-        mLastMedicineIntakeSubject = new OptionalBehaviorSubject<>();
+        mLastMedicineIntakeSubject = new SerialOptionalBehaviorSubject<>();
         mDateTimeFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
         mTimeFormat = new SimpleDateFormat("HH:mm");
     }
