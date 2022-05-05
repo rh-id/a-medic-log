@@ -15,10 +15,10 @@ import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 
+import co.rh.id.lib.rx3_utils.subject.QueueSubject;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-import io.reactivex.rxjava3.subjects.ReplaySubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.MainActivity;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineIntakeCmd;
@@ -57,7 +57,7 @@ public class AppNotificationHandler {
     private final ProviderValue<UpdateMedicineReminderCmd> mUpdateMedicineReminderCmd;
     private final ProviderValue<MedicineReminderEventHandler> mMedicineReminderEventHandler;
     private final ReentrantLock mLock;
-    private ReplaySubject<MedicineReminder> mMedicineReminderSubject;
+    private QueueSubject<MedicineReminder> mMedicineReminderSubject;
 
     public AppNotificationHandler(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
@@ -71,7 +71,7 @@ public class AppNotificationHandler {
         mUpdateMedicineReminderCmd = provider.lazyGet(UpdateMedicineReminderCmd.class);
         mMedicineReminderEventHandler = provider.lazyGet(MedicineReminderEventHandler.class);
         mLock = new ReentrantLock();
-        mMedicineReminderSubject = ReplaySubject.create();
+        mMedicineReminderSubject = new QueueSubject<>();
     }
 
     public void postMedicineReminder(MedicineReminder medicineReminder) {
@@ -255,11 +255,5 @@ public class AppNotificationHandler {
     public Flowable<MedicineReminder> getMedicineReminderFlow() {
         return Flowable.fromObservable(mMedicineReminderSubject, BackpressureStrategy.BUFFER)
                 .subscribeOn(Schedulers.from(mExecutorService.get()));
-    }
-
-    public void clearNotificationBuffer() {
-        mMedicineReminderSubject.cleanupBuffer();
-        mMedicineReminderSubject.onComplete();
-        mMedicineReminderSubject = ReplaySubject.create();
     }
 }

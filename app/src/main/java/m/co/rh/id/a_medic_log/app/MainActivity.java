@@ -82,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mAppNotificationHandler.clearNotificationBuffer();
         mActivityProvider.dispose();
         mActivityProvider = null;
         mRebuildUi.onComplete();
