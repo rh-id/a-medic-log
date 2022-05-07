@@ -1,0 +1,8 @@
+Release 1.2.6+17
+
+Features:
+* Add indonesian language
+
+Fixes:
+* Autocomplete suggestion list
+* Restructure and optimize app
