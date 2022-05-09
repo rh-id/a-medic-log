@@ -120,4 +120,5 @@
     <string name="bitcoin">Bitcoin</string>
     <string name="donation_other_apps">Other apps by developer: %s</string>
     <string name="donation_thank_you">Thank you for your support</string>
+    <string name="error_please_select_profile">Error, please select profile</string>
 </resources>

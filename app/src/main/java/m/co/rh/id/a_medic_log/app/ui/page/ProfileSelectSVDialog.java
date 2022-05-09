@@ -11,19 +11,33 @@ import java.util.ArrayList;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.ui.component.profile.ProfileListSV;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulViewDialog;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.RequireComponent;
+import m.co.rh.id.aprovider.Provider;
 
-public class ProfileSelectSVDialog extends StatefulViewDialog<Activity> implements View.OnClickListener {
+public class ProfileSelectSVDialog extends StatefulViewDialog<Activity> implements RequireComponent<Provider>, View.OnClickListener {
+
+    private static final String TAG = ProfileSelectSVDialog.class.getName();
+
     @NavInject
     private transient INavigator mNavigator;
+
+    private transient ILogger mLogger;
+
     @NavInject
     private ProfileListSV mProfileListSV;
 
     public ProfileSelectSVDialog() {
         mProfileListSV = new ProfileListSV(ProfileListSV.ListMode.selectMode());
+    }
+
+    @Override
+    public void provideComponent(Provider provider) {
+        mLogger = provider.get(ILogger.class);
     }
 
     @Override
@@ -46,7 +60,11 @@ public class ProfileSelectSVDialog extends StatefulViewDialog<Activity> implemen
             getNavigator().pop();
         } else if (viewId == R.id.button_ok) {
             ArrayList<Profile> selectedProfile = mProfileListSV.getSelectedProfile();
-            getNavigator().pop(Result.selectedProfile(selectedProfile));
+            if (!selectedProfile.isEmpty()) {
+                getNavigator().pop(Result.selectedProfile(selectedProfile));
+            } else {
+                mLogger.i(TAG, view.getContext().getString(R.string.error_please_select_profile));
+            }
         }
     }
 

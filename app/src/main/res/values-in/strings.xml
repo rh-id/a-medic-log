@@ -120,4 +120,5 @@
     <string name="bitcoin">Bitcoin</string>
     <string name="donation_other_apps">Aplikasi lain oleh developer: %s</string>
     <string name="donation_thank_you">Terima kasih untuk bantuan anda</string>
+    <string name="error_please_select_profile">Error, silakan pilih profil</string>
 </resources>
