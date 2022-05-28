@@ -65,9 +65,4 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerLazy(NewNoteAttachmentFileCmd.class, () -> new NewNoteAttachmentFileCmd(provider));
         providerRegistry.registerLazy(DeleteNoteAttachmentFileCmd.class, () -> new DeleteNoteAttachmentFileCmd(provider));
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // leave blank
-    }
 }
