@@ -84,8 +84,8 @@ public class AppProviderModule implements ProviderModule {
 
         providerRegistry.registerAsync(MedicineReminderEventHandler.class, () -> new MedicineReminderEventHandler(provider));
         // it is safer to register navigator last in case it needs dependency from all above, provider can be passed here
-        providerRegistry.register(NavExtDialogConfig.class, new NavExtDialogConfig(provider.getContext()));
-        providerRegistry.register(INavigator.class, getNavigator(provider));
+        providerRegistry.register(NavExtDialogConfig.class, () -> new NavExtDialogConfig(provider.getContext()));
+        providerRegistry.register(INavigator.class, () -> getNavigator(provider));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
