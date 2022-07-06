@@ -1,0 +1,11 @@
+Release 1.2.9+20
+
+IMPORTANT Fixes:
+* Deadlock issue
+
+
+Release 1.2.8+19
+
+Fixes:
+* Android SDK memory leak
+* Optimize app
