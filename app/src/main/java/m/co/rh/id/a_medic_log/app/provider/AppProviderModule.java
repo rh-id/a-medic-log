@@ -25,6 +25,7 @@ import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteTagChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.ProfileChangeNotifier;
 import m.co.rh.id.a_medic_log.app.ui.page.DonationsPage;
+import m.co.rh.id.a_medic_log.app.ui.page.HomePage;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineDetailPage;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineIntakeDetailPage;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineIntakeListPage;
@@ -90,12 +91,8 @@ public class AppProviderModule implements ProviderModule {
     @SuppressWarnings({"rawtypes", "unchecked"})
     private Navigator getNavigator(Provider provider) {
         Map<String, StatefulViewFactory<Activity, StatefulView<Activity>>> navMap = new HashMap<>();
-        navMap.put(Routes.HOME_PAGE, (args, activity) -> {
-            if (args instanceof StatefulView) {
-                return (StatefulView) args;
-            }
-            return new SplashPage();
-        });
+        navMap.put(Routes.SPLASH_PAGE, (args, activity) -> new SplashPage(Routes.HOME_PAGE));
+        navMap.put(Routes.HOME_PAGE, (args, activity) -> new HomePage());
         navMap.put(Routes.SETTINGS_PAGE, (args, activity) -> new SettingsPage());
         navMap.put(Routes.DONATIONS_PAGE, (args, activity) -> new DonationsPage());
         navMap.put(Routes.PROFILES_PAGE, (args, activity) -> new ProfilesPage());
@@ -113,7 +110,7 @@ public class AppProviderModule implements ProviderModule {
         navMap.put(Routes.COMMON_IMAGEVIEW, (args, activity) -> new ImageViewPage());
         navMap.putAll(provider.get(NavExtDialogConfig.class).getNavMap());
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =
-                new NavConfiguration.Builder(Routes.HOME_PAGE, navMap);
+                new NavConfiguration.Builder(Routes.SPLASH_PAGE, navMap);
         navBuilder.setRequiredComponent(provider);
         navBuilder.setMainHandler(provider.get(Handler.class));
         navBuilder.setLoadingView(LayoutInflater.from(provider.getContext())

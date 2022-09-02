@@ -16,6 +16,12 @@ public class SplashPage extends StatefulView<Activity> implements RequireNavigat
     private transient INavigator mNavigator;
     private transient Provider mProvider;
 
+    private String mNextPage;
+
+    public SplashPage(String nextPage) {
+        mNextPage = nextPage;
+    }
+
     @Override
     public void provideNavigator(INavigator navigator) {
         mNavigator = navigator;
@@ -31,7 +37,7 @@ public class SplashPage extends StatefulView<Activity> implements RequireNavigat
         super.initState(activity);
         mProvider.get(Handler.class)
                 .postDelayed(() ->
-                        mNavigator.retry(new HomePage()), 1000);
+                        mNavigator.replace(mNextPage), 1000);
     }
 
     @Override
