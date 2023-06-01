@@ -1,8 +1,11 @@
 package m.co.rh.id.a_medic_log.app.workmanager;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.work.WorkManager;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
@@ -48,7 +51,9 @@ public class MedicineReminderNotificationWorker extends Worker {
             if (medicineReminder.reminderDays.contains(currentDay)) {
                 AppNotificationHandler appNotificationHandler = mAppNotificationHandler.get();
                 appNotificationHandler.cancelNotificationSync(medicineReminder);
-                appNotificationHandler.postMedicineReminder(medicineReminder);
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                    appNotificationHandler.postMedicineReminder(medicineReminder);
+                }
             }
 
             mMedicineReminderEventHandler.get().startMedicineReminderNotificationWork(Collections.singletonList(medicineReminder));

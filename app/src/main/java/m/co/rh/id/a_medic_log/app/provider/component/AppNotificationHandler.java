@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 
+import androidx.annotation.RequiresPermission;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -73,7 +74,7 @@ public class AppNotificationHandler {
         mLock = new ReentrantLock();
         mMedicineReminderSubject = new QueueSubject<>();
     }
-
+    @RequiresPermission("android.permission.POST_NOTIFICATIONS")
     public void postMedicineReminder(MedicineReminder medicineReminder) {
         mLock.lock();
         try {
