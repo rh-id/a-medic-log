@@ -2,6 +2,7 @@
 
 ![Languages](https://img.shields.io/github/languages/top/rh-id/a-medic-log)
 ![Downloads](https://img.shields.io/github/downloads/rh-id/a-medic-log/total)
+![GitHub release (by tag)](https://img.shields.io/github/downloads/rh-id/a-medic-log/latest/total)
 ![Release](https://img.shields.io/github/v/release/rh-id/a-medic-log)
 ![Android CI](https://github.com/rh-id/a-medic-log/actions/workflows/gradlew-build.yml/badge.svg)
 ![Release Build](https://github.com/rh-id/a-medic-log/actions/workflows/android-release.yml/badge.svg)
