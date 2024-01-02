@@ -37,6 +37,9 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     namespace 'm.co.rh.id.a_medic_log.base'
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
