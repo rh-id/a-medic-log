@@ -77,12 +77,12 @@ graph TD
         subgraph "UI Layer"
             Act[MainActivity]
             Nav[Navigator]
-            View[StatefulView (Page)]
+            View["StatefulView (Page)"]
         end
 
         subgraph "Logic Layer"
-            Cmd[Command (Business Logic)]
-            Notif[Notifier (Event Bus)]
+            Cmd["Command (Business Logic)"]
+            Notif["Notifier (Event Bus)"]
         end
     end
 
