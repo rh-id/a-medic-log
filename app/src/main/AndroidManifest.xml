@@ -39,9 +39,9 @@
                 android:resource="@xml/filepaths" />
         </provider>
 
-        <receiver android:name=".app.receiver.NotificationDeleteReceiver" />
-        <receiver android:name=".app.receiver.NotificationTakeMedicineReceiver" />
-        <receiver android:name=".app.receiver.NotificationDisableMedicineReminderReceiver" />
+        <receiver android:name=".app.receiver.NotificationDeleteReceiver" android:exported="false" />
+        <receiver android:name=".app.receiver.NotificationTakeMedicineReceiver" android:exported="false" />
+        <receiver android:name=".app.receiver.NotificationDisableMedicineReminderReceiver" android:exported="false" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"
