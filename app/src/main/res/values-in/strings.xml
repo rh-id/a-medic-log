@@ -117,7 +117,7 @@
     <string name="share_text">Bagi teks</string>
     <string name="buy_developer_a_coffee">Belikan developer secangkir kopi</string>
     <string name="donation_pitch">Bantu developer, traktir secangkir kopi</string>
-    <string name="bitcoin">Bitcoin</string>
+    <string name="trakteer">Trakteer</string>
     <string name="donation_other_apps">Aplikasi lain oleh developer: %s</string>
     <string name="donation_thank_you">Terima kasih untuk bantuan anda</string>
     <string name="error_please_select_profile">Error, silakan pilih profil</string>
