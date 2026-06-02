@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineChangeNotifier;
@@ -32,11 +33,11 @@ public class NewMedicineCmd {
     }
 
     public Single<MedicineState> execute(MedicineState medicineState) {
-        return Single.fromFuture(mExecutorService.get().submit(() -> {
+        return Single.fromCallable(() -> {
             mMedicineDao.get().insertMedicine(medicineState.getMedicine(), medicineState.getMedicineReminderList());
             mMedicineChangeNotifier.get().medicineAdded(medicineState.clone());
             return medicineState;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     public boolean valid(MedicineState medicineState) {

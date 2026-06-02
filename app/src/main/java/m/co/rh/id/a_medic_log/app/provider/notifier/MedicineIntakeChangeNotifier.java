@@ -5,17 +5,18 @@ import java.io.Serializable;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 
 public class MedicineIntakeChangeNotifier {
-    private PublishSubject<MedicineIntake> mAddedMedicineSubject;
-    private PublishSubject<MedicineIntakeUpdatedEvent> mUpdatedMedicineSubject;
-    private PublishSubject<MedicineIntake> mDeletedMedicineSubject;
+    private Subject<MedicineIntake> mAddedMedicineSubject;
+    private Subject<MedicineIntakeUpdatedEvent> mUpdatedMedicineSubject;
+    private Subject<MedicineIntake> mDeletedMedicineSubject;
 
     public MedicineIntakeChangeNotifier() {
-        mAddedMedicineSubject = PublishSubject.create();
-        mUpdatedMedicineSubject = PublishSubject.create();
-        mDeletedMedicineSubject = PublishSubject.create();
+        mAddedMedicineSubject = PublishSubject.<MedicineIntake>create().toSerialized();
+        mUpdatedMedicineSubject = PublishSubject.<MedicineIntakeUpdatedEvent>create().toSerialized();
+        mDeletedMedicineSubject = PublishSubject.<MedicineIntake>create().toSerialized();
     }
 
     public void medicineIntakeAdded(MedicineIntake medicineIntake) {

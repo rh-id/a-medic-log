@@ -5,6 +5,7 @@ import android.content.Context;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
 import m.co.rh.id.a_medic_log.base.entity.Note;
@@ -28,13 +29,16 @@ public class DeleteNoteCmd {
     }
 
     public Single<NoteState> execute(Note note) {
-        return Single.fromFuture(mExecutorService.get().submit(() -> {
+        return Single.fromCallable(() -> {
             NoteState noteState = new NoteState();
             noteState.updateNote(note.clone());
-            noteState = mNoteQueryCmd.get().queryNoteInfo(noteState).blockingGet();
-            mNoteDao.get().deleteNote(noteState);
-            mNoteChangeNotifier.get().noteDeleted(noteState);
             return noteState;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService.get()))
+        .flatMap(noteState -> mNoteQueryCmd.get().queryNoteInfo(noteState)
+                .flatMap(fullNoteState -> Single.fromCallable(() -> {
+                    mNoteDao.get().deleteNote(fullNoteState);
+                    mNoteChangeNotifier.get().noteDeleted(fullNoteState);
+                    return fullNoteState;
+                }).subscribeOn(Schedulers.from(mExecutorService.get()))));
     }
 }

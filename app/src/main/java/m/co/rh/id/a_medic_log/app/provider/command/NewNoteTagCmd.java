@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteTagChangeNotifier;
@@ -30,11 +31,11 @@ public class NewNoteTagCmd {
     }
 
     public Single<NoteTag> execute(NoteTag noteTag) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             mNoteDao.insertNoteTag(noteTag);
             mNoteTagChangeNotifier.noteTagAdded(noteTag);
             return noteTag;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public boolean valid(NoteTag noteTag) {

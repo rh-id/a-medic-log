@@ -162,7 +162,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
                         .subscribe(medicineReminders -> mMedicineReminderRecyclerViewAdapter.notifyItemRefreshed()));
         mRxDisposer.add("createView_onMedicineReminderAdded",
                 mMedicineReminderChangeNotifier.getAddedMedicineReminder()
-                        .observeOn(Schedulers.from(mExecutorService))
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(medicineReminder -> {
                             if (isUpdate() && shouldSave()) {
                                 mMedicineState.addMedicineReminder(medicineReminder);
@@ -170,7 +170,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
                         }));
         mRxDisposer.add("createView_onMedicineReminderUpdated",
                 mMedicineReminderChangeNotifier.getUpdatedMedicineReminder()
-                        .observeOn(Schedulers.from(mExecutorService))
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(updateMedicineReminderEvent -> {
                             if (isUpdate() && shouldSave()) {
                                 mMedicineState.updateMedicineReminder(updateMedicineReminderEvent.getAfter());
@@ -178,7 +178,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
                         }));
         mRxDisposer.add("createView_onMedicineReminderDeleted",
                 mMedicineReminderChangeNotifier.getDeletedMedicineReminder()
-                        .observeOn(Schedulers.from(mExecutorService))
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(medicineReminder -> {
                             if (isUpdate() && shouldSave()) {
                                 mMedicineState.deleteMedicineReminder(medicineReminder);

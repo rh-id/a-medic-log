@@ -5,6 +5,7 @@ import android.content.Context;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineChangeNotifier;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
@@ -25,10 +26,10 @@ public class DeleteMedicineCmd {
     }
 
     public Single<MedicineState> execute(MedicineState medicineState) {
-        return Single.fromFuture(mExecutorService.get().submit(() -> {
+        return Single.fromCallable(() -> {
             mMedicineDao.get().deleteMedicineByMedicineId(medicineState.getMedicineId());
             mMedicineChangeNotifier.get().medicineDeleted(medicineState.clone());
             return medicineState;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 }

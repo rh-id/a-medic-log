@@ -1,25 +1,22 @@
 package m.co.rh.id.a_medic_log.base.state;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
-import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 
 public class MedicineState implements Serializable, Cloneable {
-    private transient BehaviorSubject<Medicine> mMedicineSubject;
-    private transient BehaviorSubject<ArrayList<MedicineReminder>> mMedicineReminderListSubject;
+    private SerialBehaviorSubject<Medicine> mMedicineSubject;
+    private SerialBehaviorSubject<ArrayList<MedicineReminder>> mMedicineReminderListSubject;
 
     public MedicineState() {
-        mMedicineSubject = BehaviorSubject.createDefault(new Medicine());
-        mMedicineReminderListSubject = BehaviorSubject.createDefault(new ArrayList<>());
+        mMedicineSubject = new SerialBehaviorSubject<>(new Medicine());
+        mMedicineReminderListSubject = new SerialBehaviorSubject<>(new ArrayList<>());
     }
 
     public void setNoteId(long noteId) {
@@ -51,24 +48,11 @@ public class MedicineState implements Serializable, Cloneable {
     }
 
     public Flowable<Medicine> getMedicineFlow() {
-        return Flowable.fromObservable(mMedicineSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mMedicineSubject.getSubject(), BackpressureStrategy.BUFFER);
     }
 
     public Flowable<ArrayList<MedicineReminder>> getMedicineReminderListFlow() {
-        return Flowable.fromObservable(mMedicineReminderListSubject, BackpressureStrategy.BUFFER);
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeObject(mMedicineSubject.getValue());
-        out.writeObject(mMedicineReminderListSubject.getValue());
-    }
-
-    @SuppressWarnings("unchecked")
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        Medicine medicine = (Medicine) in.readObject();
-        ArrayList<MedicineReminder> medicineReminders = (ArrayList<MedicineReminder>) in.readObject();
-        mMedicineSubject = BehaviorSubject.createDefault(medicine);
-        mMedicineReminderListSubject = BehaviorSubject.createDefault(medicineReminders);
+        return Flowable.fromObservable(mMedicineReminderListSubject.getSubject(), BackpressureStrategy.BUFFER);
     }
 
     public String getMedicineName() {

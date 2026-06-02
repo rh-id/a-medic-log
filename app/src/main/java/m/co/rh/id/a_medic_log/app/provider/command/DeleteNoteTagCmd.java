@@ -5,6 +5,7 @@ import android.content.Context;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteTagChangeNotifier;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
@@ -24,10 +25,10 @@ public class DeleteNoteTagCmd {
     }
 
     public Single<NoteTag> execute(NoteTag noteTag) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             mNoteDao.delete(noteTag);
             mNoteTagChangeNotifier.noteTagDeleted(noteTag);
             return noteTag;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 }

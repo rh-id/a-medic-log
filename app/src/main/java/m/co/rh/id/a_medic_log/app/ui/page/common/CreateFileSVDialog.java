@@ -18,6 +18,7 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Constants;
 import m.co.rh.id.a_medic_log.base.provider.FileHelper;
@@ -127,9 +128,10 @@ public class CreateFileSVDialog extends StatefulViewDialog<Activity> implements 
     }
 
     private void returnResult(Uri fullPhotoUri) {
-        mCompositeDisposable.add(Single.fromFuture(mExecutorService.submit(() -> mFileHelper
+        mCompositeDisposable.add(Single.fromCallable(() -> mFileHelper
                         .createImageTempFile(fullPhotoUri))
-                ).observeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.from(mExecutorService))
+                .observeOn(AndroidSchedulers.mainThread())
                         .subscribe((file, throwable) -> {
                             if (throwable != null) {
                                 if (throwable.getCause() != null) {

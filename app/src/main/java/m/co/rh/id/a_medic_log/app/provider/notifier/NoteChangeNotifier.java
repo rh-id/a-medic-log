@@ -5,17 +5,18 @@ import java.io.Serializable;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 
 public class NoteChangeNotifier {
-    private PublishSubject<NoteState> mAddedNoteSubject;
-    private PublishSubject<NoteUpdatedEvent> mUpdatedNoteSubject;
-    private PublishSubject<NoteState> mDeletedNoteSubject;
+    private Subject<NoteState> mAddedNoteSubject;
+    private Subject<NoteUpdatedEvent> mUpdatedNoteSubject;
+    private Subject<NoteState> mDeletedNoteSubject;
 
     public NoteChangeNotifier() {
-        mAddedNoteSubject = PublishSubject.create();
-        mUpdatedNoteSubject = PublishSubject.create();
-        mDeletedNoteSubject = PublishSubject.create();
+        mAddedNoteSubject = PublishSubject.<NoteState>create().toSerialized();
+        mUpdatedNoteSubject = PublishSubject.<NoteUpdatedEvent>create().toSerialized();
+        mDeletedNoteSubject = PublishSubject.<NoteState>create().toSerialized();
     }
 
     public void noteAdded(NoteState noteState) {

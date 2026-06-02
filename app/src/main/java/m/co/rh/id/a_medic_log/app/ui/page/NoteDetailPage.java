@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
@@ -328,48 +329,68 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         mRxDisposer.add("createView_onNoteAttachmentFileAdded",
                 mNoteAttachmentFileChangeNotifier.getAddedNoteAttachmentFile()
                         .observeOn(Schedulers.from(mExecutorService))
-                        .subscribe(noteAttachmentFile ->
-                        {
+                        .flatMapSingle(noteAttachmentFile -> {
                             if (isUpdate()) {
-                                mQueryNoteCmd.queryNoteAttachmentInfo(mNoteState);
+                                return mQueryNoteCmd.queryNoteAttachmentInfo(mNoteState);
                             }
-                        }));
+                            return Single.just(mNoteState.getNoteAttachmentStates());
+                        })
+                        .subscribe(
+                                noteAttachmentStates -> {},
+                                throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)
+                        ));
         mRxDisposer.add("createView_onNoteAttachmentFileDeleted",
                 mNoteAttachmentFileChangeNotifier.getDeletedNoteAttachmentFile()
                         .observeOn(Schedulers.from(mExecutorService))
-                        .subscribe(noteAttachmentFile ->
-                        {
+                        .flatMapSingle(noteAttachmentFile -> {
                             if (isUpdate()) {
-                                mQueryNoteCmd.queryNoteAttachmentInfo(mNoteState);
+                                return mQueryNoteCmd.queryNoteAttachmentInfo(mNoteState);
                             }
-                        }));
+                            return Single.just(mNoteState.getNoteAttachmentStates());
+                        })
+                        .subscribe(
+                                noteAttachmentStates -> {},
+                                throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)
+                        ));
         mRxDisposer.add("createView_onMedicineReminderAdded",
                 mMedicineReminderChangeNotifier.getAddedMedicineReminder()
                         .observeOn(Schedulers.from(mExecutorService))
-                        .subscribe(medicineReminder ->
-                        {
+                        .flatMapSingle(medicineReminder -> {
                             if (isUpdate()) {
-                                mQueryNoteCmd.queryMedicineInfo(mNoteState);
+                                return mQueryNoteCmd.queryMedicineInfo(mNoteState);
                             }
-                        }));
+                            return Single.just(mNoteState.getMedicineList());
+                        })
+                        .subscribe(
+                                medicineStates -> {},
+                                throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)
+                        ));
         mRxDisposer.add("createView_onMedicineReminderUpdated",
                 mMedicineReminderChangeNotifier.getUpdatedMedicineReminder()
                         .observeOn(Schedulers.from(mExecutorService))
-                        .subscribe(medicineReminder ->
-                        {
+                        .flatMapSingle(medicineReminder -> {
                             if (isUpdate()) {
-                                mQueryNoteCmd.queryMedicineInfo(mNoteState);
+                                return mQueryNoteCmd.queryMedicineInfo(mNoteState);
                             }
-                        }));
+                            return Single.just(mNoteState.getMedicineList());
+                        })
+                        .subscribe(
+                                medicineStates -> {},
+                                throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)
+                        ));
         mRxDisposer.add("createView_onMedicineReminderDeleted",
                 mMedicineReminderChangeNotifier.getDeletedMedicineReminder()
                         .observeOn(Schedulers.from(mExecutorService))
-                        .subscribe(medicineReminder ->
-                        {
+                        .flatMapSingle(medicineReminder -> {
                             if (isUpdate()) {
-                                mQueryNoteCmd.queryMedicineInfo(mNoteState);
+                                return mQueryNoteCmd.queryMedicineInfo(mNoteState);
                             }
-                        }));
+                            return Single.just(mNoteState.getMedicineList());
+                        })
+                        .subscribe(
+                                medicineStates -> {},
+                                throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)
+                        ));
         return rootLayout;
     }
 
@@ -597,8 +618,9 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                 boolean isUpdate = isUpdate();
                 mSvProvider.get(RxDisposer.class)
                         .add("onMenuItemClick_newNoteCmd.execute",
-                                mNewNoteCmd.execute(mNoteState)
-                                        .subscribe((noteState, throwable) -> {
+mNewNoteCmd.execute(mNoteState)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((noteState, throwable) -> {
                                             String errorMessage;
                                             String successMessage;
                                             if (isUpdate) {

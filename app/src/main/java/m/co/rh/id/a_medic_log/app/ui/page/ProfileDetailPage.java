@@ -168,8 +168,9 @@ public class ProfileDetailPage extends StatefulView<Activity> implements Require
                 Context context = mSvProvider.getContext();
                 mSvProvider.get(RxDisposer.class)
                         .add("onMenuItemClick_newProfileCmd.execute",
-                                mNewProfileCmd.execute(mProfile)
-                                        .subscribe((profile, throwable) -> {
+                            mNewProfileCmd.execute(mProfile)
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe((profile, throwable) -> {
                                             String errorMessage;
                                             String successMessage;
                                             if (isUpdate()) {

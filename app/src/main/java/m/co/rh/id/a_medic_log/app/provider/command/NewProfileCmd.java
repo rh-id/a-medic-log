@@ -7,6 +7,7 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.notifier.ProfileChangeNotifier;
@@ -31,11 +32,11 @@ public class NewProfileCmd {
     }
 
     public Single<Profile> execute(Profile profile) {
-        return Single.fromFuture(mExecutorService.get().submit(() -> {
+        return Single.fromCallable(() -> {
             mProfileDao.get().insertProfile(profile);
             mProfileChangeNotifier.get().profileAdded(profile);
             return profile;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 
     public boolean valid(Profile profile) {

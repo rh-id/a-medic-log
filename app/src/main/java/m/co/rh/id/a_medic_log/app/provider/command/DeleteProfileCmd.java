@@ -5,6 +5,7 @@ import android.content.Context;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.app.provider.notifier.ProfileChangeNotifier;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
@@ -25,10 +26,10 @@ public class DeleteProfileCmd {
     }
 
     public Single<Profile> execute(Profile profile) {
-        return Single.fromFuture(mExecutorService.get().submit(() -> {
+        return Single.fromCallable(() -> {
             mProfileDao.get().delete(profile);
             mProfileChangeNotifier.get().profileDeleted(profile);
             return profile;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 }

@@ -7,6 +7,7 @@ import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
@@ -36,17 +37,17 @@ public class QueryNoteCmd {
     }
 
     public Single<NoteState> queryNoteInfo(long noteId) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             Note note = mNoteDao.findNoteById(noteId);
             NoteState noteState = new NoteState();
             noteState.updateNote(note);
-            noteState = queryNoteInfo(noteState).blockingGet();
             return noteState;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService))
+        .flatMap(this::queryNoteInfo);
     }
 
     public Single<NoteState> queryNoteInfo(NoteState noteState) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             Long noteId = noteState.getNoteId();
             if (noteId == null) return noteState;
             Note note = mNoteDao.findNoteById(noteId);
@@ -56,7 +57,7 @@ public class QueryNoteCmd {
             queryNoteAttachmentStateList(noteState);
             queryMedicineStateList(noteState);
             return noteState;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     private void queryMedicineStateList(NoteState noteState) {
@@ -92,28 +93,28 @@ public class QueryNoteCmd {
     }
 
     public Single<List<NoteAttachmentState>> queryNoteAttachmentInfo(NoteState noteState) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             queryNoteAttachmentStateList(noteState);
-            return noteState.getNoteAttachmentStates();
-        }));
+            return (List<NoteAttachmentState>) noteState.getNoteAttachmentStates();
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<List<MedicineState>> queryMedicineInfo(NoteState noteState) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             queryMedicineStateList(noteState);
-            return noteState.getMedicineList();
-        }));
+            return (List<MedicineState>) noteState.getMedicineList();
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<TreeSet<NoteTag>> queryNoteTag(long noteId) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             List<NoteTag> noteTags = mNoteDao.findNoteTagsByNoteId(noteId);
             return new TreeSet<>(noteTags);
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<LinkedHashSet<String>> searchNoteTag(String search) {
-        return Single.fromFuture(mExecutorService.submit(() ->
+        return Single.fromCallable(() ->
         {
             LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>();
             List<NoteTag> noteTags = mNoteDao.searchNoteTag(search);
@@ -123,11 +124,11 @@ public class QueryNoteCmd {
                 }
             }
             return linkedHashSet;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<String> createShareMedicineText(NoteState mNoteState) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             Long profileId = mNoteState.getProfileId();
             Profile profile;
             if (profileId != null) {
@@ -153,6 +154,6 @@ public class QueryNoteCmd {
                 }
             }
             return stringBuilder.toString();
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 }

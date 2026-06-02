@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
@@ -60,7 +61,7 @@ public class AppBarSV extends StatefulView<Activity> implements Externalizable, 
         mSvProvider = BaseApplication.of(activity).getProvider().get(StatefulViewProvider.class);
         Toolbar toolbar = view.findViewById(R.id.toolbar);
         mSvProvider.get(RxDisposer.class).add("updateTitle",
-                mUpdateTitle.subscribe(toolbar::setTitle));
+                mUpdateTitle.observeOn(AndroidSchedulers.mainThread()).subscribe(toolbar::setTitle));
         if (isInitialRoute()) {
             toolbar.setNavigationIcon(R.drawable.ic_menu_white);
         } else {

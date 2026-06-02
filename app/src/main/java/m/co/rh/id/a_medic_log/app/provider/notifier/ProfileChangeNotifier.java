@@ -3,17 +3,18 @@ package m.co.rh.id.a_medic_log.app.provider.notifier;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 
 public class ProfileChangeNotifier {
-    private PublishSubject<Profile> mAddedProfileSubject;
-    private PublishSubject<Profile> mUpdatedProfileSubject;
-    private PublishSubject<Profile> mDeletedProfileSubject;
+    private Subject<Profile> mAddedProfileSubject;
+    private Subject<Profile> mUpdatedProfileSubject;
+    private Subject<Profile> mDeletedProfileSubject;
 
     public ProfileChangeNotifier() {
-        mAddedProfileSubject = PublishSubject.create();
-        mUpdatedProfileSubject = PublishSubject.create();
-        mDeletedProfileSubject = PublishSubject.create();
+        mAddedProfileSubject = PublishSubject.<Profile>create().toSerialized();
+        mUpdatedProfileSubject = PublishSubject.<Profile>create().toSerialized();
+        mDeletedProfileSubject = PublishSubject.<Profile>create().toSerialized();
     }
 
     public void profileAdded(Profile profile) {

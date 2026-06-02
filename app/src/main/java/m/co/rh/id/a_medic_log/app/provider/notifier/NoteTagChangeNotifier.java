@@ -3,15 +3,16 @@ package m.co.rh.id.a_medic_log.app.provider.notifier;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 
 public class NoteTagChangeNotifier {
-    private PublishSubject<NoteTag> mAddedNoteTagSubject;
-    private PublishSubject<NoteTag> mDeletedNoteTagSubject;
+    private Subject<NoteTag> mAddedNoteTagSubject;
+    private Subject<NoteTag> mDeletedNoteTagSubject;
 
     public NoteTagChangeNotifier() {
-        mAddedNoteTagSubject = PublishSubject.create();
-        mDeletedNoteTagSubject = PublishSubject.create();
+        mAddedNoteTagSubject = PublishSubject.<NoteTag>create().toSerialized();
+        mDeletedNoteTagSubject = PublishSubject.<NoteTag>create().toSerialized();
     }
 
     public void noteTagAdded(NoteTag noteTag) {

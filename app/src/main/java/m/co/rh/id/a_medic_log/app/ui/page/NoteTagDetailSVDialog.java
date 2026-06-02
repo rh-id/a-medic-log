@@ -142,6 +142,7 @@ public class NoteTagDetailSVDialog extends StatefulViewDialog<Activity> implemen
             if (shouldSave()) {
                 if (mNewNoteTagCmd.valid(mNoteTag.getValue())) {
                     mRxDisposer.add("onClick_newNoteTag", mNewNoteTagCmd.execute(mNoteTag.getValue())
+                            .observeOn(AndroidSchedulers.mainThread())
                             .subscribe((noteTag, throwable) -> {
                                 Context context = mSvProvider.getContext();
                                 String success = context.getString(R.string.success_adding_tag);

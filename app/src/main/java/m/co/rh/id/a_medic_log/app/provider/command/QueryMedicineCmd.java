@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
@@ -21,12 +22,12 @@ public class QueryMedicineCmd {
     }
 
     public Single<MedicineIntake> lastMedicineIntake(long medicineId) {
-        return Single.fromFuture(mExecutorService.submit(() ->
-                mMedicineDao.findLastMedicineIntake(medicineId)));
+        return Single.fromCallable(() ->
+                mMedicineDao.findLastMedicineIntake(medicineId)).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<LinkedHashSet<String>> searchMedicineIntakeDescription(String search) {
-        return Single.fromFuture(mExecutorService.submit(() ->
+        return Single.fromCallable(() ->
         {
             LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>();
             List<MedicineIntake> medicineIntakes = mMedicineDao.searchMedicineIntakeDescription(search);
@@ -36,11 +37,11 @@ public class QueryMedicineCmd {
                 }
             }
             return linkedHashSet;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<LinkedHashSet<String>> searchMedicineName(String search) {
-        return Single.fromFuture(mExecutorService.submit(() ->
+        return Single.fromCallable(() ->
         {
             LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>();
             List<Medicine> medicines = mMedicineDao.searchMedicineName(search);
@@ -50,11 +51,11 @@ public class QueryMedicineCmd {
                 }
             }
             return linkedHashSet;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<LinkedHashSet<String>> searchMedicineReminderMessage(String search) {
-        return Single.fromFuture(mExecutorService.submit(() ->
+        return Single.fromCallable(() ->
         {
             LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>();
             List<MedicineReminder> medicineReminders = mMedicineDao.searchMedicineReminderMessage(search);
@@ -64,6 +65,6 @@ public class QueryMedicineCmd {
                 }
             }
             return linkedHashSet;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 }

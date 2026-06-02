@@ -22,6 +22,7 @@ import java.util.concurrent.Future;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
@@ -179,6 +180,7 @@ public class NoteAttachmentDetailPage extends StatefulView<Activity> implements 
                 if (mNewNoteAttachmentCmd.valid(mNoteAttachmentState)) {
                     mRxDisposer.add("onMenuItemClick_save",
                             mNewNoteAttachmentCmd.execute(mNoteAttachmentState)
+                                    .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe((noteAttachmentState, throwable) -> {
                                         if (throwable != null) {
                                             mLogger.e(TAG, throwable.getMessage(), throwable);
@@ -221,46 +223,35 @@ public class NoteAttachmentDetailPage extends StatefulView<Activity> implements 
 
     private void addNoteAttachmentFile(File file) {
         mRxDisposer.add("addNoteAttachmentFile",
-                Single.fromFuture(mExecutorService.submit(() -> {
+                Single.fromCallable(() -> {
                     String fileName = file.getName();
                     Future<File> imageFile = mExecutorService.submit(() -> mFileHelper.createNoteAttachmentImage(Uri.fromFile(file), fileName));
                     Future<File> thumbnailFile = mExecutorService.submit(() -> mFileHelper.createNoteAttachmentThumbnail(Uri.fromFile(file), fileName));
                     NoteAttachmentFile noteAttachmentFile = new NoteAttachmentFile();
                     noteAttachmentFile.fileName = fileName;
-                    thumbnailFile.get(); // wait till finish
-                    imageFile.get(); // wait till finish
+                    thumbnailFile.get();
+                    imageFile.get();
                     return noteAttachmentFile;
-                })).observeOn(AndroidSchedulers.mainThread())
-                        .subscribe((noteAttachmentFile, throwable) -> {
-                            if (throwable != null) {
-                                Throwable cause = throwable.getCause();
-                                if (cause == null) {
-                                    cause = throwable;
-                                }
-                                mLogger.e(TAG, cause.getMessage(), cause);
-                            } else {
-                                if (isUpdate()) {
-                                    noteAttachmentFile.attachmentId = mNoteAttachmentState.getId();
-                                    mRxDisposer.add("addNoteAttachmentFile_newNoteAttachmentFile",
-                                            mNewNoteAttachmentFileCmd.execute(noteAttachmentFile)
-                                                    .observeOn(AndroidSchedulers.mainThread())
-                                                    .subscribe((savedNoteAttachmentFile, newNoteAttachmentFileThrowable) -> {
-                                                        if (newNoteAttachmentFileThrowable != null) {
-                                                            Throwable cause = newNoteAttachmentFileThrowable.getCause();
-                                                            if (cause == null) {
-                                                                cause = newNoteAttachmentFileThrowable;
-                                                            }
-                                                            mLogger.e(TAG, cause.getMessage(), cause);
-                                                        } else {
-                                                            mNoteAttachmentFileRecyclerViewAdapter.notifyItemAdded(savedNoteAttachmentFile);
-                                                        }
-                                                    }));
-
-                                } else {
-                                    mNoteAttachmentFileRecyclerViewAdapter.notifyItemAdded(noteAttachmentFile);
-                                }
-                            }
-                        }));
+                }).subscribeOn(Schedulers.from(mExecutorService))
+                .flatMap(noteAttachmentFile -> {
+                    if (isUpdate()) {
+                        noteAttachmentFile.attachmentId = mNoteAttachmentState.getId();
+                        return mNewNoteAttachmentFileCmd.execute(noteAttachmentFile);
+                    }
+                    return Single.just(noteAttachmentFile);
+                })
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((noteAttachmentFile, throwable) -> {
+                    if (throwable != null) {
+                        Throwable cause = throwable.getCause();
+                        if (cause == null) {
+                            cause = throwable;
+                        }
+                        mLogger.e(TAG, cause.getMessage(), cause);
+                    } else {
+                        mNoteAttachmentFileRecyclerViewAdapter.notifyItemAdded(noteAttachmentFile);
+                    }
+                }));
     }
 
     @Override
