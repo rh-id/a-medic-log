@@ -8,3 +8,14 @@
 .externalNativeBuild
 .cxx
 local.properties
+*.jks
+*.keystore
+*.p12
+*.p8
+signing.properties
+keystore.properties
+.env
+.env.local
+*.apk
+*.aab
+*.ap_

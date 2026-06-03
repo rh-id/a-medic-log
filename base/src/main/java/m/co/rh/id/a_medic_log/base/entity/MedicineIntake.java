@@ -3,6 +3,7 @@ package m.co.rh.id.a_medic_log.base.entity;
 import androidx.annotation.NonNull;
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
@@ -14,7 +15,9 @@ import m.co.rh.id.a_medic_log.base.room.converter.Converter;
 /**
  * Medicine intake history
  */
-@Entity(tableName = "medicine_intake")
+@Entity(tableName = "medicine_intake", indices = {
+        @Index(value = "medicine_id")
+})
 public class MedicineIntake implements Serializable, Cloneable {
     @PrimaryKey(autoGenerate = true)
     public long id;
@@ -51,6 +54,36 @@ public class MedicineIntake implements Serializable, Cloneable {
         createdDateTime = date;
         updatedDateTime = date;
         takenDateTime = date;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        MedicineIntake that = (MedicineIntake) o;
+
+        if (id != that.id) return false;
+        if (medicineId != null ? !medicineId.equals(that.medicineId) : that.medicineId != null)
+            return false;
+        if (description != null ? !description.equals(that.description) : that.description != null)
+            return false;
+        if (takenDateTime != null ? !takenDateTime.equals(that.takenDateTime) : that.takenDateTime != null)
+            return false;
+        if (createdDateTime != null ? !createdDateTime.equals(that.createdDateTime) : that.createdDateTime != null)
+            return false;
+        return updatedDateTime != null ? updatedDateTime.equals(that.updatedDateTime) : that.updatedDateTime == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = (int) (id ^ (id >>> 32));
+        result = 31 * result + (medicineId != null ? medicineId.hashCode() : 0);
+        result = 31 * result + (description != null ? description.hashCode() : 0);
+        result = 31 * result + (takenDateTime != null ? takenDateTime.hashCode() : 0);
+        result = 31 * result + (createdDateTime != null ? createdDateTime.hashCode() : 0);
+        result = 31 * result + (updatedDateTime != null ? updatedDateTime.hashCode() : 0);
+        return result;
     }
 
     @NonNull

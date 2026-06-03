@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 import java.io.IOException;
 
 import m.co.rh.id.a_medic_log.base.room.DbMigration;
+import m.co.rh.id.a_medic_log.base.room.converter.LinkedHashSetConverter;
 
 @RunWith(AndroidJUnit4.class)
 public class DbMigrationTest {
@@ -42,7 +43,9 @@ public class DbMigrationTest {
                 InstrumentationRegistry.getInstrumentation().getTargetContext(),
                 AppDatabase.class,
                 TEST_DB)
-                .addMigrations(DbMigration.getAll()).build();
+                .addMigrations(DbMigration.getAll())
+                .addTypeConverter(new LinkedHashSetConverter(null))
+                .build();
         appDb.getOpenHelper().getWritableDatabase();
         appDb.close();
     }

@@ -2,6 +2,7 @@ package m.co.rh.id.a_medic_log.base.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
@@ -10,7 +11,10 @@ import java.util.Date;
 
 import m.co.rh.id.a_medic_log.base.room.converter.Converter;
 
-@Entity(tableName = "note")
+@Entity(tableName = "note", indices = {
+        @Index(value = "profile_id"),
+        @Index(value = "entry_date_time")
+})
 public class Note implements Serializable, Cloneable {
     @PrimaryKey(autoGenerate = true)
     public Long id;

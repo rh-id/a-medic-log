@@ -26,6 +26,7 @@ import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.room.DbMigration;
+import m.co.rh.id.a_medic_log.base.room.converter.LinkedHashSetConverter;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 
@@ -62,6 +63,7 @@ public class NoteDaoTest {
                 AppDatabase.class,
                 TEST_DB)
                 .addMigrations(DbMigration.getAll())
+                .addTypeConverter(new LinkedHashSetConverter(null))
                 .build();
     }
 

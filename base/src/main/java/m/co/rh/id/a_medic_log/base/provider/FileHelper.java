@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
+import android.os.ParcelFileDescriptor;
 
 import androidx.exifinterface.media.ExifInterface;
 
@@ -75,21 +76,17 @@ public class FileHelper {
 
         if (content != null) {
             ContentResolver cr = mAppContext.getContentResolver();
-            InputStream inputStream = cr.openInputStream(content);
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
-
-            FileOutputStream fileOutputStream = new FileOutputStream(tmpFile);
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream);
-            byte[] buff = new byte[2048];
-            int b = bufferedInputStream.read(buff);
-            while (b != -1) {
-                bufferedOutputStream.write(buff);
-                b = bufferedInputStream.read(buff);
+            try (InputStream inputStream = cr.openInputStream(content);
+                 BufferedInputStream bufferedInputStream = new BufferedInputStream(inputStream);
+                 FileOutputStream fileOutputStream = new FileOutputStream(tmpFile);
+                 BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(fileOutputStream)) {
+                byte[] buff = new byte[2048];
+                int b = bufferedInputStream.read(buff);
+                while (b != -1) {
+                    bufferedOutputStream.write(buff);
+                    b = bufferedInputStream.read(buff);
+                }
             }
-            bufferedOutputStream.close();
-            fileOutputStream.close();
-            bufferedInputStream.close();
-            inputStream.close();
         }
         return tmpFile;
     }
@@ -175,19 +172,21 @@ public class FileHelper {
 
     private void copyImage(Uri content, File outFile, int width, int height) throws IOException {
         ContentResolver contentResolver = mAppContext.getContentResolver();
-        FileDescriptor fd = contentResolver.openFileDescriptor(
-                content, "r").getFileDescriptor();
-        InputStream fis = new FileInputStream(fd);
-        BitmapFactory.Options bmOptions = getBitmapOptionForCompression(fis, width, height);
-        OutputStream fileOutputStream = new BufferedOutputStream(
-                new FileOutputStream(outFile), 10240);
+        BitmapFactory.Options bmOptions;
+        try (ParcelFileDescriptor pfd = contentResolver.openFileDescriptor(content, "r")) {
+            try (InputStream fis = new FileInputStream(pfd.getFileDescriptor())) {
+                bmOptions = getBitmapOptionForCompression(fis, width, height);
+            }
+        }
         Bitmap bitmap = processExifAttr(mAppContext, content, bmOptions);
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream);
-        fileOutputStream.flush();
-        fileOutputStream.close();
+        try (OutputStream fileOutputStream = new BufferedOutputStream(
+                new FileOutputStream(outFile), 10240)) {
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream);
+            fileOutputStream.flush();
+        }
     }
 
-    private BitmapFactory.Options getBitmapOptionForCompression(InputStream fis, int width, int height) {
+    private BitmapFactory.Options getBitmapOptionForCompression(InputStream fis, int width, int height) throws IOException {
         BitmapFactory.Options bmOptions = new BitmapFactory.Options();
         bmOptions.inJustDecodeBounds = true;
         BitmapFactory.decodeStream(fis, null, bmOptions);
@@ -207,15 +206,16 @@ public class FileHelper {
 
     private Bitmap processExifAttr(Context context, Uri imageUri, BitmapFactory.Options bmOptions) throws IOException {
         ContentResolver contentResolver = context.getContentResolver();
-        FileDescriptor fd = contentResolver.openFileDescriptor(
-                imageUri, "r").getFileDescriptor();
-        ExifInterface exifInterface = new ExifInterface(fd);
-        int rotation = getRotation(exifInterface);
-
-        // get fd again
-        fd = contentResolver.openFileDescriptor(
-                imageUri, "r").getFileDescriptor();
-        Bitmap bitmap = BitmapFactory.decodeFileDescriptor(fd, null, bmOptions);
+        int rotation;
+        try (ParcelFileDescriptor pfd = contentResolver.openFileDescriptor(imageUri, "r")) {
+            ExifInterface exifInterface = new ExifInterface(pfd.getFileDescriptor());
+            rotation = getRotation(exifInterface);
+        }
+        Bitmap bitmap;
+        try (ParcelFileDescriptor pfd = contentResolver.openFileDescriptor(imageUri, "r")) {
+            FileDescriptor fd = pfd.getFileDescriptor();
+            bitmap = BitmapFactory.decodeFileDescriptor(fd, null, bmOptions);
+        }
         if (rotation != 0) {
             Matrix matrix = new Matrix();
             matrix.setRotate(rotation);

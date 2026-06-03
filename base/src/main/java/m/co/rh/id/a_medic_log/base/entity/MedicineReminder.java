@@ -2,6 +2,7 @@ package m.co.rh.id.a_medic_log.base.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
@@ -13,7 +14,9 @@ import java.util.LinkedHashSet;
 import m.co.rh.id.a_medic_log.base.room.converter.Converter;
 import m.co.rh.id.a_medic_log.base.room.converter.LinkedHashSetConverter;
 
-@Entity(tableName = "medicine_reminder")
+@Entity(tableName = "medicine_reminder", indices = {
+        @Index(value = "medicine_id")
+})
 public class MedicineReminder implements Serializable, Cloneable {
     @PrimaryKey(autoGenerate = true)
     public Long id;
@@ -87,6 +90,8 @@ public class MedicineReminder implements Serializable, Cloneable {
         if (reminderEnabled != null ? !reminderEnabled.equals(that.reminderEnabled) : that.reminderEnabled != null)
             return false;
         if (message != null ? !message.equals(that.message) : that.message != null) return false;
+        if (reminderDays != null ? !reminderDays.equals(that.reminderDays) : that.reminderDays != null)
+            return false;
         if (createdDateTime != null ? !createdDateTime.equals(that.createdDateTime) : that.createdDateTime != null)
             return false;
         return updatedDateTime != null ? updatedDateTime.equals(that.updatedDateTime) : that.updatedDateTime == null;
@@ -99,6 +104,7 @@ public class MedicineReminder implements Serializable, Cloneable {
         result = 31 * result + (startDateTime != null ? startDateTime.hashCode() : 0);
         result = 31 * result + (reminderEnabled != null ? reminderEnabled.hashCode() : 0);
         result = 31 * result + (message != null ? message.hashCode() : 0);
+        result = 31 * result + (reminderDays != null ? reminderDays.hashCode() : 0);
         result = 31 * result + (createdDateTime != null ? createdDateTime.hashCode() : 0);
         result = 31 * result + (updatedDateTime != null ? updatedDateTime.hashCode() : 0);
         return result;

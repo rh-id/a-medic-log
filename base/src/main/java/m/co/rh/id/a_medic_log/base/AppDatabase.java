@@ -2,6 +2,7 @@ package m.co.rh.id.a_medic_log.base;
 
 import androidx.room.Database;
 import androidx.room.RoomDatabase;
+import androidx.room.TypeConverters;
 
 import m.co.rh.id.a_medic_log.base.dao.AndroidNotificationDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
@@ -16,11 +17,13 @@ import m.co.rh.id.a_medic_log.base.entity.NoteAttachment;
 import m.co.rh.id.a_medic_log.base.entity.NoteAttachmentFile;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
+import m.co.rh.id.a_medic_log.base.room.converter.LinkedHashSetConverter;
 
 @Database(entities = {Profile.class, Note.class, NoteTag.class, NoteAttachment.class,
         NoteAttachmentFile.class, Medicine.class, MedicineReminder.class, MedicineIntake.class
         , AndroidNotification.class},
-        version = 3)
+        version = 4)
+@TypeConverters({LinkedHashSetConverter.class})
 public abstract class AppDatabase extends RoomDatabase {
 
     public abstract ProfileDao profileDao();

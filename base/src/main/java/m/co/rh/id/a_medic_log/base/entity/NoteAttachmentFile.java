@@ -2,6 +2,7 @@ package m.co.rh.id.a_medic_log.base.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
 
@@ -10,7 +11,9 @@ import java.util.Date;
 
 import m.co.rh.id.a_medic_log.base.room.converter.Converter;
 
-@Entity(tableName = "note_attachment_file")
+@Entity(tableName = "note_attachment_file", indices = {
+        @Index(value = "attachment_id")
+})
 public class NoteAttachmentFile implements Comparable<NoteAttachmentFile>, Serializable, Cloneable {
     @PrimaryKey(autoGenerate = true)
     public Long id;
