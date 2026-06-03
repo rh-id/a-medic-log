@@ -18,13 +18,13 @@ import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.function.Function;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineReminderCmd;
@@ -64,7 +64,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
 
     private transient TextWatcher mStartDateTimeTextWatcher;
     private transient TextWatcher mMessageTextWatcher;
-    private transient Function<String, Collection<String>> mSuggestionMessageQuery;
+    private transient Function<String, Single<LinkedHashSet<String>>> mSuggestionMessageQuery;
 
     @Override
     public void provideNavigator(INavigator navigator) {
@@ -100,7 +100,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
         }
         mAppBarSv.setMenuItemListener(this);
         initTextWatcher();
-        mSuggestionMessageQuery = s -> mQueryMedicineCmd.searchMedicineReminderMessage(s).blockingGet();
+        mSuggestionMessageQuery = s -> mQueryMedicineCmd.searchMedicineReminderMessage(s);
     }
 
     @Override

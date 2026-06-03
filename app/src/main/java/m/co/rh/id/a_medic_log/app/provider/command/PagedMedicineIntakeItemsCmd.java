@@ -1,7 +1,5 @@
 package m.co.rh.id.a_medic_log.app.provider.command;
 
-import android.content.Context;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -11,12 +9,14 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
 public class PagedMedicineIntakeItemsCmd {
-    private Context mAppContext;
+    private static final String TAG = PagedMedicineIntakeItemsCmd.class.getName();
     private ExecutorService mExecutorService;
     private MedicineDao mMedicineDao;
+    private ILogger mLogger;
     private Long mMedicineId;
     private int mLimit;
     private String mSearch;
@@ -24,9 +24,9 @@ public class PagedMedicineIntakeItemsCmd {
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
 
     public PagedMedicineIntakeItemsCmd(Provider provider) {
-        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mMedicineDao = provider.get(MedicineDao.class);
+        mLogger = provider.get(ILogger.class);
         mItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
         resetPage();
@@ -47,7 +47,8 @@ public class PagedMedicineIntakeItemsCmd {
                     List<MedicineIntake> dbList = mMedicineDao.searchMedicineIntakeDescription(mSearch);
                     mItemsSubject.onNext(new ArrayList<>(dbList));
                 } catch (Throwable throwable) {
-                    mItemsSubject.onError(throwable);
+                    mLogger.e(TAG, throwable.getMessage(), throwable);
+                    mItemsSubject.onNext(new ArrayList<>());
                 } finally {
                     mIsLoadingSubject.onNext(false);
                 }
@@ -84,7 +85,8 @@ public class PagedMedicineIntakeItemsCmd {
                 mItemsSubject.onNext(
                         loadItems());
             } catch (Throwable throwable) {
-                mItemsSubject.onError(throwable);
+                mLogger.e(TAG, throwable.getMessage(), throwable);
+                mItemsSubject.onNext(new ArrayList<>());
             } finally {
                 mIsLoadingSubject.onNext(false);
             }

@@ -15,12 +15,13 @@ import androidx.appcompat.widget.Toolbar;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.function.Function;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineIntakeCmd;
@@ -59,7 +60,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
 
     private transient TextWatcher mTakenDateTimeTextWatcher;
     private transient TextWatcher mDescriptionTextWatcher;
-    private transient Function<String, Collection<String>> mSuggestionQuery;
+    private transient Function<String, Single<LinkedHashSet<String>>> mSuggestionQuery;
 
     public MedicineIntakeDetailPage() {
         mAppBarSv = new AppBarSV(R.menu.page_medicine_intake_detail);
@@ -98,7 +99,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
         mAppBarSv.setMenuItemListener(this);
         initTextWatcher();
         mSuggestionQuery = s ->
-                mQueryMedicineCmd.searchMedicineIntakeDescription(s).blockingGet();
+                mQueryMedicineCmd.searchMedicineIntakeDescription(s);
     }
 
     @Override

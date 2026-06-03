@@ -1,7 +1,5 @@
 package m.co.rh.id.a_medic_log.app.provider.command;
 
-import android.content.Context;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -15,12 +13,14 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
 public class PagedNoteItemsCmd {
-    private Context mAppContext;
+    private static final String TAG = PagedNoteItemsCmd.class.getName();
     private ExecutorService mExecutorService;
     private NoteDao mNoteDao;
+    private ILogger mLogger;
     private Long mProfileId;
     private int mLimit;
     private String mSearch;
@@ -28,9 +28,9 @@ public class PagedNoteItemsCmd {
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
 
     public PagedNoteItemsCmd(Provider provider) {
-        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mNoteDao = provider.get(NoteDao.class);
+        mLogger = provider.get(ILogger.class);
         mItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
         resetPage();
@@ -62,7 +62,8 @@ public class PagedNoteItemsCmd {
                     }
                     mItemsSubject.onNext(resultList);
                 } catch (Throwable throwable) {
-                    mItemsSubject.onError(throwable);
+                    mLogger.e(TAG, throwable.getMessage(), throwable);
+                    mItemsSubject.onNext(new ArrayList<>());
                 } finally {
                     mIsLoadingSubject.onNext(false);
                 }
@@ -117,7 +118,8 @@ public class PagedNoteItemsCmd {
                 mItemsSubject.onNext(
                         loadItems());
             } catch (Throwable throwable) {
-                mItemsSubject.onError(throwable);
+                mLogger.e(TAG, throwable.getMessage(), throwable);
+                mItemsSubject.onNext(new ArrayList<>());
             } finally {
                 mIsLoadingSubject.onNext(false);
             }

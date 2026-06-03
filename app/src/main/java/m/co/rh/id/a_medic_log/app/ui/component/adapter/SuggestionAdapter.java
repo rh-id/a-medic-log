@@ -7,13 +7,16 @@ import android.widget.Filter;
 import androidx.annotation.NonNull;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.function.Function;
+
+import io.reactivex.rxjava3.core.Single;
 
 public class SuggestionAdapter extends ArrayAdapter<String> {
     private Filter mFilter;
-    private Function<String, Collection<String>> mQuery;
+    private Function<String, Single<LinkedHashSet<String>>> mQuery;
 
-    public SuggestionAdapter(@NonNull Context context, int resource, Function<String, Collection<String>> query) {
+    public SuggestionAdapter(@NonNull Context context, int resource, Function<String, Single<LinkedHashSet<String>>> query) {
         super(context, resource);
         mQuery = query;
         initFilter();
@@ -24,7 +27,7 @@ public class SuggestionAdapter extends ArrayAdapter<String> {
             @Override
             protected FilterResults performFiltering(CharSequence charSequence) {
                 if (charSequence == null) return null;
-                Collection<String> resultList = mQuery.apply(charSequence.toString());
+                Collection<String> resultList = mQuery.apply(charSequence.toString()).blockingGet();
                 FilterResults filterResults = new FilterResults();
                 filterResults.values = resultList;
                 filterResults.count = resultList.size();

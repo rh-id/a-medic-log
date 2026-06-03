@@ -16,6 +16,7 @@ import java.util.function.Function;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteTagCmd;
@@ -23,7 +24,6 @@ import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
-import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulViewDialog;
@@ -43,7 +43,7 @@ public class NoteTagDetailSVDialog extends StatefulViewDialog<Activity> implemen
     private transient QueryNoteCmd mQueryNoteCmd;
     private transient NewNoteTagCmd mNewNoteTagCmd;
     private transient TextWatcher mTagTextWatcher;
-    private transient Function<String, Collection<String>> mSuggestionQuery;
+    private transient Function<String, Single<LinkedHashSet<String>>> mSuggestionQuery;
 
     @Override
     public void provideNavRoute(NavRoute navRoute) {
@@ -85,18 +85,23 @@ public class NoteTagDetailSVDialog extends StatefulViewDialog<Activity> implemen
         };
         mSuggestionQuery = s ->
         {
-            LinkedHashSet<String> linkedHashSet = mQueryNoteCmd.searchNoteTag(s).blockingGet();
             Long noteId = getNoteId();
             if (noteId != null) {
-                NoteState noteState = mQueryNoteCmd.queryNoteInfo(noteId).blockingGet();
-                Collection<NoteTag> noteTagSet = noteState.getNoteTagSet();
-                if (!noteTagSet.isEmpty()) {
-                    for (NoteTag noteTag : noteTagSet) {
-                        linkedHashSet.remove(noteTag.tag);
-                    }
-                }
+                return mQueryNoteCmd.searchNoteTag(s)
+                        .flatMap(linkedHashSet ->
+                                mQueryNoteCmd.queryNoteInfo(noteId)
+                                        .map(noteState -> {
+                                            Collection<NoteTag> noteTagSet = noteState.getNoteTagSet();
+                                            if (!noteTagSet.isEmpty()) {
+                                                for (NoteTag noteTag : noteTagSet) {
+                                                    linkedHashSet.remove(noteTag.tag);
+                                                }
+                                            }
+                                            return linkedHashSet;
+                                        })
+                        );
             }
-            return linkedHashSet;
+            return mQueryNoteCmd.searchNoteTag(s);
         };
     }
 

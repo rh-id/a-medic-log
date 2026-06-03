@@ -16,12 +16,12 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
@@ -63,7 +63,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
     private transient UpdateMedicineReminderCmd mUpdateMedicineReminderCmd;
     private transient DeleteMedicineReminderCmd mDeleteMedicineReminderCmd;
     private transient MedicineReminderRecyclerViewAdapter mMedicineReminderRecyclerViewAdapter;
-    private transient Function<String, Collection<String>> mSuggestionQuery;
+    private transient Function<String, Single<LinkedHashSet<String>>> mSuggestionQuery;
 
     @NavInject
     private AppBarSV mAppBarSv;
@@ -120,7 +120,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
         mMedicineReminderRecyclerViewAdapter = new MedicineReminderRecyclerViewAdapter(mMedicineState,
                 this, this, this, mNavigator, this);
         mSuggestionQuery = s ->
-                mQueryMedicineCmd.searchMedicineName(s).blockingGet();
+                mQueryMedicineCmd.searchMedicineName(s);
     }
 
     @Override
