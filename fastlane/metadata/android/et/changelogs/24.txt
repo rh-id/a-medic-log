@@ -1,0 +1,18 @@
+Release 1.4.0+24
+
+Uued funktsioonid:
+* Lisatud 8 uut keeletõlget (saksa, prantsuse, itaalia, retoromaani, islandi, eesti, norra bokmål, norra nynorsk)
+* Uuendatud Java 17-le ja AGP 9.2.1-le
+
+Täiustused:
+* Suur arhitektuuri ümberkorraldamine - DAO-d jagatud fokusseeritud üksikolemite klassideks
+* Implementeeritud Repository muster parema vastutuste jaotamise jaoks
+* Lisatud andmebaasi võõrvõtme CASCADE piirangud
+* Lisatud andmebaasi indeksid parema päringujõudluse saavutamiseks
+* RxJava migreeritud fromCallable-ile ja lõimekindlatele Subject-idele
+
+Veaparandused:
+* Parandatud RxJava lõimimise probleemid
+* Parandatud ressursside lekid FileHelper-is
+* Parandatud vigade käsitlemine teavituse BroadcastReceivers-ites
+* Parandatud equals/hashCode MedicineReminder, NoteTag, MedicineIntake jaoks

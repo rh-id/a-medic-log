@@ -1,0 +1,18 @@
+Release 1.4.0+24
+
+Fitur Baru:
+* Menambahkan 8 terjemahan bahasa baru (Jerman, Prancis, Italia, Romansh, Islandia, Estonia, Norwegia Bokmål, Norwegia Nynorsk)
+* Peningkatan ke Java 17 dan AGP 9.2.1
+
+Peningkatan:
+* Refaktor arsitektur utama - membagi DAO menjadi kelas fokus satu entitas
+* Implementasi pola Repository untuk pemisahan tanggung jawab yang lebih baik
+* Menambahkan batasan foreign key CASCADE pada database
+* Menambahkan indeks database untuk performa kueri yang lebih baik
+* Migrasi RxJava ke fromCallable dan Subjects yang thread-safe
+
+Perbaikan Bug:
+* Memperbaiki masalah threading RxJava
+* Memperbaiki kebocoran sumber daya di FileHelper
+* Memperbaiki penanganan kesalahan di BroadcastReceivers notifikasi
+* Memperbaiki equals/hashCode untuk MedicineReminder, NoteTag, MedicineIntake

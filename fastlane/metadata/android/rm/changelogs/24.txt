@@ -1,0 +1,18 @@
+Release 1.4.0+24
+
+Nova funcziuns:
+* Agiuntà 8 novs translaziuns da linguas (tudestg, franzos, talian, rumantsch, islandais, estunais, norvegiais bokmål, norvegiais nynorsk)
+* Actualisà a Java 17 ed AGP 9.2.1
+
+Meglieraziuns:
+* Refactoring principal da l'architectura - dividì ils DAOs en classas focalisadas sin ina suletta entitad
+* Implementà il muster Repository per ina megliura separaziun da las responsabladads
+* Agiuntà restricziuns da clav externa CASCADE en la banca da datas
+* Agiuntà indices da banca da datas per ina megliura prestaziun da queries
+* Migrasziun da RxJava a fromCallable e Subjects thread-safe
+
+Correcziuns:
+* Corregì problems da threading da RxJava
+* Corregì leaks da resursas en FileHelper
+* Corregì la tractanza d'errurs en ils BroadcastReceivers da notificaziuns
+* Corregì equals/hashCode per MedicineReminder, NoteTag, MedicineIntake

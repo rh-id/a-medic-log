@@ -1,0 +1,18 @@
+Release 1.4.0+24
+
+Novità:
+* Aggiunte 8 nuove traduzioni linguistiche (tedesco, francese, italiano, romancio, islandese, estone, norvegese bokmål, norvegese nynorsk)
+* Aggiornamento a Java 17 e AGP 9.2.1
+
+Miglioramenti:
+* Importante ristrutturazione dell'architettura - suddivisione dei DAO in classi focalizzate su singola entità
+* Implementazione del pattern Repository per una migliore separazione delle responsabilità
+* Aggiunta vincoli di chiave esterna CASCADE nel database
+* Aggiunta indici del database per migliori prestazioni di query
+* Migrazione di RxJava a fromCallable e Subjects thread-safe
+
+Correzioni:
+* Correzione problemi di threading RxJava
+* Correzione perdite di risorse in FileHelper
+* Correzione gestione degli errori nei BroadcastReceivers di notifica
+* Correzione equals/hashCode per MedicineReminder, NoteTag, MedicineIntake
