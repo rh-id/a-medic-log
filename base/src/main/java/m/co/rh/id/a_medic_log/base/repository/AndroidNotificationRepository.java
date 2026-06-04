@@ -10,8 +10,8 @@ import m.co.rh.id.a_medic_log.base.entity.AndroidNotification;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
-public class AndroidNotificationRepo {
-    private static final String SHARED_PREFERENCES_NAME = "AndroidNotificationRepo";
+public class AndroidNotificationRepository {
+    private static final String SHARED_PREFERENCES_NAME = "AndroidNotificationRepository";
 
     private SharedPreferences mSharedPreferences;
     private ProviderValue<AndroidNotificationDao> mAndroidNotificationDao;
@@ -19,7 +19,7 @@ public class AndroidNotificationRepo {
     private AtomicInteger mRequestId;
     private String mRequestIdKey;
 
-    public AndroidNotificationRepo(Provider provider) {
+    public AndroidNotificationRepository(Provider provider) {
         mSharedPreferences = provider.getContext().getSharedPreferences(
                 SHARED_PREFERENCES_NAME, Context.MODE_PRIVATE);
         mAndroidNotificationDao = provider.lazyGet(AndroidNotificationDao.class);

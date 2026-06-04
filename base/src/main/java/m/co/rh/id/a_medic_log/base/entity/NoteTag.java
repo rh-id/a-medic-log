@@ -2,6 +2,7 @@ package m.co.rh.id.a_medic_log.base.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 
@@ -10,6 +11,11 @@ import java.io.Serializable;
 @Entity(tableName = "note_tag", indices = {
         @Index(value = "note_id"),
         @Index(value = "tag")
+}, foreignKeys = {
+        @ForeignKey(entity = Note.class,
+                parentColumns = "id",
+                childColumns = "note_id",
+                onDelete = ForeignKey.CASCADE)
 })
 public class NoteTag implements Comparable<NoteTag>, Serializable, Cloneable {
     @PrimaryKey(autoGenerate = true)

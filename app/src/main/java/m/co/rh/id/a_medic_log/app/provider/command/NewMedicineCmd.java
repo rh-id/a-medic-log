@@ -12,6 +12,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineChangeNotifier;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.repository.MedicineRepository;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.aprovider.Provider;
@@ -21,6 +22,7 @@ public class NewMedicineCmd {
     protected Context mAppContext;
     protected ProviderValue<ExecutorService> mExecutorService;
     protected ProviderValue<MedicineDao> mMedicineDao;
+    protected ProviderValue<MedicineRepository> mMedicineRepository;
     protected ProviderValue<MedicineChangeNotifier> mMedicineChangeNotifier;
     protected BehaviorSubject<String> mNameValidSubject;
 
@@ -28,13 +30,14 @@ public class NewMedicineCmd {
         mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mMedicineDao = provider.lazyGet(MedicineDao.class);
+        mMedicineRepository = provider.lazyGet(MedicineRepository.class);
         mMedicineChangeNotifier = provider.lazyGet(MedicineChangeNotifier.class);
         mNameValidSubject = BehaviorSubject.create();
     }
 
     public Single<MedicineState> execute(MedicineState medicineState) {
         return Single.fromCallable(() -> {
-            mMedicineDao.get().insertMedicine(medicineState.getMedicine(), medicineState.getMedicineReminderList());
+            mMedicineRepository.get().insertMedicine(medicineState.getMedicine(), medicineState.getMedicineReminderList());
             mMedicineChangeNotifier.get().medicineAdded(medicineState.clone());
             return medicineState;
         }).subscribeOn(Schedulers.from(mExecutorService.get()));

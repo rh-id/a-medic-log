@@ -12,6 +12,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineReminderChangeNotifier;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.repository.MedicineRepository;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
@@ -20,6 +21,7 @@ public class NewMedicineReminderCmd {
     protected Context mAppContext;
     protected ProviderValue<ExecutorService> mExecutorService;
     protected ProviderValue<MedicineDao> mMedicineDao;
+    protected ProviderValue<MedicineRepository> mMedicineRepository;
     protected ProviderValue<MedicineReminderChangeNotifier> mMedicineReminderChangeNotifier;
     protected BehaviorSubject<String> mStartDateTimeValidSubject;
     protected BehaviorSubject<String> mMessageValidSubject;
@@ -29,6 +31,7 @@ public class NewMedicineReminderCmd {
         mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mMedicineDao = provider.lazyGet(MedicineDao.class);
+        mMedicineRepository = provider.lazyGet(MedicineRepository.class);
         mMedicineReminderChangeNotifier = provider.lazyGet(MedicineReminderChangeNotifier.class);
         mStartDateTimeValidSubject = BehaviorSubject.create();
         mMessageValidSubject = BehaviorSubject.create();
@@ -37,7 +40,7 @@ public class NewMedicineReminderCmd {
 
     public Single<MedicineReminder> execute(MedicineReminder medicineReminder) {
         return Single.fromCallable(() -> {
-            mMedicineDao.get().insertMedicineReminder(medicineReminder);
+            mMedicineRepository.get().insertMedicineReminder(medicineReminder);
             mMedicineReminderChangeNotifier.get().medicineReminderAdded(medicineReminder.clone());
             return medicineReminder;
         }).subscribeOn(Schedulers.from(mExecutorService.get()));

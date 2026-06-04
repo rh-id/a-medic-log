@@ -13,8 +13,8 @@ public class UpdateMedicineCmd extends NewMedicineCmd {
 
     public Single<MedicineState> execute(MedicineState medicineState) {
         return Single.fromCallable(() -> {
-            MedicineState beforeUpdate = mMedicineDao.get().findMedicineStateByMedicineId(medicineState.getMedicineId());
-            mMedicineDao.get().updateMedicine(medicineState.getMedicine(), medicineState.getMedicineReminderList());
+            MedicineState beforeUpdate = mMedicineRepository.get().findMedicineStateByMedicineId(medicineState.getMedicineId());
+            mMedicineRepository.get().updateMedicine(medicineState.getMedicine(), medicineState.getMedicineReminderList());
             mMedicineChangeNotifier.get().medicineUpdated(beforeUpdate, medicineState.clone());
             return medicineState;
         }).subscribeOn(Schedulers.from(mExecutorService.get()));

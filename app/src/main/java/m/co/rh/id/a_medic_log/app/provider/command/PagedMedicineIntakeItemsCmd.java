@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
-import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.dao.MedicineIntakeDao;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -15,7 +15,7 @@ import m.co.rh.id.aprovider.Provider;
 public class PagedMedicineIntakeItemsCmd {
     private static final String TAG = PagedMedicineIntakeItemsCmd.class.getName();
     private ExecutorService mExecutorService;
-    private MedicineDao mMedicineDao;
+    private MedicineIntakeDao mMedicineIntakeDao;
     private ILogger mLogger;
     private Long mMedicineId;
     private int mLimit;
@@ -25,7 +25,7 @@ public class PagedMedicineIntakeItemsCmd {
 
     public PagedMedicineIntakeItemsCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
-        mMedicineDao = provider.get(MedicineDao.class);
+        mMedicineIntakeDao = provider.get(MedicineIntakeDao.class);
         mLogger = provider.get(ILogger.class);
         mItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
@@ -44,7 +44,7 @@ public class PagedMedicineIntakeItemsCmd {
             } else {
                 mIsLoadingSubject.onNext(true);
                 try {
-                    List<MedicineIntake> dbList = mMedicineDao.searchMedicineIntakeDescription(mSearch);
+                    List<MedicineIntake> dbList = mMedicineIntakeDao.searchMedicineIntakeDescription(mSearch);
                     mItemsSubject.onNext(new ArrayList<>(dbList));
                 } catch (Throwable throwable) {
                     mLogger.e(TAG, throwable.getMessage(), throwable);
@@ -96,9 +96,9 @@ public class PagedMedicineIntakeItemsCmd {
     private ArrayList<MedicineIntake> loadItems() {
         List<MedicineIntake> dbList;
         if (mMedicineId == null) {
-            dbList = mMedicineDao.findMedicineIntakesByWithLimit(mLimit);
+            dbList = mMedicineIntakeDao.findMedicineIntakesByWithLimit(mLimit);
         } else {
-            dbList = mMedicineDao.findMedicineIntakesByMedicineIdWithLimit(mMedicineId, mLimit);
+            dbList = mMedicineIntakeDao.findMedicineIntakesByMedicineIdWithLimit(mMedicineId, mLimit);
         }
         return new ArrayList<>(dbList);
     }

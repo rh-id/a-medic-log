@@ -11,7 +11,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineIntakeChangeNotifier;
-import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.dao.MedicineIntakeDao;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
@@ -19,7 +19,7 @@ import m.co.rh.id.aprovider.ProviderValue;
 public class NewMedicineIntakeCmd {
     protected Context mAppContext;
     protected ProviderValue<ExecutorService> mExecutorService;
-    protected ProviderValue<MedicineDao> mMedicineDao;
+    protected ProviderValue<MedicineIntakeDao> mMedicineIntakeDao;
     protected ProviderValue<MedicineIntakeChangeNotifier> mMedicineIntakeChangeNotifier;
     protected BehaviorSubject<String> mTakenDateTimeValidSubject;
     protected BehaviorSubject<String> mDescriptionValidSubject;
@@ -27,7 +27,7 @@ public class NewMedicineIntakeCmd {
     public NewMedicineIntakeCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
-        mMedicineDao = provider.lazyGet(MedicineDao.class);
+        mMedicineIntakeDao = provider.lazyGet(MedicineIntakeDao.class);
         mMedicineIntakeChangeNotifier = provider.lazyGet(MedicineIntakeChangeNotifier.class);
         mTakenDateTimeValidSubject = BehaviorSubject.create();
         mDescriptionValidSubject = BehaviorSubject.create();
@@ -35,7 +35,8 @@ public class NewMedicineIntakeCmd {
 
     public Single<MedicineIntake> execute(MedicineIntake medicineIntake) {
         return Single.fromCallable(() -> {
-            mMedicineDao.get().insert(medicineIntake);
+            long id = mMedicineIntakeDao.get().insert(medicineIntake);
+            medicineIntake.id = id;
             mMedicineIntakeChangeNotifier.get().medicineIntakeAdded(medicineIntake.clone());
             return medicineIntake;
         }).subscribeOn(Schedulers.from(mExecutorService.get()));

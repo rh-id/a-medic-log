@@ -2,6 +2,7 @@ package m.co.rh.id.a_medic_log.base.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
@@ -16,6 +17,11 @@ import m.co.rh.id.a_medic_log.base.room.converter.LinkedHashSetConverter;
 
 @Entity(tableName = "medicine_reminder", indices = {
         @Index(value = "medicine_id")
+}, foreignKeys = {
+        @ForeignKey(entity = Medicine.class,
+                parentColumns = "id",
+                childColumns = "medicine_id",
+                onDelete = ForeignKey.CASCADE)
 })
 public class MedicineReminder implements Serializable, Cloneable {
     @PrimaryKey(autoGenerate = true)

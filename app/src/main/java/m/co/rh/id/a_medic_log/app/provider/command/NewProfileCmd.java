@@ -12,6 +12,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.notifier.ProfileChangeNotifier;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
+import m.co.rh.id.a_medic_log.base.repository.ProfileRepository;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
@@ -20,6 +21,7 @@ public class NewProfileCmd {
     protected Context mAppContext;
     protected ProviderValue<ExecutorService> mExecutorService;
     protected ProviderValue<ProfileDao> mProfileDao;
+    protected ProviderValue<ProfileRepository> mProfileRepository;
     protected ProviderValue<ProfileChangeNotifier> mProfileChangeNotifier;
     protected BehaviorSubject<String> mNameValidSubject;
 
@@ -27,13 +29,14 @@ public class NewProfileCmd {
         mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mProfileDao = provider.lazyGet(ProfileDao.class);
+        mProfileRepository = provider.lazyGet(ProfileRepository.class);
         mProfileChangeNotifier = provider.lazyGet(ProfileChangeNotifier.class);
         mNameValidSubject = BehaviorSubject.create();
     }
 
     public Single<Profile> execute(Profile profile) {
         return Single.fromCallable(() -> {
-            mProfileDao.get().insertProfile(profile);
+            mProfileRepository.get().insertProfile(profile);
             mProfileChangeNotifier.get().profileAdded(profile);
             return profile;
         }).subscribeOn(Schedulers.from(mExecutorService.get()));

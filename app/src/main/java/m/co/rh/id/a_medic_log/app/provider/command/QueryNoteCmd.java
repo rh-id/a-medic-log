@@ -9,7 +9,11 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
+import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentDao;
+import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentFileDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
+import m.co.rh.id.a_medic_log.base.dao.NoteTagDao;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
@@ -27,13 +31,21 @@ public class QueryNoteCmd {
     protected ExecutorService mExecutorService;
     protected ProfileDao mProfileDao;
     protected NoteDao mNoteDao;
+    protected NoteTagDao mNoteTagDao;
+    protected NoteAttachmentDao mNoteAttachmentDao;
+    protected NoteAttachmentFileDao mNoteAttachmentFileDao;
     protected MedicineDao mMedicineDao;
+    protected MedicineReminderDao mMedicineReminderDao;
 
     public QueryNoteCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
         mProfileDao = provider.get(ProfileDao.class);
         mNoteDao = provider.get(NoteDao.class);
+        mNoteTagDao = provider.get(NoteTagDao.class);
+        mNoteAttachmentDao = provider.get(NoteAttachmentDao.class);
+        mNoteAttachmentFileDao = provider.get(NoteAttachmentFileDao.class);
         mMedicineDao = provider.get(MedicineDao.class);
+        mMedicineReminderDao = provider.get(MedicineReminderDao.class);
     }
 
     public Single<NoteState> queryNoteInfo(long noteId) {
@@ -52,7 +64,7 @@ public class QueryNoteCmd {
             if (noteId == null) return noteState;
             Note note = mNoteDao.findNoteById(noteId);
             noteState.updateNote(note);
-            List<NoteTag> noteTags = mNoteDao.findNoteTagsByNoteId(noteId);
+            List<NoteTag> noteTags = mNoteTagDao.findNoteTagsByNoteId(noteId);
             noteState.updateNoteTagSet(noteTags);
             queryNoteAttachmentStateList(noteState);
             queryMedicineStateList(noteState);
@@ -66,7 +78,7 @@ public class QueryNoteCmd {
         if (!medicineList.isEmpty()) {
             ArrayList<MedicineState> medicineStates = new ArrayList<>();
             for (Medicine medicine : medicineList) {
-                List<MedicineReminder> medicineReminders = mMedicineDao.findMedicineRemindersByMedicineId(medicine.id);
+                List<MedicineReminder> medicineReminders = mMedicineReminderDao.findMedicineRemindersByMedicineId(medicine.id);
                 MedicineState medicineState = new MedicineState();
                 medicineState.updateMedicine(medicine);
                 medicineState.updateMedicineReminderList(medicineReminders);
@@ -78,11 +90,11 @@ public class QueryNoteCmd {
 
     private void queryNoteAttachmentStateList(NoteState noteState) {
         Long noteId = noteState.getNoteId();
-        List<NoteAttachment> noteAttachments = mNoteDao.findNoteAttachmentsByNoteId(noteId);
+        List<NoteAttachment> noteAttachments = mNoteAttachmentDao.findNoteAttachmentsByNoteId(noteId);
         if (!noteAttachments.isEmpty()) {
             List<NoteAttachmentState> noteAttachmentStates = new ArrayList<>();
             for (NoteAttachment noteAttachment : noteAttachments) {
-                List<NoteAttachmentFile> noteAttachmentFiles = mNoteDao.findNoteAttachmentFilesByAttachmentId(noteAttachment.id);
+                List<NoteAttachmentFile> noteAttachmentFiles = mNoteAttachmentFileDao.findNoteAttachmentFilesByAttachmentId(noteAttachment.id);
                 NoteAttachmentState noteAttachmentState = new NoteAttachmentState();
                 noteAttachmentState.updateNoteAttachment(noteAttachment);
                 noteAttachmentState.updateNoteAttachmentFileList(noteAttachmentFiles);
@@ -108,7 +120,7 @@ public class QueryNoteCmd {
 
     public Single<TreeSet<NoteTag>> queryNoteTag(long noteId) {
         return Single.fromCallable(() -> {
-            List<NoteTag> noteTags = mNoteDao.findNoteTagsByNoteId(noteId);
+            List<NoteTag> noteTags = mNoteTagDao.findNoteTagsByNoteId(noteId);
             return new TreeSet<>(noteTags);
         }).subscribeOn(Schedulers.from(mExecutorService));
     }
@@ -117,7 +129,7 @@ public class QueryNoteCmd {
         return Single.fromCallable(() ->
         {
             LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>();
-            List<NoteTag> noteTags = mNoteDao.searchNoteTag(search);
+            List<NoteTag> noteTags = mNoteTagDao.searchNoteTag(search);
             if (!noteTags.isEmpty()) {
                 for (NoteTag noteTag : noteTags) {
                     linkedHashSet.add(noteTag.tag);

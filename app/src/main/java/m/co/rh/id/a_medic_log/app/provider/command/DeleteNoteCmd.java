@@ -8,6 +8,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
+import m.co.rh.id.a_medic_log.base.repository.NoteRepository;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.aprovider.Provider;
@@ -17,6 +18,7 @@ public class DeleteNoteCmd {
     protected Context mAppContext;
     protected ProviderValue<ExecutorService> mExecutorService;
     protected ProviderValue<NoteDao> mNoteDao;
+    protected ProviderValue<NoteRepository> mNoteRepository;
     protected ProviderValue<NoteChangeNotifier> mNoteChangeNotifier;
     protected ProviderValue<QueryNoteCmd> mNoteQueryCmd;
 
@@ -24,6 +26,7 @@ public class DeleteNoteCmd {
         mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mNoteDao = provider.lazyGet(NoteDao.class);
+        mNoteRepository = provider.lazyGet(NoteRepository.class);
         mNoteChangeNotifier = provider.lazyGet(NoteChangeNotifier.class);
         mNoteQueryCmd = provider.lazyGet(QueryNoteCmd.class);
     }
@@ -36,7 +39,7 @@ public class DeleteNoteCmd {
         }).subscribeOn(Schedulers.from(mExecutorService.get()))
         .flatMap(noteState -> mNoteQueryCmd.get().queryNoteInfo(noteState)
                 .flatMap(fullNoteState -> Single.fromCallable(() -> {
-                    mNoteDao.get().deleteNote(fullNoteState);
+                    mNoteRepository.get().deleteNote(fullNoteState);
                     mNoteChangeNotifier.get().noteDeleted(fullNoteState);
                     return fullNoteState;
                 }).subscribeOn(Schedulers.from(mExecutorService.get()))));

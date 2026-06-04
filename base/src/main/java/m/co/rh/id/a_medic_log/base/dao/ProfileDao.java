@@ -4,10 +4,8 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
-import androidx.room.Transaction;
 import androidx.room.Update;
 
-import java.util.Date;
 import java.util.List;
 
 import m.co.rh.id.a_medic_log.base.entity.Profile;
@@ -25,27 +23,11 @@ public abstract class ProfileDao {
     @Query("SELECT * FROM profile WHERE id = :id")
     public abstract Profile findProfileById(long id);
 
-    @Transaction
-    public void insertProfile(Profile profile) {
-        if (profile.createdDateTime == null) {
-            Date date = new Date();
-            profile.createdDateTime = date;
-            profile.updatedDateTime = date;
-        }
-        profile.id = insert(profile);
-    }
-
-    @Transaction
-    public void updateProfile(Profile profile) {
-        profile.updatedDateTime = new Date();
-        update(profile);
-    }
-
     @Insert
-    protected abstract long insert(Profile profile);
+    public abstract long insert(Profile profile);
 
     @Update
-    protected abstract void update(Profile profile);
+    public abstract void update(Profile profile);
 
     @Delete
     public abstract void delete(Profile profile);

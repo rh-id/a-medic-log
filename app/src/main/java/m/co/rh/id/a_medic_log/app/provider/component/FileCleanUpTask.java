@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import m.co.rh.id.a_medic_log.base.dao.NoteDao;
+import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentFileDao;
 import m.co.rh.id.a_medic_log.base.entity.NoteAttachmentFile;
 import m.co.rh.id.a_medic_log.base.provider.FileHelper;
 import m.co.rh.id.alogger.ILogger;
@@ -21,13 +21,13 @@ public class FileCleanUpTask {
     private final ExecutorService mExecutorService;
     private final ILogger mLogger;
     private final FileHelper mFileHelper;
-    private final NoteDao mNoteDao;
+    private final NoteAttachmentFileDao mNoteAttachmentFileDao;
 
     public FileCleanUpTask(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
         mLogger = provider.get(ILogger.class);
         mFileHelper = provider.get(FileHelper.class);
-        mNoteDao = provider.get(NoteDao.class);
+        mNoteAttachmentFileDao = provider.get(NoteAttachmentFileDao.class);
         cleanUp();
     }
 
@@ -55,7 +55,7 @@ public class FileCleanUpTask {
                             List<String> noteAttachmentImageNames = noteAttachmentImageFileList.get();
                             if (!noteAttachmentImageNames.isEmpty()) {
                                 for (String imageName : noteAttachmentImageNames) {
-                                    NoteAttachmentFile noteAttachmentFile = mNoteDao.findNoteAttachmentFileByFileName(imageName);
+                                    NoteAttachmentFile noteAttachmentFile = mNoteAttachmentFileDao.findNoteAttachmentFileByFileName(imageName);
                                     if (noteAttachmentFile == null) {
                                         mFileHelper.deleteNoteAttachmentImage(imageName);
                                     }

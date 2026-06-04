@@ -8,6 +8,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineChangeNotifier;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.repository.MedicineRepository;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
@@ -16,18 +17,20 @@ public class DeleteMedicineCmd {
     protected Context mAppContext;
     protected ProviderValue<ExecutorService> mExecutorService;
     protected ProviderValue<MedicineDao> mMedicineDao;
+    protected ProviderValue<MedicineRepository> mMedicineRepository;
     protected ProviderValue<MedicineChangeNotifier> mMedicineChangeNotifier;
 
     public DeleteMedicineCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mMedicineDao = provider.lazyGet(MedicineDao.class);
+        mMedicineRepository = provider.lazyGet(MedicineRepository.class);
         mMedicineChangeNotifier = provider.lazyGet(MedicineChangeNotifier.class);
     }
 
     public Single<MedicineState> execute(MedicineState medicineState) {
         return Single.fromCallable(() -> {
-            mMedicineDao.get().deleteMedicineByMedicineId(medicineState.getMedicineId());
+            mMedicineRepository.get().deleteMedicineByMedicineId(medicineState.getMedicineId());
             mMedicineChangeNotifier.get().medicineDeleted(medicineState.clone());
             return medicineState;
         }).subscribeOn(Schedulers.from(mExecutorService.get()));

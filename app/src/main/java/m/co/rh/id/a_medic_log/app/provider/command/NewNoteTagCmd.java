@@ -11,28 +11,28 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteTagChangeNotifier;
-import m.co.rh.id.a_medic_log.base.dao.NoteDao;
+import m.co.rh.id.a_medic_log.base.dao.NoteTagDao;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.aprovider.Provider;
 
 public class NewNoteTagCmd {
     protected Context mAppContext;
     protected ExecutorService mExecutorService;
-    protected NoteDao mNoteDao;
+    protected NoteTagDao mNoteTagDao;
     protected NoteTagChangeNotifier mNoteTagChangeNotifier;
     protected BehaviorSubject<String> mTagValidSubject;
 
     public NewNoteTagCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
-        mNoteDao = provider.get(NoteDao.class);
+        mNoteTagDao = provider.get(NoteTagDao.class);
         mNoteTagChangeNotifier = provider.get(NoteTagChangeNotifier.class);
         mTagValidSubject = BehaviorSubject.create();
     }
 
     public Single<NoteTag> execute(NoteTag noteTag) {
         return Single.fromCallable(() -> {
-            mNoteDao.insertNoteTag(noteTag);
+            noteTag.id = mNoteTagDao.insert(noteTag);
             mNoteTagChangeNotifier.noteTagAdded(noteTag);
             return noteTag;
         }).subscribeOn(Schedulers.from(mExecutorService));

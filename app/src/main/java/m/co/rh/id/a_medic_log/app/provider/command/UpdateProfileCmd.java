@@ -14,7 +14,7 @@ public class UpdateProfileCmd extends NewProfileCmd {
     @Override
     public Single<Profile> execute(Profile profile) {
         return Single.fromCallable(() -> {
-            mProfileDao.get().updateProfile(profile);
+            mProfileRepository.get().updateProfile(profile);
             mProfileChangeNotifier.get().profileUpdated(profile);
             return profile;
         }).subscribeOn(Schedulers.from(mExecutorService.get()));

@@ -18,7 +18,7 @@ import java.util.Set;
 import m.co.rh.id.a_medic_log.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderEventHandler;
 import m.co.rh.id.a_medic_log.base.BaseApplication;
-import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
@@ -27,7 +27,7 @@ public class MedicineReminderNotificationWorker extends Worker {
     private ProviderValue<WorkManager> mWorkManager;
     private ProviderValue<MedicineReminderEventHandler> mMedicineReminderEventHandler;
     private ProviderValue<AppNotificationHandler> mAppNotificationHandler;
-    private ProviderValue<MedicineDao> mMedicineDao;
+    private ProviderValue<MedicineReminderDao> mMedicineReminderDao;
 
     public MedicineReminderNotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -35,14 +35,14 @@ public class MedicineReminderNotificationWorker extends Worker {
         mWorkManager = provider.lazyGet(WorkManager.class);
         mMedicineReminderEventHandler = provider.lazyGet(MedicineReminderEventHandler.class);
         mAppNotificationHandler = provider.lazyGet(AppNotificationHandler.class);
-        mMedicineDao = provider.lazyGet(MedicineDao.class);
+        mMedicineReminderDao = provider.lazyGet(MedicineReminderDao.class);
     }
 
     @NonNull
     @Override
     public Result doWork() {
         long medicineReminderId = getInputData().getLong(Keys.LONG_MEDICINE_REMINDER_ID, -1);
-        MedicineReminder medicineReminder = mMedicineDao.get().findMedicineReminderById(medicineReminderId);
+        MedicineReminder medicineReminder = mMedicineReminderDao.get().findMedicineReminderById(medicineReminderId);
         if (medicineReminder != null) {
             Date today = new Date();
             Calendar calendar = Calendar.getInstance();

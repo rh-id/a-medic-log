@@ -16,9 +16,6 @@ public abstract class AndroidNotificationDao {
     @Query("SELECT * FROM android_notification WHERE group_key=:groupKey AND ref_id=:refId")
     public abstract AndroidNotification findByGroupTagAndRefId(String groupKey, Long refId);
 
-    @Query("SELECT COUNT(id) FROM android_notification")
-    public abstract long count();
-
     @Query("DELETE FROM android_notification WHERE request_id = :requestId")
     public abstract void deleteByRequestId(int requestId);
 

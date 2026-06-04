@@ -2,6 +2,7 @@ package m.co.rh.id.a_medic_log.base.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
@@ -13,6 +14,11 @@ import m.co.rh.id.a_medic_log.base.room.converter.Converter;
 
 @Entity(tableName = "note_attachment_file", indices = {
         @Index(value = "attachment_id")
+}, foreignKeys = {
+        @ForeignKey(entity = NoteAttachment.class,
+                parentColumns = "id",
+                childColumns = "attachment_id",
+                onDelete = ForeignKey.CASCADE)
 })
 public class NoteAttachmentFile implements Comparable<NoteAttachmentFile>, Serializable, Cloneable {
     @PrimaryKey(autoGenerate = true)

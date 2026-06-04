@@ -28,6 +28,7 @@ import m.co.rh.id.a_medic_log.app.receiver.NotificationDeleteReceiver;
 import m.co.rh.id.a_medic_log.app.receiver.NotificationDisableMedicineReminderReceiver;
 import m.co.rh.id.a_medic_log.app.receiver.NotificationTakeMedicineReceiver;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
 import m.co.rh.id.a_medic_log.base.entity.AndroidNotification;
@@ -36,7 +37,7 @@ import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
-import m.co.rh.id.a_medic_log.base.repository.AndroidNotificationRepo;
+import m.co.rh.id.a_medic_log.base.repository.AndroidNotificationRepository;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
@@ -50,8 +51,9 @@ public class AppNotificationHandler {
     private final Context mAppContext;
     private final ProviderValue<ILogger> mLogger;
     private final ProviderValue<ExecutorService> mExecutorService;
-    private final ProviderValue<AndroidNotificationRepo> mAndroidNotificationRepo;
+    private final ProviderValue<AndroidNotificationRepository> mAndroidNotificationRepo;
     private final ProviderValue<MedicineDao> mMedicineDao;
+    private final ProviderValue<MedicineReminderDao> mMedicineReminderDao;
     private final ProviderValue<NoteDao> mNoteDao;
     private final ProviderValue<ProfileDao> mProfileDao;
     private final ProviderValue<NewMedicineIntakeCmd> mNewMedicineIntakeCmd;
@@ -64,8 +66,9 @@ public class AppNotificationHandler {
         mAppContext = provider.getContext().getApplicationContext();
         mLogger = provider.lazyGet(ILogger.class);
         mExecutorService = provider.lazyGet(ExecutorService.class);
-        mAndroidNotificationRepo = provider.lazyGet(AndroidNotificationRepo.class);
+        mAndroidNotificationRepo = provider.lazyGet(AndroidNotificationRepository.class);
         mMedicineDao = provider.lazyGet(MedicineDao.class);
+        mMedicineReminderDao = provider.lazyGet(MedicineReminderDao.class);
         mNoteDao = provider.lazyGet(NoteDao.class);
         mProfileDao = provider.lazyGet(ProfileDao.class);
         mNewMedicineIntakeCmd = provider.lazyGet(NewMedicineIntakeCmd.class);
@@ -190,7 +193,7 @@ public class AppNotificationHandler {
                     AndroidNotification androidNotification =
                             mAndroidNotificationRepo.get().findByRequestId((int) serializable);
                     if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_MEDICINE_REMINDER)) {
-                        MedicineReminder medicineReminder = mMedicineDao.get().findMedicineReminderById(androidNotification.refId);
+                        MedicineReminder medicineReminder = mMedicineReminderDao.get().findMedicineReminderById(androidNotification.refId);
                         MedicineIntake medicineIntake = new MedicineIntake();
                         medicineIntake.medicineId = medicineReminder.medicineId;
                         medicineIntake.description = medicineReminder.message;
@@ -215,7 +218,7 @@ public class AppNotificationHandler {
                     AndroidNotification androidNotification =
                             mAndroidNotificationRepo.get().findByRequestId((int) serializable);
                     if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_MEDICINE_REMINDER)) {
-                        MedicineReminder medicineReminder = mMedicineDao.get().findMedicineReminderById(androidNotification.refId);
+                        MedicineReminder medicineReminder = mMedicineReminderDao.get().findMedicineReminderById(androidNotification.refId);
                         medicineReminder.reminderEnabled = false;
                         medicineReminder = mUpdateMedicineReminderCmd.get().execute(medicineReminder).blockingGet();
                         cancelNotificationSync(medicineReminder);
@@ -240,7 +243,7 @@ public class AppNotificationHandler {
                     AndroidNotification androidNotification =
                             mAndroidNotificationRepo.get().findByRequestId((int) serializable);
                     if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_MEDICINE_REMINDER)) {
-                        MedicineReminder medicineReminder = mMedicineDao.get().findMedicineReminderById(androidNotification.refId);
+                        MedicineReminder medicineReminder = mMedicineReminderDao.get().findMedicineReminderById(androidNotification.refId);
                         mMedicineReminderSubject.onNext(medicineReminder);
                         cancelNotificationSync(medicineReminder);
                     }

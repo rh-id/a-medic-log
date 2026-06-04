@@ -12,6 +12,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
+import m.co.rh.id.a_medic_log.base.repository.NoteRepository;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.aprovider.Provider;
@@ -21,6 +22,7 @@ public class NewNoteCmd {
     protected Context mAppContext;
     protected ProviderValue<ExecutorService> mExecutorService;
     protected ProviderValue<NoteDao> mNoteDao;
+    protected ProviderValue<NoteRepository> mNoteRepository;
     protected ProviderValue<NoteChangeNotifier> mNoteChangeNotifier;
     protected BehaviorSubject<String> mProfileIdValidSubject;
     protected BehaviorSubject<String> mEntryDateTimeValidSubject;
@@ -30,6 +32,7 @@ public class NewNoteCmd {
         mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.lazyGet(ExecutorService.class);
         mNoteDao = provider.lazyGet(NoteDao.class);
+        mNoteRepository = provider.lazyGet(NoteRepository.class);
         mNoteChangeNotifier = provider.lazyGet(NoteChangeNotifier.class);
         mProfileIdValidSubject = BehaviorSubject.create();
         mEntryDateTimeValidSubject = BehaviorSubject.create();
@@ -38,7 +41,7 @@ public class NewNoteCmd {
 
     public Single<NoteState> execute(NoteState noteState) {
         return Single.fromCallable(() -> {
-            mNoteDao.get().insertNote(noteState);
+            mNoteRepository.get().insertNote(noteState);
             mNoteChangeNotifier.get().noteAdded(noteState);
             return noteState;
         }).subscribeOn(Schedulers.from(mExecutorService.get()));

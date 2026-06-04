@@ -2,6 +2,7 @@ package m.co.rh.id.a_medic_log.base.entity;
 
 import androidx.room.ColumnInfo;
 import androidx.room.Entity;
+import androidx.room.ForeignKey;
 import androidx.room.Index;
 import androidx.room.PrimaryKey;
 import androidx.room.TypeConverters;
@@ -13,6 +14,11 @@ import m.co.rh.id.a_medic_log.base.room.converter.Converter;
 
 @Entity(tableName = "medicine", indices = {
         @Index(value = "note_id")
+}, foreignKeys = {
+        @ForeignKey(entity = Note.class,
+                parentColumns = "id",
+                childColumns = "note_id",
+                onDelete = ForeignKey.CASCADE)
 })
 public class Medicine implements Serializable, Cloneable {
     @PrimaryKey(autoGenerate = true)

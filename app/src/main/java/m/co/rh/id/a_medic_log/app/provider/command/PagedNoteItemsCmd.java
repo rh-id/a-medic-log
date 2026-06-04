@@ -11,6 +11,7 @@ import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
+import m.co.rh.id.a_medic_log.base.dao.NoteTagDao;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.alogger.ILogger;
@@ -20,6 +21,7 @@ public class PagedNoteItemsCmd {
     private static final String TAG = PagedNoteItemsCmd.class.getName();
     private ExecutorService mExecutorService;
     private NoteDao mNoteDao;
+    private NoteTagDao mNoteTagDao;
     private ILogger mLogger;
     private Long mProfileId;
     private int mLimit;
@@ -30,6 +32,7 @@ public class PagedNoteItemsCmd {
     public PagedNoteItemsCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
         mNoteDao = provider.get(NoteDao.class);
+        mNoteTagDao = provider.get(NoteTagDao.class);
         mLogger = provider.get(ILogger.class);
         mItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
@@ -73,17 +76,15 @@ public class PagedNoteItemsCmd {
 
     private Future<List<Note>> searchNoteTag(String search) {
         return mExecutorService.submit(() -> {
-            List<NoteTag> noteTagList = mNoteDao.searchNoteTag(search);
+            List<NoteTag> noteTagList = mNoteTagDao.searchNoteTag(search);
             List<Note> noteList = new ArrayList<>();
             Set<Long> noteIds = new LinkedHashSet<>();
             if (!noteTagList.isEmpty()) {
                 for (NoteTag noteTag : noteTagList) {
                     noteIds.add(noteTag.noteId);
                 }
-                if (!noteIds.isEmpty()) {
-                    List<Note> notes = mNoteDao.findNoteByIds(noteIds);
-                    noteList.addAll(notes);
-                }
+                List<Note> notes = mNoteDao.findNoteByIds(noteIds);
+                noteList.addAll(notes);
             }
             return noteList;
         });

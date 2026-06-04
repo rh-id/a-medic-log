@@ -17,7 +17,7 @@ public class UpdateNoteCmd extends NewNoteCmd {
     public Single<NoteState> execute(NoteState noteState) {
         return mNoteQueryCmd.get().queryNoteInfo(noteState.getNoteId())
                 .flatMap(beforeUpdate -> Single.fromCallable(() -> {
-                    mNoteDao.get().updateNote(noteState);
+                    mNoteRepository.get().updateNote(noteState);
                     mNoteChangeNotifier.get().noteUpdated(beforeUpdate, noteState.clone());
                     return noteState;
                 }).subscribeOn(Schedulers.from(mExecutorService.get())));

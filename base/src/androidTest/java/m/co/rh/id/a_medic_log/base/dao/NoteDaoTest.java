@@ -1,6 +1,7 @@
 package m.co.rh.id.a_medic_log.base.dao;
 
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 
 import androidx.room.Room;
@@ -75,6 +76,9 @@ public class NoteDaoTest {
     public void insertUpdateDelete_noteState() {
         NoteDao noteDao = mAppDatabase.noteDao();
         MedicineDao medicineDao = mAppDatabase.medicineDao();
+        NoteTagDao noteTagDao = mAppDatabase.noteTagDao();
+        MedicineReminderDao medicineReminderDao = mAppDatabase.medicineReminderDao();
+        MedicineIntakeDao medicineIntakeDao = mAppDatabase.medicineIntakeDao();
 
         String noteContent = "test note";
         String noteTagTag = "sample tag";
@@ -100,21 +104,38 @@ public class NoteDaoTest {
         noteState.updateMedicineStates(medicineStateList);
 
         // INSERT NOTE
-        noteDao.insertNote(noteState);
-        assertEquals(1, noteDao.countNote());
-        assertEquals(1, noteDao.countNoteTag());
-        assertEquals(1, medicineDao.countMedicine());
-        assertEquals(1, medicineDao.countMedicineReminder());
-        assertEquals(0, medicineDao.countMedicineIntake());
+        mAppDatabase.runInTransaction(() -> {
+            Note n = noteState.getNote();
+            long noteId = noteDao.insert(n);
+            n.id = noteId;
+            for (NoteTag nt : noteState.getNoteTagSet()) {
+                nt.noteId = noteId;
+                nt.id = noteTagDao.insert(nt);
+            }
+            for (MedicineState ms : noteState.getMedicineList()) {
+                ms.setNoteId(noteId);
+                Medicine med = ms.getMedicine();
+                long medId = medicineDao.insert(med);
+                med.id = medId;
+                for (MedicineReminder mr : ms.getMedicineReminderList()) {
+                    mr.medicineId = medId;
+                    mr.id = medicineReminderDao.insert(mr);
+                }
+            }
+        });
+
         Note noteFromInsert = noteDao.findNoteById(noteState.getNoteId());
+        assertNotNull(noteFromInsert);
         assertEquals(noteContent, noteFromInsert.content);
-        List<NoteTag> noteTagListFromInsert = noteDao.findNoteTagsByNoteId(noteState.getNoteId());
+        List<NoteTag> noteTagListFromInsert = noteTagDao.findNoteTagsByNoteId(noteState.getNoteId());
         assertEquals(1, noteTagListFromInsert.size());
         assertEquals(noteTagTag, noteTagListFromInsert.get(0).tag);
-        List<Medicine> medicineListFromInsert = noteDao.findMedicinesByNoteId(noteState.getNoteId());
+        List<Medicine> medicineListFromInsert = medicineDao.findMedicinesByNoteId(noteState.getNoteId());
         assertEquals(1, medicineListFromInsert.size());
         assertEquals(medicineName, medicineListFromInsert.get(0).name);
-        List<MedicineReminder> medicineReminderListFromInsert = medicineDao.findMedicineRemindersByMedicineId(
+        assertEquals(1, medicineReminderDao.findMedicineRemindersByMedicineId(medicineListFromInsert.get(0).id).size());
+        assertEquals(0, medicineIntakeDao.findMedicineIntakesByMedicineIdWithLimit(medicineListFromInsert.get(0).id, 10).size());
+        List<MedicineReminder> medicineReminderListFromInsert = medicineReminderDao.findMedicineRemindersByMedicineId(
                 medicineListFromInsert.get(0).id
         );
         assertEquals(1, medicineReminderListFromInsert.size());
@@ -124,43 +145,50 @@ public class NoteDaoTest {
         MedicineIntake medicineIntake = new MedicineIntake();
         medicineIntake.medicineId = medicineListFromInsert.get(0).id;
         medicineIntake.description = medicineIntakeDesc;
-        medicineDao.insert(medicineIntake);
+        long medicineIntakeId = medicineIntakeDao.insert(medicineIntake);
+        medicineIntake.id = medicineIntakeId;
 
         // after that update note
         String noteContentUpdate = noteContent + " updated ";
         noteState.getNote().content = noteContentUpdate;
         // UPDATE NOTE
-        noteDao.updateNote(noteState);
-        assertEquals(1, noteDao.countNote());
-        assertEquals(1, noteDao.countNoteTag());
-        assertEquals(1, medicineDao.countMedicine());
-        assertEquals(1, medicineDao.countMedicineReminder());
-        assertEquals(1, medicineDao.countMedicineIntake());
+        mAppDatabase.runInTransaction(() -> {
+            noteDao.update(noteState.getNote());
+        });
+
+        assertNotNull(noteDao.findNoteById(noteState.getNoteId()));
+        assertEquals(1, noteTagDao.findNoteTagsByNoteId(noteState.getNoteId()).size());
+        assertEquals(1, medicineDao.findMedicinesByNoteId(noteState.getNoteId()).size());
+        assertEquals(1, medicineReminderDao.findMedicineRemindersByMedicineId(medicineListFromInsert.get(0).id).size());
+        assertNotNull(medicineIntakeDao.findLastMedicineIntake(medicineListFromInsert.get(0).id));
         Note noteFromUpdate = noteDao.findNoteById(noteState.getNoteId());
         assertEquals(noteContentUpdate, noteFromUpdate.content);
-        List<NoteTag> noteTagListFromUpdate = noteDao.findNoteTagsByNoteId(noteState.getNoteId());
+        List<NoteTag> noteTagListFromUpdate = noteTagDao.findNoteTagsByNoteId(noteState.getNoteId());
         assertEquals(1, noteTagListFromUpdate.size());
         assertEquals(noteTagTag, noteTagListFromUpdate.get(0).tag);
-        List<Medicine> medicineListFromUpdate = noteDao.findMedicinesByNoteId(noteState.getNoteId());
+        List<Medicine> medicineListFromUpdate = medicineDao.findMedicinesByNoteId(noteState.getNoteId());
         assertEquals(1, medicineListFromUpdate.size());
         assertEquals(medicineName, medicineListFromUpdate.get(0).name);
-        List<MedicineReminder> medicineReminderListFromUpdate = medicineDao.findMedicineRemindersByMedicineId(
+        List<MedicineReminder> medicineReminderListFromUpdate = medicineReminderDao.findMedicineRemindersByMedicineId(
                 medicineListFromUpdate.get(0).id
         );
         assertEquals(1, medicineReminderListFromUpdate.size());
         assertEquals(medicineReminderMessage, medicineReminderListFromUpdate.get(0).message);
 
         // ensure medicine intake not deleted when updating note state
-        MedicineIntake updateNoteMedicineIntake = medicineDao.findLastMedicineIntake(medicineIntake.medicineId);
+        MedicineIntake updateNoteMedicineIntake = medicineIntakeDao.findLastMedicineIntake(medicineIntake.medicineId);
         assertNotNull(updateNoteMedicineIntake);
         assertEquals(medicineIntakeDesc, updateNoteMedicineIntake.description);
 
-        // DELETE NOTE
-        noteDao.deleteNote(noteState);
-        assertEquals(0, noteDao.countNote());
-        assertEquals(0, noteDao.countNoteTag());
-        assertEquals(0, medicineDao.countMedicine());
-        assertEquals(0, medicineDao.countMedicineReminder());
-        assertEquals(0, medicineDao.countMedicineIntake());
+        // DELETE NOTE (FK CASCADE handles related records)
+        mAppDatabase.runInTransaction(() -> {
+            noteDao.delete(noteState.getNote());
+        });
+
+        assertNull(noteDao.findNoteById(noteState.getNoteId()));
+        assertEquals(0, noteTagDao.findNoteTagsByNoteId(noteState.getNoteId()).size());
+        assertEquals(0, medicineDao.findMedicinesByNoteId(noteState.getNoteId()).size());
+        assertEquals(0, medicineReminderDao.findMedicineRemindersByMedicineId(medicineListFromInsert.get(0).id).size());
+        assertNull(medicineIntakeDao.findLastMedicineIntake(medicineListFromInsert.get(0).id));
     }
 }
