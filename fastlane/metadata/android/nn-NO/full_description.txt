@@ -1,0 +1,12 @@
+Enkle og brukarvennlege personlege medisinske notat.
+<ul>
+  <li>Legg enkelt til dine medisinske notat</li>
+  <li>Fleire profilar for å halda oversikt over eldre og familiemedlemmers sjukehistorie</li>
+  <li>Legg til medisininformasjon og medisinpåminningar for å varsla deg om å ta medisin</li>
+  <li>Spor medisininntakshistorikk</li>
+  <li>Legg ved filer og bilete i notata dine</li>
+  <li>Tagg notata dine for betre organisering</li>
+  <li>Søk gjennom notata dine</li>
+  <li>Støttar mørk modus og lys modus</li>
+  <li>Tilgjengeleg på fleire språk</li>
+</ul>

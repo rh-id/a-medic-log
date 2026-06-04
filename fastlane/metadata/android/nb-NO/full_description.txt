@@ -1,0 +1,12 @@
+Enkle og brukervennlige personlige medisinske notater.
+<ul>
+  <li>Legg enkelt til dine medisinske notater</li>
+  <li>Flere profiler for å holde oversikt over eldre og familiemedlemmers sykehistorie</li>
+  <li>Legg til medisininformasjon og medisinpåminnelser for å varsle deg om å ta medisin</li>
+  <li>Spor medisininntakshistorikk</li>
+  <li>Legg ved filer og bilder i notatene dine</li>
+  <li>Tagg notatene dine for bedre organisering</li>
+  <li>Søk gjennom notatene dine</li>
+  <li>Støtter mørk modus og lys modus</li>
+  <li>Tilgjengelig på flere språk</li>
+</ul>

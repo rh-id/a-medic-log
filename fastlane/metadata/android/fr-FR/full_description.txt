@@ -1,0 +1,12 @@
+Des notes médicales personnelles simples et faciles à utiliser.
+<ul>
+  <li>Ajoutez facilement vos notes médicales</li>
+  <li>Plusieurs profils pour suivre l'historique médical des personnes âgées et des membres de la famille</li>
+  <li>Ajoutez des informations sur les médicaments et des rappels pour vous notifier de prendre vos médicaments</li>
+  <li>Suivez l'historique de la prise de médicaments</li>
+  <li>Joignez des fichiers et des images à vos notes</li>
+  <li>Étiquetez vos notes pour une meilleure organisation</li>
+  <li>Recherchez dans vos notes</li>
+  <li>Prise en charge du mode sombre et du mode clair</li>
+  <li>Disponible en plusieurs langues</li>
+</ul>

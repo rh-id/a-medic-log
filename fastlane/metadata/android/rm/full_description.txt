@@ -1,0 +1,12 @@
+Notas medicalas persunalas simpelas e faciles d'utilisar.
+<ul>
+  <li>Agiuntescha facilmain tias notas medicalas</li>
+  <li>Plirs profils per guardar l'istorgia medicinala da persunas veglias e commembers da la famiglia</li>
+  <li>Agiuntescha infurmaziuns da medischina e promemorias per ta notifitgar da prender medischinas</li>
+  <li>Guarda l'istorgia da la consumziun da medischinas</li>
+  <li>Agnescha datotecas e maletgs a tias notas</li>
+  <li>Marquescha tias notas per in'organisaziun megliera</li>
+  <li>Tschertga en tias notas</li>
+  <li>Sustegna il mod stgir ed il mod cler</li>
+  <li>Disponibel en pliras linguas</li>
+</ul>

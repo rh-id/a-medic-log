@@ -1,0 +1,12 @@
+Lihtsad ja hõlpsasti kasutatavad isiklikud meditsiinilised märkmed.
+<ul>
+  <li>Lisage hõlpsalt oma meditsiinilisi märkmeid</li>
+  <li>Mitu profiili eakate ja pereliikmete meditsiiniajaloo jälgimiseks</li>
+  <li>Lisage ravimiteavet ja ravimimeeldetuletusi, et teavitada teid ravimite võtmisest</li>
+  <li>Jälgige ravimite tarvitamise ajalugu</li>
+  <li>Manustage faile ja pilte oma märkmetele</li>
+  <li>Sildistage oma märkmeid parema korraldamise eesmärgil</li>
+  <li>Otsige oma märkmete seast</li>
+  <li>Toetab tumedat ja heledat režiimi</li>
+  <li>Saadaval mitmes keeles</li>
+</ul>

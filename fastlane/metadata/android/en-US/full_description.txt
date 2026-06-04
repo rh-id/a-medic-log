@@ -1,7 +1,12 @@
 A simple and easy to use personal medical notes.
 <ul>
   <li>Easily add your medical notes</li>
-  <li>Multiple profile to keep track elderly and family members medical history</li>
+  <li>Multiple profiles to keep track of elderly and family members' medical history</li>
   <li>Add medicine information and medicine reminder to notify you to take medicine</li>
+  <li>Track medicine intake history</li>
+  <li>Attach files and images to your notes</li>
+  <li>Tag your notes for better organization</li>
+  <li>Search through your notes</li>
   <li>Support dark mode and light mode</li>
+  <li>Available in multiple languages</li>
 </ul>

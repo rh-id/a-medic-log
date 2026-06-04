@@ -1,0 +1,5 @@
+Release 1.2.7+18
+
+Fixes:
+* Select profile crash when user didn't select any profile
+* Radio button on Select profile dialog didn't selecting profile

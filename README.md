@@ -8,24 +8,45 @@
 ![Release Build](https://github.com/rh-id/a-medic-log/actions/workflows/android-release.yml/badge.svg)
 ![Emulator Test](https://github.com/rh-id/a-medic-log/actions/workflows/android-emulator-test.yml/badge.svg)
 
-A simple and easy to use personal medical notes.
-<ul>
-  <li>Easily add your medical notes</li>
-  <li>Multiple profile to keep track elderly and family members medical history</li>
-  <li>Add medicine information and medicine reminder to notify you to take medicine</li>
-  <li>Support dark mode and light mode</li>
-</ul>
+A simple and easy to use personal medical notes app.
 
-This project is intended for demo app for [a-navigator](https://github.com/rh-id/a-navigator) and [a-provider](https://github.com/rh-id/a-provider) library usage.
-The app still works as production even though it is demo app.
+This project is intended as a demo app for [a-navigator](https://github.com/rh-id/a-navigator) and [a-provider](https://github.com/rh-id/a-provider) library usage.
+The app works as a production app even though it is a demo app.
+
+## Features
+
+- **Medical Notes** - Easily add and manage your medical notes with date tracking
+- **Multiple Profiles** - Keep track of elderly and family members' medical history
+- **Medicine Tracking** - Add medicine information with detailed descriptions
+- **Medicine Reminders** - Set up notifications to remind you to take medicine
+- **Medicine Intake History** - Log and review past medicine intakes
+- **Note Attachments** - Attach files and images to your notes
+- **Note Tags** - Tag your notes for better organization
+- **Search** - Search through your notes and profiles
+- **Dark/Light Mode** - Support for both dark mode and light mode themes
+- **Multi-language** - Available in English, German, French, Italian, Indonesian, Estonian, Icelandic, Norwegian (Bokmål & Nynorsk), and Romansh
+
+## Tech Stack
+
+| Component | Detail |
+|---|---|
+| Language | Java 17 |
+| Min SDK | 21 (Android 5.0) |
+| Target SDK | 36 (Android 16) |
+| Compile SDK | 36 |
+| Build System | Gradle (AGP 9.2.1) |
+| Architecture | Single-Activity + StatefulView |
+| Navigation | [a-navigator](https://github.com/rh-id/a-navigator) |
+| Dependency Injection | [a-provider](https://github.com/rh-id/a-provider) |
+| Database | Room (SQLite) |
+| Reactive | RxJava3 / RxAndroid |
+| Background Work | WorkManager |
 
 ## Project Structure
 
 The app uses a-navigator framework as navigator and StatefulView as base structure,
 combined with a-provider library for service locator,
 and finally RxAndroid to handle UI use cases.
-
-## Architecture
 
 The project is divided into two main modules:
 *   `app`: Contains the UI logic, navigation, dependency injection wiring, and business logic implementation.
@@ -151,6 +172,31 @@ erDiagram
     MEDICINE ||--o{ MEDICINE_INTAKE : history
 ```
 
+## Building
+
+### Prerequisites
+- JDK 17
+- Android SDK with Compile SDK 36
+
+### Build commands
+```bash
+./gradlew build              # Build debug and release APKs
+./gradlew assembleDebug      # Build debug APK only
+./gradlew assembleRelease    # Build release APK only
+./gradlew test               # Run unit tests
+./gradlew connectedCheck     # Run instrumented tests (requires device/emulator)
+```
+
+## CI/CD
+
+The project uses GitHub Actions for continuous integration and deployment:
+
+| Workflow | Trigger | Description |
+|---|---|---|
+| **Android CI** | Push/PR to `master` | Builds the project with Gradle |
+| **Emulator Test** | Push/PR to `master` | Runs instrumented tests on API 23 & 29 emulators |
+| **Release APKs** | Tag push (`v*`) | Builds signed APKs and creates a GitHub Release with changelog |
+
 ## Screenshots
 <img src="https://github.com/rh-id/a-medic-log/blob/master/fastlane/metadata/android/en-US/images/featureGraphic.png" width="1024"/>
 
@@ -165,3 +211,7 @@ Consider donation to support this project
     <td><a href="https://trakteer.id/rh-id">https://trakteer.id/rh-id</a></td>
   </tr>
 </table>
+
+## License
+
+This project is licensed under the [GNU General Public License v3.0](LICENSE).

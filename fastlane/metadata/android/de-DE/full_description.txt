@@ -1,0 +1,12 @@
+Einfache und leicht zu bedienende persönliche medizinische Notizen.
+<ul>
+  <li>Erstellen Sie ganz einfach Ihre medizinischen Notizen</li>
+  <li>Mehrere Profile zur Verfolgung der Krankengeschichte von Angehörigen und Senioren</li>
+  <li>Hinzufügen von Medikamenteninformationen und Medikamentenerinnerungen, die Sie an die Einnahme erinnern</li>
+  <li>Verfolgen Sie die Medikamenteneinnahmehistorie</li>
+  <li>Hängen Sie Dateien und Bilder an Ihre Notizen an</li>
+  <li>Verschlagworten Sie Ihre Notizen für eine bessere Organisation</li>
+  <li>Durchsuchen Sie Ihre Notizen</li>
+  <li>Unterstützt den Dunkelmodus und den Hellmodus</li>
+  <li>Verfügbar in mehreren Sprachen</li>
+</ul>

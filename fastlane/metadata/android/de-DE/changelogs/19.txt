@@ -1,0 +1,5 @@
+Release 1.2.8+19
+
+Fixes:
+* Android SDK memory leak
+* Optimize app

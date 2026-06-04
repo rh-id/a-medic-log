@@ -1,0 +1,4 @@
+Release 1.1.0+10
+
+Feature:
+* Add tag to note

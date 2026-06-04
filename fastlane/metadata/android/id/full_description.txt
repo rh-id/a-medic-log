@@ -1,0 +1,12 @@
+Catatan medis pribadi yang sederhana dan mudah digunakan.
+<ul>
+  <li>Mudah menambahkan catatan medis Anda</li>
+  <li>Beberapa profil untuk melacak riwayat medis lansia dan anggota keluarga</li>
+  <li>Tambahkan informasi obat dan pengingat obat untuk memberitahu Anda saat waktunya minum obat</li>
+  <li>Lacak riwayat konsumsi obat</li>
+  <li>Lampirkan file dan gambar ke catatan Anda</li>
+  <li>Beri tag pada catatan Anda untuk organisasi yang lebih baik</li>
+  <li>Cari melalui catatan Anda</li>
+  <li>Mendukung mode gelap dan mode terang</li>
+  <li>Tersedia dalam berbagai bahasa</li>
+</ul>

@@ -1,0 +1,12 @@
+Einfaldar og auðveldar persónulegar lækningaskýrslur.
+<ul>
+  <li>Bættu auðveldlega við lækningaskýrslum þínum</li>
+  <li>Margar persónur til að fylgjast með sjúkrasögu aldraðra og fjölskyldumeðlima</li>
+  <li>Bættu við lyfjaupplýsingum og lyfjaáminningum til að tilkynna þér að taka lyfin</li>
+  <li>Fylgstu með lyfjainntökusögu</li>
+  <li>Hengdu skjöl og myndir við skýrslurnar þínar</li>
+  <li>Merktu skýrslurnar þínar til að skipuleggja betur</li>
+  <li>Leitaðu í skýrslunum þínum</li>
+  <li>Styður dökkan og ljósan ham</li>
+  <li>Fáanlegt á mörgum tungumálum</li>
+</ul>
