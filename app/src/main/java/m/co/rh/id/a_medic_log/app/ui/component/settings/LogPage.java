@@ -5,16 +5,17 @@ import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
-import android.widget.ScrollView;
-import android.widget.TextView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import androidx.recyclerview.widget.RecyclerView;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
@@ -37,6 +38,7 @@ public class LogPage extends StatefulView<Activity> {
     private AppBarSV mAppBarSV;
 
     private transient Provider mSvProvider;
+    private transient LogLineRecyclerViewAdapter mAdapter;
 
     public LogPage() {
         mAppBarSV = new AppBarSV();
@@ -52,13 +54,14 @@ public class LogPage extends StatefulView<Activity> {
         containerAppBar.addView(mAppBarSV.buildView(activity, rootLayout));
         ProgressBar progressBar = view.findViewById(R.id.progress_circular);
         View noRecord = view.findViewById(R.id.no_record);
-        ScrollView scrollView = view.findViewById(R.id.scroll_view);
-        TextView textView = view.findViewById(R.id.text_content);
+        RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
         Provider provider = BaseApplication.of(activity).getProvider();
         if (mSvProvider != null) {
             mSvProvider.dispose();
         }
         mSvProvider = Provider.createProvider(activity.getApplicationContext(), new RxProviderModule());
+        mAdapter = new LogLineRecyclerViewAdapter();
+        recyclerView.setAdapter(mAdapter);
         FileHelper fileHelper = provider.get(FileHelper.class);
         File logFile = fileHelper.getLogFile();
         FloatingActionButton fabClear = view.findViewById(R.id.fab_clear);
@@ -84,32 +87,34 @@ public class LogPage extends StatefulView<Activity> {
                                 .getProvider().get(ExecutorService.class)))
                         .map(file -> {
                             if (!file.exists()) {
-                                return "";
+                                return new ArrayList<String>();
                             } else {
-                                StringBuilder stringBuilder = new StringBuilder();
-                                BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-                                char[] buff = new char[2048];
-                                int b = bufferedReader.read(buff);
-                                while (b != -1) {
-                                    stringBuilder.append(buff);
-                                    b = bufferedReader.read(buff);
+                                List<String> lines = new ArrayList<>();
+                                try (BufferedReader bufferedReader =
+                                             new BufferedReader(new FileReader(file))) {
+                                    String line = bufferedReader.readLine();
+                                    while (line != null) {
+                                        lines.add(line);
+                                        line = bufferedReader.readLine();
+                                    }
                                 }
-                                return stringBuilder.toString();
+                                return lines;
                             }
                         })
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(s -> {
+                        .subscribe(lines -> {
                             progressBar.setVisibility(View.GONE);
-                            textView.setText(s);
-                            if (s.isEmpty()) {
+                            mAdapter.setLines(lines);
+                            if (lines.isEmpty()) {
                                 noRecord.setVisibility(View.VISIBLE);
-                                scrollView.setVisibility(View.GONE);
+                                recyclerView.setVisibility(View.GONE);
                                 fabShare.setVisibility(View.GONE);
                                 fabClear.setVisibility(View.GONE);
                             } else {
                                 noRecord.setVisibility(View.GONE);
-                                scrollView.setVisibility(View.VISIBLE);
-                                scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
+                                recyclerView.setVisibility(View.VISIBLE);
+                                recyclerView.post(() ->
+                                        recyclerView.scrollToPosition(lines.size() - 1));
                                 fabShare.setVisibility(View.VISIBLE);
                                 fabClear.setVisibility(View.VISIBLE);
                             }
@@ -121,6 +126,10 @@ public class LogPage extends StatefulView<Activity> {
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
+        if (mAdapter != null) {
+            mAdapter.dispose(activity);
+            mAdapter = null;
+        }
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;
