@@ -1,0 +1,11 @@
+Release 1.4.1+25
+
+Endurbætur:
+* Dagbókarsýn bjartsýn með RecyclerView til að koma í veg fyrir að viðmót frjósi við stórar skrár
+* Target Android SDK uppfært í 37 (Android 17)
+
+Villuleiðréttingar:
+* Biðminnisritun í FileHelper löguð
+* Minnyleki við myndþjöppun lagfærður með Bitmap-endurvinnslu
+* Tag-samsvörun í WorkManager löguð þegar eldri áminningum er eytt
+* Tilvísanir í klasaheiti fyrir viðmótsuppsetningu lagfærðar

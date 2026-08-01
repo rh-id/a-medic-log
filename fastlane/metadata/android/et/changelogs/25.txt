@@ -1,0 +1,11 @@
+Release 1.4.1+25
+
+Täiustused:
+* Logivaaturi optimeerimine RecyclerView-ga, et vältida külmumist suurte logide puhul
+* Uuendatud siht-Android SDK 37-le (Android 17)
+
+Veaparandused:
+* Parandatud puhvri kirjutamise arvutus FileHelper-is
+* Parandatud mäluleke piltide pakimisel Bitmap-i taaskasutusega
+* Parandatud WorkManageri siltide kokkulangevus vanade meeldetuletuste tühistamisel
+* Parandatud küljenduse klassinimede viited erinevatel lehtedel

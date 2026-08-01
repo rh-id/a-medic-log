@@ -1,0 +1,11 @@
+Release 1.4.1+25
+
+Peningkatan:
+* Optimasi tampilan Log dengan RecyclerView untuk cegah UI freeze pada log besar
+* Memperbarui target Android SDK ke 37 (Android 17)
+
+Perbaikan Bug:
+* Memperbaiki kalkulasi penulisan buffer di FileHelper
+* Memperbaiki kebocoran memori kompresi gambar dengan daur ulang Bitmap eksplisit
+* Memperbaiki pencocokan tag WorkManager saat membatalkan tugas pengingat lama
+* Memperbaiki referensi kelas inflasi tata letak di berbagai halaman

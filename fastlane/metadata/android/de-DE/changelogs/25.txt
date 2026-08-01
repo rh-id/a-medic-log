@@ -1,0 +1,11 @@
+Release 1.4.1+25
+
+Verbesserungen:
+* Log-Anzeige mit RecyclerView optimiert, um Einfrieren bei großen Protokollen zu verhindern
+* Ziel-Android-SDK auf 37 (Android 17) aktualisiert
+
+Fehlerbehebungen:
+* Pufferschreibberechnung in FileHelper korrigiert
+* Speicherleck bei Bildkomprimierung durch Bitmap-Recycling behoben
+* WorkManager-Tag-Abgleich beim Abbrechen alter Erinnerungsaufgaben korrigiert
+* Klassennamenreferenzen für Layout-Inflation korrigiert

@@ -1,0 +1,11 @@
+Release 1.4.1+25
+
+Meglieraziuns:
+* Visualisader da log optimisà cun RecyclerView per meglierar la prestaziun tar grondas datotecas
+* Actualisà il SDK Android da finamira a 37 (Android 17)
+
+Correcziuns:
+* Corregì la calculaziun da scriver il buffer en FileHelper
+* Corregì la perdita da memoria tar cumpressiun d'illustraziuns cun recicladi da Bitmaps
+* Corregì la correspondenza da tags da WorkManager tar l'annullaziun da vegls detg-davosters
+* Corregì las classas d'inflaziun dal layout

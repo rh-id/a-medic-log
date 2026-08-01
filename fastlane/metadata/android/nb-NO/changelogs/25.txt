@@ -1,0 +1,11 @@
+Release 1.4.1+25
+
+Forbedringer:
+* Loggvisning optimalisert med RecyclerView for å forhindre at brukergrensesnittet fryser ved store logger
+* Oppgradert mål-Android SDK til 37 (Android 17)
+
+Feilrettinger:
+* Rettet skriveberegning for mebuffer i FileHelper
+* Rettet minnelekkasje ved bildekomprimering med gjenbruk av Bitmap
+* Rettet WorkManager-taggmatching ved kansellering av eldre påminnelser
+* Rettet klassenavnreferanser for oppsettinflasjon på sider

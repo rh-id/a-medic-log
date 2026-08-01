@@ -1,0 +1,11 @@
+Release 1.4.1+25
+
+Améliorations :
+* Optimisation du visionneur de journaux avec RecyclerView pour éviter le gel sur les grands fichiers
+* Mise à niveau du SDK Android cible vers 37 (Android 17)
+
+Corrections :
+* Correction du calcul d'écriture du tampon dans FileHelper
+* Fuite de mémoire corrigée lors de la compression d'image avec recyclage de Bitmap
+* Tag WorkManager corrigé lors de l'annulation d'anciens rappels
+* Correction des classes d'inflation de mise en page

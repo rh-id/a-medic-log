@@ -1,0 +1,11 @@
+Release 1.4.1+25
+
+Improvements:
+* Log viewer optimization using RecyclerView to prevent UI freeze on large log files
+* Updated target Android SDK to 37 (Android 17)
+
+Fixes:
+* Fixed FileHelper buffer write calculation
+* Fixed native memory leak in image compression with explicit Bitmap recycling
+* Fixed WorkManager tag matching when cancelling legacy reminder workers
+* Fixed layout inflation class name references across pages
