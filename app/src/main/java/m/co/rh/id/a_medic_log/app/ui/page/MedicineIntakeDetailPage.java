@@ -17,6 +17,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.function.Function;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
@@ -64,7 +65,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
 
     public MedicineIntakeDetailPage() {
         mAppBarSv = new AppBarSV(R.menu.page_medicine_intake_detail);
-        mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
+        mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
     }
 
     @Override

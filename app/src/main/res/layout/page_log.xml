@@ -33,7 +33,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:visibility="gone"
-            app:layoutManager=".app.ui.recyclerview.CustomLinearLayoutManager" />
+            app:layoutManager="m.co.rh.id.a_medic_log.app.ui.recyclerview.CustomLinearLayoutManager" />
     </LinearLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

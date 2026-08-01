@@ -61,8 +61,12 @@ public class MedicineReminderNotificationWorker extends Worker {
 
         // previously this worker is enqueued as periodic work, so remove it
         Set<String> tags = getTags();
-        String tag = tags.iterator().next();
-        mWorkManager.get().cancelUniqueWork(tag);
+        for (String tag : tags) {
+            if (tag.startsWith(Tags.MEDICINE_REMINDER_TAG)) {
+                mWorkManager.get().cancelUniqueWork(tag);
+                break;
+            }
+        }
 
         return Result.success();
     }

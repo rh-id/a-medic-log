@@ -20,6 +20,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -58,8 +59,8 @@ public class MedicineItemSV extends StatefulView<Activity> implements RequireCom
     public MedicineItemSV() {
         mMedicineStateSubject = new SerialBehaviorSubject<>(new MedicineState());
         mLastMedicineIntakeSubject = new SerialOptionalBehaviorSubject<>();
-        mDateTimeFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
-        mTimeFormat = new SimpleDateFormat("HH:mm");
+        mDateTimeFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
+        mTimeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
     }
 
     @Override

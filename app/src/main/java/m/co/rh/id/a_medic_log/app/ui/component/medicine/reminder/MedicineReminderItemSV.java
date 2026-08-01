@@ -10,6 +10,7 @@ import androidx.appcompat.widget.SwitchCompat;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -32,7 +33,7 @@ public class MedicineReminderItemSV extends StatefulView<Activity> implements Re
 
     public MedicineReminderItemSV() {
         mMedicineReminderSubject = new SerialBehaviorSubject<>(new MedicineReminder());
-        mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
+        mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
     }
 
     @Override

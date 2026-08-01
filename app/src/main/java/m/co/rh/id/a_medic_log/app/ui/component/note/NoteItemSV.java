@@ -12,6 +12,7 @@ import com.google.android.material.chip.ChipGroup;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 import java.util.TreeSet;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
@@ -56,7 +57,7 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
         mProfileSubject = new SerialBehaviorSubject<>(new Profile());
         mNoteSubject = new SerialBehaviorSubject<>(new Note());
         mNoteTagSetSubject = new SerialBehaviorSubject<>(new TreeSet<>());
-        mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
+        mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
     }
 
     @Override

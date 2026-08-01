@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -29,7 +30,7 @@ public class MedicineIntakeItemSV extends StatefulView<Activity> implements Requ
 
     public MedicineIntakeItemSV() {
         mMedicineIntakeSubject = new SerialBehaviorSubject<>(new MedicineIntake());
-        mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
+        mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
     }
 
     @Override

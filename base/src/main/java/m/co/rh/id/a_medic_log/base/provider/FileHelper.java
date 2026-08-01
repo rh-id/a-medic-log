@@ -83,7 +83,7 @@ public class FileHelper {
                 byte[] buff = new byte[2048];
                 int b = bufferedInputStream.read(buff);
                 while (b != -1) {
-                    bufferedOutputStream.write(buff);
+                    bufferedOutputStream.write(buff, 0, b);
                     b = bufferedInputStream.read(buff);
                 }
             }
@@ -183,6 +183,10 @@ public class FileHelper {
                 new FileOutputStream(outFile), 10240)) {
             bitmap.compress(Bitmap.CompressFormat.JPEG, 90, fileOutputStream);
             fileOutputStream.flush();
+        } finally {
+            if (bitmap != null && !bitmap.isRecycled()) {
+                bitmap.recycle();
+            }
         }
     }
 

@@ -27,7 +27,7 @@
         android:layout_height="80dp"
         android:layout_margin="@dimen/text_margin"
         android:orientation="horizontal"
-        app:layoutManager=".app.ui.recyclerview.CustomLinearLayoutManager"
+        app:layoutManager="m.co.rh.id.a_medic_log.app.ui.recyclerview.CustomLinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/container_action_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

@@ -108,7 +108,7 @@
                 android:layout_marginStart="@dimen/text_margin"
                 android:layout_marginEnd="@dimen/text_margin"
                 android:layout_marginBottom="@dimen/text_margin"
-                app:layoutManager=".app.ui.recyclerview.CustomLinearLayoutManager" />
+                app:layoutManager="m.co.rh.id.a_medic_log.app.ui.recyclerview.CustomLinearLayoutManager" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

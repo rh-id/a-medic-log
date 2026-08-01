@@ -20,6 +20,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.function.Function;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
@@ -106,7 +107,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
     @Override
     protected void initState(Activity activity) {
         super.initState(activity);
-        mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
+        mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
         MedicineReminder medicineReminder = getMedicineReminder();
         mMedicineReminderSubject = new SerialBehaviorSubject<>(medicineReminder);
         mReminderDaysSubject = new SerialBehaviorSubject<>(medicineReminder.reminderDays);

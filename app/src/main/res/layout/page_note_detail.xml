@@ -260,7 +260,7 @@
                         android:layout_marginEnd="@dimen/text_margin"
                         android:layout_marginBottom="@dimen/text_margin"
                         android:visibility="gone"
-                        app:layoutManager=".app.ui.recyclerview.CustomLinearLayoutManager" />
+                        app:layoutManager="m.co.rh.id.a_medic_log.app.ui.recyclerview.CustomLinearLayoutManager" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
@@ -344,7 +344,7 @@
                         android:layout_marginEnd="@dimen/text_margin"
                         android:layout_marginBottom="@dimen/text_margin"
                         android:visibility="gone"
-                        app:layoutManager=".app.ui.recyclerview.CustomLinearLayoutManager" />
+                        app:layoutManager="m.co.rh.id.a_medic_log.app.ui.recyclerview.CustomLinearLayoutManager" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
         </LinearLayout>

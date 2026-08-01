@@ -34,6 +34,6 @@
             android:id="@+id/recyclerView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layoutManager=".app.ui.recyclerview.CustomLinearLayoutManager" />
+            app:layoutManager="m.co.rh.id.a_medic_log.app.ui.recyclerview.CustomLinearLayoutManager" />
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </LinearLayout>
