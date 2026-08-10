@@ -32,8 +32,8 @@ The app works as a production app even though it is a demo app.
 |---|---|
 | Language | Java 17 |
 | Min SDK | 21 (Android 5.0) |
-| Target SDK | 36 (Android 16) |
-| Compile SDK | 36 |
+| Target SDK | 37 (Android 17) |
+| Compile SDK | 37 |
 | Build System | Gradle (AGP 9.2.1) |
 | Architecture | Single-Activity + StatefulView |
 | Navigation | [a-navigator](https://github.com/rh-id/a-navigator) |
@@ -176,7 +176,7 @@ erDiagram
 
 ### Prerequisites
 - JDK 17
-- Android SDK with Compile SDK 36
+- Android SDK with Compile SDK 37
 
 ### Build commands
 ```bash
