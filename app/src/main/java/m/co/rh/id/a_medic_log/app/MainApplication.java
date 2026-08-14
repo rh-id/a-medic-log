@@ -1,6 +1,7 @@
 package m.co.rh.id.a_medic_log.app;
 
 import android.app.Activity;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.work.Configuration;
@@ -53,7 +54,7 @@ public class MainApplication extends BaseApplication implements Configuration.Pr
         return new Configuration.Builder()
                 .setTaskExecutor(scheduledExecutorService)
                 .setExecutor(scheduledExecutorService)
-                .setMinimumLoggingLevel(android.util.Log.INFO)
+                .setMinimumLoggingLevel(Log.INFO)
                 .build();
     }
 }

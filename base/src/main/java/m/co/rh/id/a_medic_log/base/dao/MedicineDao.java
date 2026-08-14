@@ -1,7 +1,6 @@
 package m.co.rh.id.a_medic_log.base.dao;
 
 import androidx.room.Dao;
-import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;

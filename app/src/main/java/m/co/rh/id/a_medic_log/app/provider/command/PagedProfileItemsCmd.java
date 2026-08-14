@@ -1,7 +1,5 @@
 package m.co.rh.id.a_medic_log.app.provider.command;
 
-import android.content.Context;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
