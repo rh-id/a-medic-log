@@ -119,7 +119,12 @@ public class MedicineReminder implements Serializable, Cloneable {
     @Override
     public MedicineReminder clone() {
         try {
-            return (MedicineReminder) super.clone();
+            MedicineReminder medicineReminder = (MedicineReminder) super.clone();
+            // copy the set so clone is independent from the original when mutated in place
+            if (reminderDays != null) {
+                medicineReminder.reminderDays = new LinkedHashSet<>(reminderDays);
+            }
+            return medicineReminder;
         } catch (CloneNotSupportedException e) {
             return null;
         }

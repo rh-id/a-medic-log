@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Locale;
 import java.util.TreeSet;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
@@ -26,7 +27,7 @@ public class NoteState implements Serializable, Cloneable {
         mMedicineListSubject = new SerialBehaviorSubject<>(new ArrayList<>());
         mNoteTagSetSubject = new SerialBehaviorSubject<>(new TreeSet<>());
         mNoteAttachmentsSubject = new SerialBehaviorSubject<>(new ArrayList<>());
-        mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
+        mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault());
     }
 
     public void setNoteProfileId(long profileId) {
@@ -194,6 +195,17 @@ public class NoteState implements Serializable, Cloneable {
             medicineStates = new ArrayList<>();
         }
         noteState.updateMedicineStates(medicineStates);
+        ArrayList<NoteAttachmentState> noteAttachmentStates = mNoteAttachmentsSubject.getValue();
+        if (noteAttachmentStates != null && !noteAttachmentStates.isEmpty()) {
+            ArrayList<NoteAttachmentState> noteAttachmentStatesClone = new ArrayList<>(noteAttachmentStates.size());
+            for (NoteAttachmentState noteAttachmentState : noteAttachmentStates) {
+                noteAttachmentStatesClone.add(noteAttachmentState.clone());
+            }
+            noteAttachmentStates = noteAttachmentStatesClone;
+        } else {
+            noteAttachmentStates = new ArrayList<>();
+        }
+        noteState.updateNoteAttachments(noteAttachmentStates);
         return noteState;
     }
 }

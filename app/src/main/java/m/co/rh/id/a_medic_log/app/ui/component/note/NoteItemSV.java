@@ -63,6 +63,7 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
     @Override
     public void provideComponent(Provider provider) {
         mSvProvider = provider.get(StatefulViewProvider.class);
+        mLogger = mSvProvider.get(ILogger.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mNoteTagChangeNotifier = mSvProvider.get(NoteTagChangeNotifier.class);
         mQueryNoteCmd = mSvProvider.get(QueryNoteCmd.class);
