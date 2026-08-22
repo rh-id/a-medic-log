@@ -25,40 +25,28 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
-import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteAttachmentFileCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteAttachmentCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteAttachmentFileCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateNoteAttachmentCmd;
-import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.note.attachment.NoteAttachmentFileItemSV;
 import m.co.rh.id.a_medic_log.app.ui.component.note.attachment.NoteAttachmentFileRecyclerViewAdapter;
 import m.co.rh.id.a_medic_log.app.ui.page.common.CreateFileSVDialog;
+import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
 import m.co.rh.id.a_medic_log.base.entity.NoteAttachmentFile;
 import m.co.rh.id.a_medic_log.base.provider.FileHelper;
 import m.co.rh.id.a_medic_log.base.state.NoteAttachmentState;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
-import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
-import m.co.rh.id.anavigator.component.INavigator;
-import m.co.rh.id.anavigator.component.RequireComponent;
-import m.co.rh.id.anavigator.component.RequireNavRoute;
-import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.aprovider.Provider;
 
-public class NoteAttachmentDetailPage extends StatefulView<Activity> implements RequireNavigator, RequireNavRoute, RequireComponent<Provider>, Toolbar.OnMenuItemClickListener, View.OnClickListener, NoteAttachmentFileItemSV.NoteAttachmentFileItemOnDeleteClick {
+public class NoteAttachmentDetailPage extends BaseDetailPage implements Toolbar.OnMenuItemClickListener, View.OnClickListener, NoteAttachmentFileItemSV.NoteAttachmentFileItemOnDeleteClick {
 
     private static final String TAG = NoteAttachmentDetailPage.class.getName();
-    @NavInject
-    private transient INavigator mNavigator;
-    private transient NavRoute mNavRoute;
-    private transient Provider mSvProvider;
     private transient ExecutorService mExecutorService;
-    private transient RxDisposer mRxDisposer;
     private transient FileHelper mFileHelper;
-    private transient ILogger mLogger;
     private transient NewNoteAttachmentCmd mNewNoteAttachmentCmd;
     private transient NewNoteAttachmentFileCmd mNewNoteAttachmentFileCmd;
     private transient DeleteNoteAttachmentFileCmd mDeleteNoteAttachmentFileCmd;
@@ -70,22 +58,9 @@ public class NoteAttachmentDetailPage extends StatefulView<Activity> implements 
     private transient NoteAttachmentFileRecyclerViewAdapter mNoteAttachmentFileRecyclerViewAdapter;
 
     @Override
-    public void provideNavigator(INavigator navigator) {
-        mNavigator = navigator;
-    }
-
-    @Override
-    public void provideNavRoute(NavRoute navRoute) {
-        mNavRoute = navRoute;
-    }
-
-    @Override
-    public void provideComponent(Provider provider) {
-        mSvProvider = provider.get(StatefulViewProvider.class);
+    protected void onProvideComponent(Provider provider) {
         mExecutorService = mSvProvider.get(ExecutorService.class);
-        mRxDisposer = mSvProvider.get(RxDisposer.class);
         mFileHelper = mSvProvider.get(FileHelper.class);
-        mLogger = mSvProvider.get(ILogger.class);
         mNewNoteAttachmentFileCmd = mSvProvider.get(NewNoteAttachmentFileCmd.class);
         mDeleteNoteAttachmentFileCmd = mSvProvider.get(DeleteNoteAttachmentFileCmd.class);
         boolean isUpdate = isUpdate();
@@ -107,17 +82,7 @@ public class NoteAttachmentDetailPage extends StatefulView<Activity> implements 
                 }
             }
         }
-        mNameTextWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // leave blank
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // leave blank
-            }
-
+        mNameTextWatcher = new SimpleTextWatcher() {
             @Override
             public void afterTextChanged(Editable editable) {
                 String name = editable.toString();
@@ -147,7 +112,7 @@ public class NoteAttachmentDetailPage extends StatefulView<Activity> implements 
         RecyclerView noteAttachmentFileRecyclerView = rootLayout.findViewById(R.id.recyclerView_note_attachment_file);
         noteAttachmentFileRecyclerView.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL));
         noteAttachmentFileRecyclerView.setAdapter(mNoteAttachmentFileRecyclerViewAdapter);
-        mRxDisposer.add("createView_onNameValid",
+        mRxDisposer.add("NoteAttachmentDetailPage.createView_onNameValid",
                 mNewNoteAttachmentCmd.getNameValid().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(s -> {
                             if (!s.isEmpty()) {
@@ -160,15 +125,10 @@ public class NoteAttachmentDetailPage extends StatefulView<Activity> implements 
     }
 
     @Override
-    public void dispose(Activity activity) {
-        super.dispose(activity);
+    protected void onPageDispose(Activity activity) {
         if (mAppBarSV != null) {
             mAppBarSV.dispose(activity);
             mAppBarSV = null;
-        }
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-            mSvProvider = null;
         }
     }
 
@@ -178,7 +138,7 @@ public class NoteAttachmentDetailPage extends StatefulView<Activity> implements 
         if (id == R.id.menu_save) {
             if (shouldSave()) {
                 if (mNewNoteAttachmentCmd.valid(mNoteAttachmentState)) {
-                    mRxDisposer.add("onMenuItemClick_save",
+                    mRxDisposer.add("NoteAttachmentDetailPage.onMenuItemClick_save",
                             mNewNoteAttachmentCmd.execute(mNoteAttachmentState)
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe((noteAttachmentState, throwable) -> {
@@ -222,7 +182,7 @@ public class NoteAttachmentDetailPage extends StatefulView<Activity> implements 
     }
 
     private void addNoteAttachmentFile(File file) {
-        mRxDisposer.add("addNoteAttachmentFile",
+        mRxDisposer.add("NoteAttachmentDetailPage.addNoteAttachmentFile",
                 Single.fromCallable(() -> {
                     String fileName = file.getName();
                     Future<File> imageFile = mExecutorService.submit(() -> mFileHelper.createNoteAttachmentImage(Uri.fromFile(file), fileName));
@@ -257,7 +217,7 @@ public class NoteAttachmentDetailPage extends StatefulView<Activity> implements 
     @Override
     public void noteAttachmentFile_onDeleteClick(NoteAttachmentFile noteAttachmentFile) {
         if (isUpdate()) {
-            mRxDisposer.add("noteAttachmentFile_onDeleteClick_delete",
+            mRxDisposer.add("NoteAttachmentDetailPage.noteAttachmentFile_onDeleteClick_delete",
                     mDeleteNoteAttachmentFileCmd.execute(noteAttachmentFile)
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe((deletedNoteAttachmentFile, throwable) -> {

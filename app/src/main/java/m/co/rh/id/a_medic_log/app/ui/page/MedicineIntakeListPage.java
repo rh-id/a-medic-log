@@ -89,8 +89,8 @@ public class MedicineIntakeListPage extends StatefulView<Activity> implements Re
         return null;
     }
 
-    static class Args implements Serializable {
-        static Args with(long medicineId) {
+    public static class Args implements Serializable {
+        public static Args with(long medicineId) {
             Args args = new Args();
             args.mMedicineId = medicineId;
             return args;

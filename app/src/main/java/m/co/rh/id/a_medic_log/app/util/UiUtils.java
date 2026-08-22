@@ -14,8 +14,28 @@ import androidx.core.content.FileProvider;
 import java.io.File;
 
 import m.co.rh.id.a_medic_log.app.constants.Constants;
+import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
+import m.co.rh.id.aprovider.Provider;
 
 public class UiUtils {
+
+    public static void showConfirmDialog(INavigator navigator, Provider provider,
+                                         String title, String content, Runnable onConfirm) {
+        NavExtDialogConfig navExtDialogConfig = provider.get(NavExtDialogConfig.class);
+        navigator.push(navExtDialogConfig.route_confirmDialog(),
+                navExtDialogConfig.args_confirmDialog(title, content),
+                (navigator1, navRoute, activity, currentView) -> {
+                    Provider requiredComponent = (Provider) navigator1
+                            .getNavConfiguration().getRequiredComponent();
+                    Boolean result = requiredComponent.get(NavExtDialogConfig.class)
+                            .result_confirmDialog(navRoute);
+                    if (result != null && result) {
+                        onConfirm.run();
+                    }
+                });
+    }
+
     public static void shareText(Context context, String textBody, String chooserMessage) {
         Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND);

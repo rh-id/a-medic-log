@@ -27,32 +27,20 @@ import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_medic_log.R;
-import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineReminderCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineReminderCmd;
-import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
+import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
-import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
-import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
-import m.co.rh.id.anavigator.component.INavigator;
-import m.co.rh.id.anavigator.component.RequireComponent;
-import m.co.rh.id.anavigator.component.RequireNavRoute;
-import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
-public class MedicineReminderDetailPage extends StatefulView<Activity> implements RequireNavigator, RequireNavRoute, RequireComponent<Provider>, Toolbar.OnMenuItemClickListener, View.OnClickListener {
+public class MedicineReminderDetailPage extends BaseDetailPage implements Toolbar.OnMenuItemClickListener, View.OnClickListener {
     private static final String TAG = MedicineReminderDetailPage.class.getName();
-    private transient INavigator mNavigator;
-    private transient NavRoute mNavRoute;
-    private transient Provider mSvProvider;
-    private transient ILogger mLogger;
-    private transient RxDisposer mRxDisposer;
     private transient NewMedicineReminderCmd mNewMedicineReminderCmd;
     private transient QueryMedicineCmd mQueryMedicineCmd;
 
@@ -68,21 +56,8 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
     private transient Function<String, Single<LinkedHashSet<String>>> mSuggestionMessageQuery;
 
     @Override
-    public void provideNavigator(INavigator navigator) {
-        mNavigator = navigator;
-    }
-
-    @Override
-    public void provideNavRoute(NavRoute navRoute) {
-        mNavRoute = navRoute;
-    }
-
-    @Override
-    public void provideComponent(Provider provider) {
+    protected void onProvideComponent(Provider provider) {
         boolean isUpdate = isUpdate();
-        mSvProvider = provider.get(StatefulViewProvider.class);
-        mLogger = mSvProvider.get(ILogger.class);
-        mRxDisposer = mSvProvider.get(RxDisposer.class);
         if (isUpdate) {
             mNewMedicineReminderCmd = mSvProvider.get(UpdateMedicineReminderCmd.class);
         } else {
@@ -142,7 +117,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
         reminderDaysSat.setOnClickListener(this);
         Button reminderDaysSun = rootLayout.findViewById(R.id.reminder_days_sun);
         reminderDaysSun.setOnClickListener(this);
-        mRxDisposer.add("createView_onMedicineReminderUpdated",
+        mRxDisposer.add("MedicineReminderDetailPage.createView_onMedicineReminderUpdated",
                 mMedicineReminderSubject.getSubject()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(medicineReminder -> {
@@ -153,7 +128,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
                             }
                             inputMessage.setText(medicineReminder.message);
                         }));
-        mRxDisposer.add("createView_onStartDateTimeValidated",
+        mRxDisposer.add("MedicineReminderDetailPage.createView_onStartDateTimeValidated",
                 mNewMedicineReminderCmd.getStartDateTimeValid()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(s -> {
@@ -163,7 +138,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
                                 inputMessage.setError(null);
                             }
                         }));
-        mRxDisposer.add("createView_onInputMessageValidated",
+        mRxDisposer.add("MedicineReminderDetailPage.createView_onInputMessageValidated",
                 mNewMedicineReminderCmd.getMessageValid()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(s -> {
@@ -173,7 +148,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
                                 inputMessage.setError(null);
                             }
                         }));
-        mRxDisposer.add("createView_onReminderDaysValidated",
+        mRxDisposer.add("MedicineReminderDetailPage.createView_onReminderDaysValidated",
                 mNewMedicineReminderCmd.getReminderDaysValid()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(s -> {
@@ -183,7 +158,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
                                 reminderDaysText.setError(null);
                             }
                         }));
-        mRxDisposer.add("createView_onReminderDaysChanged",
+        mRxDisposer.add("MedicineReminderDetailPage.createView_onReminderDaysChanged",
                 mReminderDaysSubject.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(integers -> {
                             if (!integers.isEmpty()) {
@@ -209,12 +184,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
     }
 
     @Override
-    public void dispose(Activity activity) {
-        super.dispose(activity);
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-            mSvProvider = null;
-        }
+    protected void onPageDispose(Activity activity) {
         if (mAppBarSv != null) {
             mAppBarSv.dispose(activity);
             mAppBarSv = null;
@@ -232,7 +202,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
                 boolean isUpdate = isUpdate();
                 Context context = mSvProvider.getContext();
                 if (mNewMedicineReminderCmd.valid(medicineReminder)) {
-                    mRxDisposer.add("onMenuItemClick_saveNewMedicineReminder",
+                    mRxDisposer.add("MedicineReminderDetailPage.onMenuItemClick_saveNewMedicineReminder",
                             mNewMedicineReminderCmd.execute(medicineReminder)
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe((medicineState, throwable) -> {
@@ -287,49 +257,39 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
                             updateStartDateTime(result);
                         }
                     });
-        } else if (id == R.id.reminder_days_mon) {
-            LinkedHashSet<Integer> reminderDays = mReminderDaysSubject.getValue();
-            if (!reminderDays.add(Calendar.MONDAY)) {
-                reminderDays.remove(Calendar.MONDAY);
+        } else {
+            Integer dayOfWeek = findDayOfWeek(id);
+            if (dayOfWeek != null) {
+                toggleReminderDay(dayOfWeek);
             }
-            mReminderDaysSubject.onNext(reminderDays);
-        } else if (id == R.id.reminder_days_tue) {
-            LinkedHashSet<Integer> reminderDays = mReminderDaysSubject.getValue();
-            if (!reminderDays.add(Calendar.TUESDAY)) {
-                reminderDays.remove(Calendar.TUESDAY);
-            }
-            mReminderDaysSubject.onNext(reminderDays);
-        } else if (id == R.id.reminder_days_wed) {
-            LinkedHashSet<Integer> reminderDays = mReminderDaysSubject.getValue();
-            if (!reminderDays.add(Calendar.WEDNESDAY)) {
-                reminderDays.remove(Calendar.WEDNESDAY);
-            }
-            mReminderDaysSubject.onNext(reminderDays);
-        } else if (id == R.id.reminder_days_thu) {
-            LinkedHashSet<Integer> reminderDays = mReminderDaysSubject.getValue();
-            if (!reminderDays.add(Calendar.THURSDAY)) {
-                reminderDays.remove(Calendar.THURSDAY);
-            }
-            mReminderDaysSubject.onNext(reminderDays);
-        } else if (id == R.id.reminder_days_fri) {
-            LinkedHashSet<Integer> reminderDays = mReminderDaysSubject.getValue();
-            if (!reminderDays.add(Calendar.FRIDAY)) {
-                reminderDays.remove(Calendar.FRIDAY);
-            }
-            mReminderDaysSubject.onNext(reminderDays);
-        } else if (id == R.id.reminder_days_sat) {
-            LinkedHashSet<Integer> reminderDays = mReminderDaysSubject.getValue();
-            if (!reminderDays.add(Calendar.SATURDAY)) {
-                reminderDays.remove(Calendar.SATURDAY);
-            }
-            mReminderDaysSubject.onNext(reminderDays);
-        } else if (id == R.id.reminder_days_sun) {
-            LinkedHashSet<Integer> reminderDays = mReminderDaysSubject.getValue();
-            if (!reminderDays.add(Calendar.SUNDAY)) {
-                reminderDays.remove(Calendar.SUNDAY);
-            }
-            mReminderDaysSubject.onNext(reminderDays);
         }
+    }
+
+    private Integer findDayOfWeek(int viewId) {
+        if (viewId == R.id.reminder_days_mon) {
+            return Calendar.MONDAY;
+        } else if (viewId == R.id.reminder_days_tue) {
+            return Calendar.TUESDAY;
+        } else if (viewId == R.id.reminder_days_wed) {
+            return Calendar.WEDNESDAY;
+        } else if (viewId == R.id.reminder_days_thu) {
+            return Calendar.THURSDAY;
+        } else if (viewId == R.id.reminder_days_fri) {
+            return Calendar.FRIDAY;
+        } else if (viewId == R.id.reminder_days_sat) {
+            return Calendar.SATURDAY;
+        } else if (viewId == R.id.reminder_days_sun) {
+            return Calendar.SUNDAY;
+        }
+        return null;
+    }
+
+    private void toggleReminderDay(int dayOfWeek) {
+        LinkedHashSet<Integer> reminderDays = mReminderDaysSubject.getValue();
+        if (!reminderDays.add(dayOfWeek)) {
+            reminderDays.remove(dayOfWeek);
+        }
+        mReminderDaysSubject.onNext(reminderDays);
     }
 
     private void updateStartDateTime(Date date) {
@@ -376,17 +336,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
 
     private void initTextWatcher() {
         if (mStartDateTimeTextWatcher == null) {
-            mStartDateTimeTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
+            mStartDateTimeTextWatcher = new SimpleTextWatcher() {
                 @Override
                 public void afterTextChanged(Editable editable) {
                     MedicineReminder medicineReminder = mMedicineReminderSubject.getValue();
@@ -395,17 +345,7 @@ public class MedicineReminderDetailPage extends StatefulView<Activity> implement
             };
         }
         if (mMessageTextWatcher == null) {
-            mMessageTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
+            mMessageTextWatcher = new SimpleTextWatcher() {
                 @Override
                 public void afterTextChanged(Editable editable) {
                     String message = editable.toString();

@@ -24,39 +24,27 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
-import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteMedicineReminderCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineReminderCmd;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineReminderChangeNotifier;
-import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.reminder.MedicineReminderItemSV;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.reminder.MedicineReminderRecyclerViewAdapter;
+import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
+import m.co.rh.id.a_medic_log.app.util.UiUtils;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
-import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
-import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
-import m.co.rh.id.anavigator.component.INavigator;
-import m.co.rh.id.anavigator.component.RequireComponent;
-import m.co.rh.id.anavigator.component.RequireNavRoute;
-import m.co.rh.id.anavigator.component.RequireNavigator;
-import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
-public class MedicineDetailPage extends StatefulView<Activity> implements RequireNavigator, RequireNavRoute, RequireComponent<Provider>, Toolbar.OnMenuItemClickListener, MedicineReminderItemSV.OnEditClick, MedicineReminderItemSV.OnEnableSwitchClick, MedicineReminderItemSV.OnDeleteClick, View.OnClickListener {
+public class MedicineDetailPage extends BaseDetailPage implements Toolbar.OnMenuItemClickListener, MedicineReminderItemSV.OnEditClick, MedicineReminderItemSV.OnEnableSwitchClick, MedicineReminderItemSV.OnDeleteClick, View.OnClickListener {
     private static final String TAG = MedicineDetailPage.class.getName();
-    private transient INavigator mNavigator;
-    private transient NavRoute mNavRoute;
     private transient ExecutorService mExecutorService;
-    private transient Provider mSvProvider;
-    private transient ILogger mLogger;
-    private transient RxDisposer mRxDisposer;
     private transient MedicineReminderChangeNotifier mMedicineReminderChangeNotifier;
     private transient NewMedicineCmd mNewMedicineCmd;
     private transient QueryMedicineCmd mQueryMedicineCmd;
@@ -74,22 +62,9 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
     private transient TextWatcher mDescriptionTextWatcher;
 
     @Override
-    public void provideNavigator(INavigator navigator) {
-        mNavigator = navigator;
-    }
-
-    @Override
-    public void provideNavRoute(NavRoute navRoute) {
-        mNavRoute = navRoute;
-    }
-
-    @Override
-    public void provideComponent(Provider provider) {
+    protected void onProvideComponent(Provider provider) {
         boolean isUpdate = isUpdate();
         mExecutorService = provider.get(ExecutorService.class);
-        mSvProvider = provider.get(StatefulViewProvider.class);
-        mLogger = mSvProvider.get(ILogger.class);
-        mRxDisposer = mSvProvider.get(RxDisposer.class);
         mMedicineReminderChangeNotifier = mSvProvider.get(MedicineReminderChangeNotifier.class);
         if (isUpdate) {
             mNewMedicineCmd = mSvProvider.get(UpdateMedicineCmd.class);
@@ -141,13 +116,13 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
         RecyclerView medicineReminderRecyclerView = rootLayout.findViewById(R.id.recyclerView_medicine_reminder);
         medicineReminderRecyclerView.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL));
         medicineReminderRecyclerView.setAdapter(mMedicineReminderRecyclerViewAdapter);
-        mRxDisposer.add("createView_onMedicineChanged",
+        mRxDisposer.add("MedicineDetailPage.createView_onMedicineChanged",
                 mMedicineState.getMedicineFlow().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(medicine -> {
                             inputName.setText(medicine.name);
                             inputDescription.setText(medicine.description);
                         }));
-        mRxDisposer.add("createView_onInputNameValidated",
+        mRxDisposer.add("MedicineDetailPage.createView_onInputNameValidated",
                 mNewMedicineCmd.getNameValid()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(s -> {
@@ -157,10 +132,10 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
                                 inputName.setError(null);
                             }
                         }));
-        mRxDisposer.add("createView_onMedicineReminderListChanged",
+        mRxDisposer.add("MedicineDetailPage.createView_onMedicineReminderListChanged",
                 mMedicineState.getMedicineReminderListFlow().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(medicineReminders -> mMedicineReminderRecyclerViewAdapter.notifyItemRefreshed()));
-        mRxDisposer.add("createView_onMedicineReminderAdded",
+        mRxDisposer.add("MedicineDetailPage.createView_onMedicineReminderAdded",
                 mMedicineReminderChangeNotifier.getAddedMedicineReminder()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(medicineReminder -> {
@@ -168,7 +143,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
                                 mMedicineState.addMedicineReminder(medicineReminder);
                             }
                         }));
-        mRxDisposer.add("createView_onMedicineReminderUpdated",
+        mRxDisposer.add("MedicineDetailPage.createView_onMedicineReminderUpdated",
                 mMedicineReminderChangeNotifier.getUpdatedMedicineReminder()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(updateMedicineReminderEvent -> {
@@ -176,7 +151,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
                                 mMedicineState.updateMedicineReminder(updateMedicineReminderEvent.getAfter());
                             }
                         }));
-        mRxDisposer.add("createView_onMedicineReminderDeleted",
+        mRxDisposer.add("MedicineDetailPage.createView_onMedicineReminderDeleted",
                 mMedicineReminderChangeNotifier.getDeletedMedicineReminder()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(medicineReminder -> {
@@ -188,12 +163,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
     }
 
     @Override
-    public void dispose(Activity activity) {
-        super.dispose(activity);
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-            mSvProvider = null;
-        }
+    protected void onPageDispose(Activity activity) {
         if (mAppBarSv != null) {
             mAppBarSv.dispose(activity);
             mAppBarSv = null;
@@ -215,7 +185,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
                 boolean isUpdate = isUpdate();
                 Context context = mSvProvider.getContext();
                 if (mNewMedicineCmd.valid(mMedicineState)) {
-                    mRxDisposer.add("onMenuItemClick_saveNewMedicine",
+                    mRxDisposer.add("MedicineDetailPage.onMenuItemClick_saveNewMedicine",
                             mNewMedicineCmd.execute(mMedicineState)
                                     .observeOn(AndroidSchedulers.mainThread())
                                     .subscribe((medicineState, throwable) -> {
@@ -282,7 +252,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
         if (isUpdate() && shouldSave()) {
             Context context = mSvProvider.getContext();
             if (mUpdateMedicineReminderCmd.valid(medicineReminder)) {
-                mRxDisposer.add("onEnableSwitchClick_saveMedicineReminder",
+                mRxDisposer.add("MedicineDetailPage.onEnableSwitchClick_saveMedicineReminder",
                         mUpdateMedicineReminderCmd.execute(medicineReminder)
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe((medicineState, throwable) -> {
@@ -338,16 +308,8 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
             Context context = mSvProvider.getContext();
             String title = context.getString(R.string.title_confirm);
             String content = context.getString(R.string.confirm_delete_medicine_reminder, medicineReminder.message);
-            NavExtDialogConfig navExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
-            mNavigator.push(navExtDialogConfig.route_confirmDialog(),
-                    navExtDialogConfig.args_confirmDialog(title, content),
-                    (navigator, navRoute, activity, currentView) -> {
-                        Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                        Boolean result = provider.get(NavExtDialogConfig.class).result_confirmDialog(navRoute);
-                        if (result != null && result) {
-                            confirmDeleteMedicineReminder(medicineReminder);
-                        }
-                    });
+            UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
+                    () -> confirmDeleteMedicineReminder(medicineReminder));
         } else {
             mMedicineReminderRecyclerViewAdapter.notifyItemDeleted(medicineReminder);
         }
@@ -355,7 +317,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
 
     private void confirmDeleteMedicineReminder(MedicineReminder medicineReminder) {
         Context context = mSvProvider.getContext();
-        mRxDisposer.add("confirmDeleteMedicineReminder_deleteMedicineReminderCmd",
+        mRxDisposer.add("MedicineDetailPage.confirmDeleteMedicineReminder_deleteMedicineReminderCmd",
                 mDeleteMedicineReminderCmd
                         .execute(medicineReminder)
                         .observeOn(AndroidSchedulers.mainThread())
@@ -411,17 +373,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
 
     private void initTextWatcher() {
         if (mNameTextWatcher == null) {
-            mNameTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
+            mNameTextWatcher = new SimpleTextWatcher() {
                 @Override
                 public void afterTextChanged(Editable editable) {
                     String name = editable.toString();
@@ -431,17 +383,7 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
             };
         }
         if (mDescriptionTextWatcher == null) {
-            mDescriptionTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
+            mDescriptionTextWatcher = new SimpleTextWatcher() {
                 @Override
                 public void afterTextChanged(Editable editable) {
                     String desc = editable.toString();
@@ -451,14 +393,14 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
         }
     }
 
-    static class Result implements Serializable {
+    public static class Result implements Serializable {
         static Result with(MedicineState medicineState) {
             Result result = new Result();
             result.mMedicineState = medicineState;
             return result;
         }
 
-        static Result of(NavRoute navRoute) {
+        public static Result of(NavRoute navRoute) {
             if (navRoute != null) {
                 return of(navRoute.getRouteResult());
             }
@@ -479,27 +421,27 @@ public class MedicineDetailPage extends StatefulView<Activity> implements Requir
         }
     }
 
-    static class Args implements Serializable {
-        static Args dontSave() {
+    public static class Args implements Serializable {
+        public static Args dontSave() {
             Args args = new Args();
             args.mShouldSave = false;
             return args;
         }
 
-        static Args save(long noteId) {
+        public static Args save(long noteId) {
             Args args = new Args();
             args.mShouldSave = true;
             args.mNoteId = noteId;
             return args;
         }
 
-        static Args forUpdate(MedicineState medicineState) {
+        public static Args forUpdate(MedicineState medicineState) {
             Args args = new Args();
             args.mMedicineState = medicineState;
             return args;
         }
 
-        static Args forEdit(MedicineState medicineState) {
+        public static Args forEdit(MedicineState medicineState) {
             Args args = new Args();
             args.mMedicineState = medicineState;
             args.mShouldSave = false;

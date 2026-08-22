@@ -1,14 +1,10 @@
 package m.co.rh.id.a_medic_log.app.provider.component;
 
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
+import android.app.Notification;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 
 import androidx.annotation.RequiresPermission;
-import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 import java.io.Serializable;
@@ -21,12 +17,8 @@ import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
-import m.co.rh.id.a_medic_log.app.MainActivity;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineIntakeCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineReminderCmd;
-import m.co.rh.id.a_medic_log.app.receiver.NotificationDeleteReceiver;
-import m.co.rh.id.a_medic_log.app.receiver.NotificationDisableMedicineReminderReceiver;
-import m.co.rh.id.a_medic_log.app.receiver.NotificationTakeMedicineReceiver;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
@@ -43,9 +35,6 @@ import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
 public class AppNotificationHandler {
-    private static final String GROUP_KEY_MEDICINE_REMINDER = "GROUP_KEY_MEDICINE_REMINDER";
-    private static final String KEY_INT_REQUEST_ID = "KEY_INT_REQUEST_ID";
-    private static final String CHANNEL_ID_MEDICINE_REMINDER = "CHANNEL_ID_MEDICINE_REMINDER";
     private static final String TAG = AppNotificationHandler.class.getName();
 
     private final Context mAppContext;
@@ -59,6 +48,7 @@ public class AppNotificationHandler {
     private final ProviderValue<NewMedicineIntakeCmd> mNewMedicineIntakeCmd;
     private final ProviderValue<UpdateMedicineReminderCmd> mUpdateMedicineReminderCmd;
     private final ProviderValue<MedicineReminderEventHandler> mMedicineReminderEventHandler;
+    private final MedicineReminderNotificationBuilder mNotificationBuilder;
     private final ReentrantLock mLock;
     private QueueSubject<MedicineReminder> mMedicineReminderSubject;
 
@@ -74,6 +64,7 @@ public class AppNotificationHandler {
         mNewMedicineIntakeCmd = provider.lazyGet(NewMedicineIntakeCmd.class);
         mUpdateMedicineReminderCmd = provider.lazyGet(UpdateMedicineReminderCmd.class);
         mMedicineReminderEventHandler = provider.lazyGet(MedicineReminderEventHandler.class);
+        mNotificationBuilder = new MedicineReminderNotificationBuilder(mAppContext);
         mLock = new ReentrantLock();
         mMedicineReminderSubject = new QueueSubject<>();
     }
@@ -81,54 +72,22 @@ public class AppNotificationHandler {
     public void postMedicineReminder(MedicineReminder medicineReminder) {
         mLock.lock();
         try {
-            createMedicineReminderNotificationChannel();
-            AndroidNotification androidNotification = new AndroidNotification();
-            androidNotification.groupKey = GROUP_KEY_MEDICINE_REMINDER;
-            androidNotification.refId = medicineReminder.id;
+            mNotificationBuilder.createMedicineReminderNotificationChannel();
+            AndroidNotification androidNotification = mNotificationBuilder
+                    .createAndroidNotification(medicineReminder);
             mAndroidNotificationRepo.get().insertNotification(androidNotification);
-            Intent receiverIntent = new Intent(mAppContext, MainActivity.class);
-            receiverIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
-            int intentFlag = PendingIntent.FLAG_UPDATE_CURRENT;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                intentFlag = PendingIntent.FLAG_IMMUTABLE;
-            }
-            PendingIntent pendingIntent = PendingIntent.getActivity(mAppContext, androidNotification.requestId, receiverIntent,
-                    intentFlag);
-            Intent deleteIntent = new Intent(mAppContext, NotificationDeleteReceiver.class);
-            deleteIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
-            PendingIntent deletePendingIntent = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, deleteIntent,
-                    intentFlag);
             Medicine medicine = mMedicineDao.get().findMedicineById(medicineReminder.medicineId);
             Note note = mNoteDao.get().findNoteById(medicine.noteId);
             Profile profile = mProfileDao.get().findProfileById(note.profileId);
             String title = mAppContext.getString(R.string.notification_title_medicine_reminder, profile.name, medicine.name);
             String content = medicineReminder.message;
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_MEDICINE_REMINDER)
-                    .setSmallIcon(R.drawable.ic_notification)
-                    .setColorized(true)
-                    .setColor(mAppContext.getResources().getColor(R.color.indigo_500))
-                    .setContentTitle(title)
-                    .setContentText(content)
-                    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                    .setContentIntent(pendingIntent)
-                    .setDeleteIntent(deletePendingIntent)
-                    .setGroup(GROUP_KEY_MEDICINE_REMINDER)
-                    .setAutoCancel(false);
-            Intent intentTakeMedicine = new Intent(mAppContext, NotificationTakeMedicineReceiver.class);
-            intentTakeMedicine.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
-            PendingIntent pendingIntentTakeMedicine = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, intentTakeMedicine,
-                    intentFlag);
-            builder.addAction(R.drawable.ic_check_black, mAppContext.getString(R.string.take_medicine), pendingIntentTakeMedicine);
-            Intent intentDisableMedicineReminder = new Intent(mAppContext, NotificationDisableMedicineReminderReceiver.class);
-            intentDisableMedicineReminder.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
-            PendingIntent pendingIntentDisableMedicineReminder = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, intentDisableMedicineReminder,
-                    intentFlag);
-            builder.addAction(R.drawable.ic_timer_off_black, mAppContext.getString(R.string.disable_reminder), pendingIntentDisableMedicineReminder);
+            Notification notification = mNotificationBuilder
+                    .buildMedicineReminderNotification(title, content, androidNotification.requestId);
 
             NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
-            notificationManagerCompat.notify(GROUP_KEY_MEDICINE_REMINDER,
+            notificationManagerCompat.notify(androidNotification.groupKey,
                     androidNotification.requestId,
-                    builder.build());
+                    notification);
         } catch (Exception e) {
             mLogger.get().d(TAG, "Failed to post medicine reminder: " + e.getMessage(), e);
         } finally {
@@ -136,22 +95,8 @@ public class AppNotificationHandler {
         }
     }
 
-    private void createMedicineReminderNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            CharSequence name = mAppContext.getString(R.string.notification_channel_name_medicine_reminder);
-            String description = mAppContext.getString(R.string.notification_channel_description_medicine_reminder);
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
-            NotificationChannel channel = new NotificationChannel(CHANNEL_ID_MEDICINE_REMINDER,
-                    name, importance);
-            channel.setDescription(description);
-
-            NotificationManager notificationManager = mAppContext.getSystemService(NotificationManager.class);
-            notificationManager.createNotificationChannel(channel);
-        }
-    }
-
     public void removeNotification(Intent intent) {
-        Serializable serializable = intent.getSerializableExtra(KEY_INT_REQUEST_ID);
+        Serializable serializable = intent.getSerializableExtra(MedicineReminderNotificationBuilder.KEY_INT_REQUEST_ID);
         if (serializable instanceof Integer) {
             mExecutorService.get().execute(() ->
             {
@@ -170,10 +115,10 @@ public class AppNotificationHandler {
     public void cancelNotificationSync(MedicineReminder medicineReminder) {
         mLock.lock();
         try {
-            AndroidNotification androidNotification = mAndroidNotificationRepo.get().findByGroupTagAndRefId(GROUP_KEY_MEDICINE_REMINDER, medicineReminder.id);
+            AndroidNotification androidNotification = mAndroidNotificationRepo.get().findByGroupTagAndRefId(MedicineReminderNotificationBuilder.GROUP_KEY_MEDICINE_REMINDER, medicineReminder.id);
             if (androidNotification != null) {
                 NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
-                notificationManagerCompat.cancel(GROUP_KEY_MEDICINE_REMINDER,
+                notificationManagerCompat.cancel(androidNotification.groupKey,
                         androidNotification.requestId);
                 mAndroidNotificationRepo.get().deleteNotification(androidNotification);
             }
@@ -185,14 +130,14 @@ public class AppNotificationHandler {
     }
 
     public void takeMedicine(Intent intent) {
-        Serializable serializable = intent.getSerializableExtra(KEY_INT_REQUEST_ID);
+        Serializable serializable = intent.getSerializableExtra(MedicineReminderNotificationBuilder.KEY_INT_REQUEST_ID);
         if (serializable instanceof Integer) {
             mExecutorService.get().execute(() -> {
                 mLock.lock();
                 try {
                     AndroidNotification androidNotification =
                             mAndroidNotificationRepo.get().findByRequestId((int) serializable);
-                    if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_MEDICINE_REMINDER)) {
+                    if (androidNotification != null && androidNotification.groupKey.equals(MedicineReminderNotificationBuilder.GROUP_KEY_MEDICINE_REMINDER)) {
                         MedicineReminder medicineReminder = mMedicineReminderDao.get().findMedicineReminderById(androidNotification.refId);
                         MedicineIntake medicineIntake = new MedicineIntake();
                         medicineIntake.medicineId = medicineReminder.medicineId;
@@ -210,14 +155,14 @@ public class AppNotificationHandler {
     }
 
     public void disableMedicineReminder(Intent intent) {
-        Serializable serializable = intent.getSerializableExtra(KEY_INT_REQUEST_ID);
+        Serializable serializable = intent.getSerializableExtra(MedicineReminderNotificationBuilder.KEY_INT_REQUEST_ID);
         if (serializable instanceof Integer) {
             mExecutorService.get().execute(() -> {
                 mLock.lock();
                 try {
                     AndroidNotification androidNotification =
                             mAndroidNotificationRepo.get().findByRequestId((int) serializable);
-                    if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_MEDICINE_REMINDER)) {
+                    if (androidNotification != null && androidNotification.groupKey.equals(MedicineReminderNotificationBuilder.GROUP_KEY_MEDICINE_REMINDER)) {
                         MedicineReminder medicineReminder = mMedicineReminderDao.get().findMedicineReminderById(androidNotification.refId);
                         medicineReminder.reminderEnabled = false;
                         medicineReminder = mUpdateMedicineReminderCmd.get().execute(medicineReminder).blockingGet();
@@ -235,14 +180,14 @@ public class AppNotificationHandler {
     }
 
     public void processNotification(Intent intent) {
-        Serializable serializable = intent.getSerializableExtra(KEY_INT_REQUEST_ID);
+        Serializable serializable = intent.getSerializableExtra(MedicineReminderNotificationBuilder.KEY_INT_REQUEST_ID);
         if (serializable instanceof Integer) {
             mExecutorService.get().execute(() -> {
                 mLock.lock();
                 try {
                     AndroidNotification androidNotification =
                             mAndroidNotificationRepo.get().findByRequestId((int) serializable);
-                    if (androidNotification != null && androidNotification.groupKey.equals(GROUP_KEY_MEDICINE_REMINDER)) {
+                    if (androidNotification != null && androidNotification.groupKey.equals(MedicineReminderNotificationBuilder.GROUP_KEY_MEDICINE_REMINDER)) {
                         MedicineReminder medicineReminder = mMedicineReminderDao.get().findMedicineReminderById(androidNotification.refId);
                         mMedicineReminderSubject.onNext(medicineReminder);
                         cancelNotificationSync(medicineReminder);

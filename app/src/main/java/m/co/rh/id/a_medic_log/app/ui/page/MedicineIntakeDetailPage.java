@@ -24,32 +24,20 @@ import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import m.co.rh.id.a_medic_log.R;
-import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineIntakeCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineIntakeCmd;
-import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
+import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
-import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
-import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
-import m.co.rh.id.anavigator.component.INavigator;
-import m.co.rh.id.anavigator.component.RequireComponent;
-import m.co.rh.id.anavigator.component.RequireNavRoute;
-import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
-public class MedicineIntakeDetailPage extends StatefulView<Activity> implements RequireNavigator, RequireNavRoute, RequireComponent<Provider>, Toolbar.OnMenuItemClickListener, View.OnClickListener {
+public class MedicineIntakeDetailPage extends BaseDetailPage implements Toolbar.OnMenuItemClickListener, View.OnClickListener {
     private static final String TAG = MedicineIntakeDetailPage.class.getName();
-    private transient INavigator mNavigator;
-    private transient NavRoute mNavRoute;
-    private transient Provider mSvProvider;
-    private transient ILogger mLogger;
-    private transient RxDisposer mRxDisposer;
     private transient NewMedicineIntakeCmd mNewMedicineIntakeCmd;
     private transient QueryMedicineCmd mQueryMedicineCmd;
 
@@ -69,21 +57,8 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
     }
 
     @Override
-    public void provideNavigator(INavigator navigator) {
-        mNavigator = navigator;
-    }
-
-    @Override
-    public void provideNavRoute(NavRoute navRoute) {
-        mNavRoute = navRoute;
-    }
-
-    @Override
-    public void provideComponent(Provider provider) {
+    protected void onProvideComponent(Provider provider) {
         boolean isUpdate = isUpdate();
-        mSvProvider = provider.get(StatefulViewProvider.class);
-        mLogger = mSvProvider.get(ILogger.class);
-        mRxDisposer = mSvProvider.get(RxDisposer.class);
         if (isUpdate) {
             mNewMedicineIntakeCmd = mSvProvider.get(UpdateMedicineIntakeCmd.class);
         } else {
@@ -129,7 +104,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
         inputDescription.setThreshold(1);
         inputDescription.setAdapter(new SuggestionAdapter
                 (activity, android.R.layout.select_dialog_item, mSuggestionQuery));
-        mRxDisposer.add("createView_onMedicineIntakeUpdated",
+        mRxDisposer.add("MedicineIntakeDetailPage.createView_onMedicineIntakeUpdated",
                 mMedicineIntakeSubject.getSubject()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(medicineReminder -> {
@@ -140,7 +115,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
                             }
                             inputDescription.setText(medicineReminder.description);
                         }));
-        mRxDisposer.add("createView_onTakenDateTimeValidated",
+        mRxDisposer.add("MedicineIntakeDetailPage.createView_onTakenDateTimeValidated",
                 mNewMedicineIntakeCmd.getTakenDateTimeValid()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(s -> {
@@ -150,7 +125,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
                                 inputDescription.setError(null);
                             }
                         }));
-        mRxDisposer.add("createView_onInputDescriptionValidated",
+        mRxDisposer.add("MedicineIntakeDetailPage.createView_onInputDescriptionValidated",
                 mNewMedicineIntakeCmd.getDescriptionValid()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(s -> {
@@ -164,12 +139,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
     }
 
     @Override
-    public void dispose(Activity activity) {
-        super.dispose(activity);
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-            mSvProvider = null;
-        }
+    protected void onPageDispose(Activity activity) {
         if (mAppBarSv != null) {
             mAppBarSv.dispose(activity);
             mAppBarSv = null;
@@ -187,7 +157,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
             Context context = mSvProvider.getContext();
             MedicineIntake medicineIntake = mMedicineIntakeSubject.getValue();
             if (mNewMedicineIntakeCmd.valid(medicineIntake)) {
-                mRxDisposer.add("onMenuItemClick_saveMedicineIntake",
+                mRxDisposer.add("MedicineIntakeDetailPage.onMenuItemClick_saveMedicineIntake",
                         mNewMedicineIntakeCmd.execute(medicineIntake)
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe((medicineIntake1, throwable) -> {
@@ -270,17 +240,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
 
     private void initTextWatcher() {
         if (mTakenDateTimeTextWatcher == null) {
-            mTakenDateTimeTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
+            mTakenDateTimeTextWatcher = new SimpleTextWatcher() {
                 @Override
                 public void afterTextChanged(Editable editable) {
                     MedicineIntake medicineIntake = mMedicineIntakeSubject.getValue();
@@ -289,17 +249,7 @@ public class MedicineIntakeDetailPage extends StatefulView<Activity> implements 
             };
         }
         if (mDescriptionTextWatcher == null) {
-            mDescriptionTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
+            mDescriptionTextWatcher = new SimpleTextWatcher() {
                 @Override
                 public void afterTextChanged(Editable editable) {
                     String description = editable.toString();

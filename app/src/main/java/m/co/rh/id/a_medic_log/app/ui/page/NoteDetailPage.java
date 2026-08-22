@@ -9,46 +9,25 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import androidx.appcompat.widget.Toolbar;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.RecyclerView;
-
-import com.google.android.material.chip.Chip;
-import com.google.android.material.chip.ChipGroup;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.TreeSet;
-import java.util.concurrent.ExecutorService;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
-import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
-import m.co.rh.id.a_medic_log.app.provider.command.DeleteMedicineCmd;
-import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteAttachmentCmd;
-import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteTagCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateNoteCmd;
-import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineReminderChangeNotifier;
-import m.co.rh.id.a_medic_log.app.provider.notifier.NoteAttachmentFileChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
-import m.co.rh.id.a_medic_log.app.ui.component.medicine.MedicineItemSV;
-import m.co.rh.id.a_medic_log.app.ui.component.medicine.MedicineRecyclerViewAdapter;
-import m.co.rh.id.a_medic_log.app.ui.component.note.attachment.NoteAttachmentItemSV;
-import m.co.rh.id.a_medic_log.app.ui.component.note.attachment.NoteAttachmentRecyclerViewAdapter;
-import m.co.rh.id.a_medic_log.app.util.UiUtils;
-import m.co.rh.id.a_medic_log.base.entity.NoteTag;
-import m.co.rh.id.a_medic_log.base.state.MedicineState;
-import m.co.rh.id.a_medic_log.base.state.NoteAttachmentState;
+import m.co.rh.id.a_medic_log.app.ui.component.note.detail.MedicineListSection;
+import m.co.rh.id.a_medic_log.app.ui.component.note.detail.NoteAttachmentSection;
+import m.co.rh.id.a_medic_log.app.ui.component.note.detail.NoteTagSection;
+import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
@@ -61,7 +40,7 @@ import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
-public class NoteDetailPage extends StatefulView<Activity> implements RequireNavigator, RequireNavRoute, RequireComponent<Provider>, Toolbar.OnMenuItemClickListener, View.OnClickListener, MedicineItemSV.MedicineItemOnMedicineIntakeListClick, MedicineItemSV.MedicineItemOnEditClick, MedicineItemSV.MedicineItemOnDeleteClick, MedicineItemSV.MedicineItemOnAddMedicineIntakeClick, NoteAttachmentItemSV.NoteAttachmentItemOnEditClick, NoteAttachmentItemSV.NoteAttachmentItemOnDeleteClick {
+public class NoteDetailPage extends StatefulView<Activity> implements RequireNavigator, RequireNavRoute, RequireComponent<Provider>, Toolbar.OnMenuItemClickListener, View.OnClickListener {
 
     private static final String TAG = NoteDetailPage.class.getName();
     private transient INavigator mNavigator;
@@ -74,23 +53,16 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     private SerialBehaviorSubject<Boolean> mMedicineListShow;
     private SerialBehaviorSubject<Boolean> mAttachmentShow;
 
-    private transient ExecutorService mExecutorService;
     private transient Provider mSvProvider;
     private transient ILogger mLogger;
     private transient RxDisposer mRxDisposer;
-    private transient MedicineReminderChangeNotifier mMedicineReminderChangeNotifier;
-    private transient NoteAttachmentFileChangeNotifier mNoteAttachmentFileChangeNotifier;
     private transient QueryNoteCmd mQueryNoteCmd;
     private transient NewNoteCmd mNewNoteCmd;
-    private transient DeleteNoteTagCmd mDeleteNoteTagCmd;
-    private transient DeleteNoteAttachmentCmd mDeleteNoteAttachmentCmd;
-    private transient DeleteMedicineCmd mDeleteMedicineCmd;
     private transient TextWatcher mEntryDateTimeTextWatcher;
     private transient TextWatcher mContentTextWatcher;
-    private transient MedicineRecyclerViewAdapter mMedicineRecyclerViewAdapter;
-    private transient NoteAttachmentRecyclerViewAdapter mNoteAttachmentRecyclerViewAdapter;
-
-    private transient CompositeDisposable mCompositeDisposable;
+    private transient NoteTagSection mNoteTagSection;
+    private transient MedicineListSection mMedicineListSection;
+    private transient NoteAttachmentSection mNoteAttachmentSection;
 
     public NoteDetailPage() {
         mNoteTagShow = new SerialBehaviorSubject<>(false);
@@ -110,12 +82,9 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
 
     @Override
     public void provideComponent(Provider provider) {
-        mExecutorService = provider.get(ExecutorService.class);
         mSvProvider = provider.get(StatefulViewProvider.class);
         mLogger = mSvProvider.get(ILogger.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
-        mMedicineReminderChangeNotifier = mSvProvider.get(MedicineReminderChangeNotifier.class);
-        mNoteAttachmentFileChangeNotifier = mSvProvider.get(NoteAttachmentFileChangeNotifier.class);
         mQueryNoteCmd = mSvProvider.get(QueryNoteCmd.class);
         boolean isUpdate = isUpdate();
         if (isUpdate) {
@@ -123,14 +92,11 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         } else {
             mNewNoteCmd = mSvProvider.get(NewNoteCmd.class);
         }
-        mDeleteNoteTagCmd = mSvProvider.get(DeleteNoteTagCmd.class);
-        mDeleteNoteAttachmentCmd = mSvProvider.get(DeleteNoteAttachmentCmd.class);
-        mDeleteMedicineCmd = mSvProvider.get(DeleteMedicineCmd.class);
         if (mNoteState == null) {
             mNoteState = new NoteState();
             if (isUpdate) {
                 mNoteState.setNoteId(getNoteId());
-                mRxDisposer.add("provideComponent_queryNoteInfo",
+                mRxDisposer.add("NoteDetailPage.provideComponent_queryNoteInfo",
                         mQueryNoteCmd
                                 .queryNoteInfo(mNoteState)
                                 .subscribe((noteState, throwable) -> {
@@ -156,10 +122,13 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         }
         mAppBarSv.setMenuItemListener(this);
         initTextWatcher();
-        mMedicineRecyclerViewAdapter = new MedicineRecyclerViewAdapter(mNoteState,
-                this, this, this, this, mNavigator, this);
-        mNoteAttachmentRecyclerViewAdapter = new NoteAttachmentRecyclerViewAdapter(mNoteState, this, this, mNavigator, this);
-        mCompositeDisposable = new CompositeDisposable();
+        Long routeNoteId = getNoteId();
+        mNoteTagSection = new NoteTagSection(mNavigator, mSvProvider,
+                mNoteState, mNoteTagShow, routeNoteId);
+        mMedicineListSection = new MedicineListSection(mNavigator, mSvProvider,
+                mNoteState, mMedicineListShow, routeNoteId, this);
+        mNoteAttachmentSection = new NoteAttachmentSection(mNavigator, mSvProvider,
+                mNoteState, mAttachmentShow, routeNoteId, this);
     }
 
     @Override
@@ -174,140 +143,18 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         clearEntryDateTimeInput.setOnClickListener(this);
         EditText contentInput = rootLayout.findViewById(R.id.input_text_content);
         contentInput.addTextChangedListener(mContentTextWatcher);
-        Button expandNoteTag = rootLayout.findViewById(R.id.button_expand_note_tag);
-        expandNoteTag.setOnClickListener(this);
-        View noteTagTextContainer = rootLayout.findViewById(R.id.container_note_tag_text);
-        noteTagTextContainer.setOnClickListener(this);
-        TextView noteTagTitle = rootLayout.findViewById(R.id.text_note_tag_title);
-        Button addNoteTagButton = rootLayout.findViewById(R.id.button_add_note_tag);
-        addNoteTagButton.setOnClickListener(this);
-        ChipGroup noteTagChipGroup = rootLayout.findViewById(R.id.chip_group_note_tag);
-        // medicine
-        Button shareMedicineButton = rootLayout.findViewById(R.id.button_share_medicine);
-        shareMedicineButton.setOnClickListener(this);
-        Button addMedicineButton = rootLayout.findViewById(R.id.button_add_medicine);
-        addMedicineButton.setOnClickListener(this);
-        Button expandMedicine = rootLayout.findViewById(R.id.button_expand_medicine);
-        expandMedicine.setOnClickListener(this);
-        View medicineTextContainer = rootLayout.findViewById(R.id.container_medicine_text);
-        medicineTextContainer.setOnClickListener(this);
-        TextView medicineTitle = rootLayout.findViewById(R.id.text_medicine_title);
-        RecyclerView medicineRecyclerView = rootLayout.findViewById(R.id.recyclerView_medicine);
-        medicineRecyclerView.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL));
-        medicineRecyclerView.setAdapter(mMedicineRecyclerViewAdapter);
-        // attachment
-        Button addAttachmentButton = rootLayout.findViewById(R.id.button_add_attachment);
-        addAttachmentButton.setOnClickListener(this);
-        Button expandAttachment = rootLayout.findViewById(R.id.button_expand_attachment);
-        expandAttachment.setOnClickListener(this);
-        View attachmentTextContainer = rootLayout.findViewById(R.id.container_attachment_text);
-        attachmentTextContainer.setOnClickListener(this);
-        TextView attachmentTitle = rootLayout.findViewById(R.id.text_attachment_title);
-        RecyclerView attachmentRecyclerView = rootLayout.findViewById(R.id.recyclerView_attachment);
-        attachmentRecyclerView.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL));
-        attachmentRecyclerView.setAdapter(mNoteAttachmentRecyclerViewAdapter);
-        mRxDisposer.add("createView_onNoteChanged",
+        mNoteTagSection.bindViews(activity, rootLayout);
+        mMedicineListSection.bindViews(activity, rootLayout);
+        mNoteAttachmentSection.bindViews(activity, rootLayout);
+        mRxDisposer.add("NoteDetailPage.createView_onNoteChanged",
                 mNoteState.getNoteFlow()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(note -> {
                             entryDateTimeInput.setText(mNoteState.getNoteEntryDateTimeDisplay());
                             contentInput.setText(mNoteState.getNoteContent());
                         }));
-        mRxDisposer.add("createView_onNoteTagChanged",
-                mNoteState.getNoteTagSetFlow().observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(noteTags -> {
-                            noteTagTitle.setText(activity.getString(R.string.title_tag, noteTags.size()));
-                            noteTagChipGroup.removeAllViews();
-                            if (!noteTags.isEmpty()) {
-                                boolean isUpdate = isUpdate();
-                                for (NoteTag noteTag : noteTags) {
-                                    Chip chip = new Chip(activity);
-                                    chip.setText(noteTag.tag);
-                                    chip.setOnCloseIconClickListener(view -> {
-                                        noteTagChipGroup.removeView(chip);
-                                        chip.setOnCloseIconClickListener(null);
-                                        TreeSet<NoteTag> noteTagSet = mNoteState.getNoteTagSet();
-                                        noteTagSet.remove(noteTag);
-                                        noteTagTitle.setText(activity.getString(R.string.title_tag, noteTagSet.size()));
-                                        if (isUpdate && noteTag.id != null) {
-                                            Context context = activity.getApplicationContext();
-                                            mCompositeDisposable.add(mDeleteNoteTagCmd.execute(noteTag)
-                                                    .observeOn(AndroidSchedulers.mainThread())
-                                                    .subscribe((deletedNoteTag, throwable) -> {
-                                                        String successMessage = context.getString(R.string.success_deleting_note_tag);
-                                                        if (throwable != null) {
-                                                            Throwable cause = throwable.getCause();
-                                                            if (cause == null) {
-                                                                cause = throwable;
-                                                            }
-                                                            mLogger
-                                                                    .e(TAG, cause.getMessage(), cause);
-                                                        } else {
-                                                            mLogger
-                                                                    .i(TAG, successMessage);
-                                                        }
-                                                    }));
-                                        }
-                                    });
-                                    chip.setCloseIconVisible(true);
-                                    noteTagChipGroup.addView(chip);
-                                }
-                            }
-                        }));
-        mRxDisposer.add("createView_onNoteTagShow",
-                mNoteTagShow.getSubject().observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(aBoolean -> {
-                            if (aBoolean) {
-                                noteTagChipGroup.setVisibility(View.VISIBLE);
-                            } else {
-                                noteTagChipGroup.setVisibility(View.GONE);
-                            }
-                            expandNoteTag.setActivated(aBoolean);
-                        }));
-        mRxDisposer.add("createView_onMedicineListShow",
-                mMedicineListShow.getSubject().observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(aBoolean -> {
-                            if (aBoolean) {
-                                medicineRecyclerView.setVisibility(View.VISIBLE);
-                            } else {
-                                medicineRecyclerView.setVisibility(View.GONE);
-                            }
-                            expandMedicine.setActivated(aBoolean);
-                        }));
-        mRxDisposer.add("createView_onMedicineChanged",
-                mNoteState.getMedicineListFlow()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(medicineStates ->
-                        {
-                            int size = medicineStates.size();
-                            medicineTitle.setText(activity.getString(R.string.title_medicine, size));
-                            if (size > 0) {
-                                shareMedicineButton.setVisibility(View.VISIBLE);
-                            } else {
-                                shareMedicineButton.setVisibility(View.GONE);
-                            }
-                            mMedicineRecyclerViewAdapter.notifyItemRefreshed();
-                        })
-        );
-        mRxDisposer.add("createView_onAttachmentChanged",
-                mNoteState.getNoteAttachmentStatesFlow()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(noteAttachmentStates -> {
-                            attachmentTitle.setText(activity.getString(R.string.title_attachment, noteAttachmentStates.size()));
-                            mNoteAttachmentRecyclerViewAdapter.notifyItemRefreshed();
-                        }));
-        mRxDisposer.add("createView_onAttachmentShow",
-                mAttachmentShow.getSubject().observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(aBoolean -> {
-                            if (aBoolean) {
-                                attachmentRecyclerView.setVisibility(View.VISIBLE);
-                            } else {
-                                attachmentRecyclerView.setVisibility(View.GONE);
-                            }
-                            expandAttachment.setActivated(aBoolean);
-                        }));
         mRxDisposer
-                .add("createView_onEntryDateTimeValidation",
+                .add("NoteDetailPage.createView_onEntryDateTimeValidation",
                         mNewNoteCmd.getEntryDateTimeValid()
                                 .observeOn(AndroidSchedulers.mainThread()).subscribe(error -> {
                             if (error != null && !error.isEmpty()) {
@@ -317,7 +164,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                             }
                         }));
         mRxDisposer
-                .add("createView_onContentValidation",
+                .add("NoteDetailPage.createView_onContentValidation",
                         mNewNoteCmd.getContentValid()
                                 .observeOn(AndroidSchedulers.mainThread()).subscribe(error -> {
                             if (error != null && !error.isEmpty()) {
@@ -326,71 +173,6 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                                 contentInput.setError(null);
                             }
                         }));
-        mRxDisposer.add("createView_onNoteAttachmentFileAdded",
-                mNoteAttachmentFileChangeNotifier.getAddedNoteAttachmentFile()
-                        .observeOn(Schedulers.from(mExecutorService))
-                        .flatMapSingle(noteAttachmentFile -> {
-                            if (isUpdate()) {
-                                return mQueryNoteCmd.queryNoteAttachmentInfo(mNoteState);
-                            }
-                            return Single.just(mNoteState.getNoteAttachmentStates());
-                        })
-                        .subscribe(
-                                noteAttachmentStates -> {},
-                                throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)
-                        ));
-        mRxDisposer.add("createView_onNoteAttachmentFileDeleted",
-                mNoteAttachmentFileChangeNotifier.getDeletedNoteAttachmentFile()
-                        .observeOn(Schedulers.from(mExecutorService))
-                        .flatMapSingle(noteAttachmentFile -> {
-                            if (isUpdate()) {
-                                return mQueryNoteCmd.queryNoteAttachmentInfo(mNoteState);
-                            }
-                            return Single.just(mNoteState.getNoteAttachmentStates());
-                        })
-                        .subscribe(
-                                noteAttachmentStates -> {},
-                                throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)
-                        ));
-        mRxDisposer.add("createView_onMedicineReminderAdded",
-                mMedicineReminderChangeNotifier.getAddedMedicineReminder()
-                        .observeOn(Schedulers.from(mExecutorService))
-                        .flatMapSingle(medicineReminder -> {
-                            if (isUpdate()) {
-                                return mQueryNoteCmd.queryMedicineInfo(mNoteState);
-                            }
-                            return Single.just(mNoteState.getMedicineList());
-                        })
-                        .subscribe(
-                                medicineStates -> {},
-                                throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)
-                        ));
-        mRxDisposer.add("createView_onMedicineReminderUpdated",
-                mMedicineReminderChangeNotifier.getUpdatedMedicineReminder()
-                        .observeOn(Schedulers.from(mExecutorService))
-                        .flatMapSingle(medicineReminder -> {
-                            if (isUpdate()) {
-                                return mQueryNoteCmd.queryMedicineInfo(mNoteState);
-                            }
-                            return Single.just(mNoteState.getMedicineList());
-                        })
-                        .subscribe(
-                                medicineStates -> {},
-                                throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)
-                        ));
-        mRxDisposer.add("createView_onMedicineReminderDeleted",
-                mMedicineReminderChangeNotifier.getDeletedMedicineReminder()
-                        .observeOn(Schedulers.from(mExecutorService))
-                        .flatMapSingle(medicineReminder -> {
-                            if (isUpdate()) {
-                                return mQueryNoteCmd.queryMedicineInfo(mNoteState);
-                            }
-                            return Single.just(mNoteState.getMedicineList());
-                        })
-                        .subscribe(
-                                medicineStates -> {},
-                                throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)
-                        ));
         return rootLayout;
     }
 
@@ -406,206 +188,17 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
             mAppBarSv = null;
         }
         mContentTextWatcher = null;
-        if (mMedicineRecyclerViewAdapter != null) {
-            mMedicineRecyclerViewAdapter.dispose(activity);
-            mMedicineRecyclerViewAdapter = null;
+        if (mNoteTagSection != null) {
+            mNoteTagSection.dispose();
+            mNoteTagSection = null;
         }
-        if (mNoteAttachmentRecyclerViewAdapter != null) {
-            mNoteAttachmentRecyclerViewAdapter.dispose(activity);
-            mNoteAttachmentRecyclerViewAdapter = null;
+        if (mMedicineListSection != null) {
+            mMedicineListSection.dispose(activity);
+            mMedicineListSection = null;
         }
-        if (mCompositeDisposable != null) {
-            mCompositeDisposable.dispose();
-            mCompositeDisposable = null;
-        }
-    }
-
-    @Override
-    public void medicineItem_onEditClick(MedicineState medicineState) {
-        MedicineDetailPage.Args args;
-        MedicineState medicineStateArgs = medicineState.clone();
-        if (isUpdate()) {
-            args = MedicineDetailPage.Args.forUpdate(medicineStateArgs);
-        } else {
-            args = MedicineDetailPage.Args.forEdit(medicineStateArgs);
-        }
-        mNavigator.push(Routes.MEDICINE_DETAIL_PAGE,
-                args,
-                (navigator, navRoute, activity, currentView) -> {
-                    MedicineDetailPage.Result result = MedicineDetailPage.Result.of(navRoute);
-                    if (result != null) {
-                        updateMedicineState(result.getMedicineState());
-                    }
-                });
-    }
-
-    @Override
-    public void medicineItem_onDeleteClick(MedicineState medicineState) {
-        if (isUpdate()) {
-            Context context = mSvProvider.getContext();
-            String title = context.getString(R.string.title_confirm);
-            String content = context.getString(R.string.confirm_delete_medicine, medicineState.getMedicineName());
-            NavExtDialogConfig navExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
-            mNavigator.push(navExtDialogConfig.route_confirmDialog(),
-                    navExtDialogConfig.args_confirmDialog(title, content),
-                    (navigator, navRoute, activity, currentView) -> {
-                        Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                        Boolean result = provider.get(NavExtDialogConfig.class).result_confirmDialog(navRoute);
-                        if (result != null && result) {
-                            confirmDeleteMedicine(medicineState);
-                        }
-                    });
-        } else {
-            mMedicineRecyclerViewAdapter.notifyItemDeleted(medicineState);
-        }
-    }
-
-    private void confirmDeleteMedicine(MedicineState medicineState) {
-        Context context = mSvProvider.getContext();
-        mRxDisposer.add("confirmDeleteMedicine_deleteMedicineCmd",
-                mDeleteMedicineCmd
-                        .execute(medicineState)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe((note, throwable) -> {
-                            String successMessage = context.getString(R.string.success_deleting_medicine);
-                            if (throwable != null) {
-                                Throwable cause = throwable.getCause();
-                                if (cause == null) {
-                                    cause = throwable;
-                                }
-                                mLogger
-                                        .e(TAG, cause.getMessage(), cause);
-                            } else {
-                                mLogger
-                                        .i(TAG, successMessage);
-                                mMedicineRecyclerViewAdapter.notifyItemDeleted(medicineState);
-                            }
-                        })
-        );
-    }
-
-    @Override
-    public void medicineItem_onAddMedicineIntakeClick(MedicineState medicineState) {
-        Long medicineId = medicineState.getMedicineId();
-        if (medicineId != null) {
-            mNavigator.push(Routes.MEDICINE_INTAKE_DETAIL_PAGE,
-                    MedicineIntakeDetailPage.Args.with(medicineId));
-        }
-    }
-
-    @Override
-    public void medicineItem_onMedicineIntakeListClick(MedicineState medicineState) {
-        Long medicineId = medicineState.getMedicineId();
-        if (medicineId != null) {
-            mNavigator.push(Routes.MEDICINE_INTAKES_PAGE,
-                    MedicineIntakeListPage.Args.with(medicineId));
-        }
-    }
-
-
-    @Override
-    public void noteAttachment_onEditClick(NoteAttachmentState noteAttachmentState) {
-        NoteAttachmentDetailPage.Args args;
-        if (isUpdate()) {
-            args = NoteAttachmentDetailPage.Args.forUpdate(noteAttachmentState.clone());
-        } else {
-            args = NoteAttachmentDetailPage.Args.forEdit(noteAttachmentState.clone());
-        }
-        mNavigator.push(Routes.NOTE_ATTACHMENT_DETAIL_PAGE,
-                args,
-                (navigator, navRoute, activity, currentView) -> {
-                    NoteAttachmentDetailPage.Result result = NoteAttachmentDetailPage.Result.of(navRoute);
-                    if (result != null) {
-                        updateNoteAttachmentState(result.getNoteAttachmentState());
-                    }
-                });
-    }
-
-    @Override
-    public void noteAttachment_onDeleteClick(NoteAttachmentState noteAttachmentState) {
-        if (isUpdate()) {
-            Context context = mSvProvider.getContext();
-            String title = context.getString(R.string.title_confirm);
-            String content = context.getString(R.string.confirm_delete_attachment);
-            NavExtDialogConfig navExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
-            mNavigator.push(navExtDialogConfig.route_confirmDialog(),
-                    navExtDialogConfig.args_confirmDialog(title, content),
-                    (navigator, navRoute, activity, currentView) -> {
-                        Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                        Boolean result = provider.get(NavExtDialogConfig.class).result_confirmDialog(navRoute);
-                        if (result != null && result) {
-                            deleteNoteAttachment(noteAttachmentState);
-                        }
-                    });
-        } else {
-            mNoteAttachmentRecyclerViewAdapter.notifyItemDeleted(noteAttachmentState);
-        }
-    }
-
-    private void updateNoteAttachmentState(NoteAttachmentState noteAttachmentState) {
-        mNoteAttachmentRecyclerViewAdapter.notifyItemUpdated(noteAttachmentState);
-    }
-
-    private void deleteNoteAttachment(NoteAttachmentState noteAttachmentState) {
-        mRxDisposer.add("deleteNoteAttachment", mDeleteNoteAttachmentCmd
-                .execute(noteAttachmentState)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe((note, throwable) -> {
-                    Context deleteContext = mSvProvider.getContext();
-                    if (throwable != null) {
-                        mLogger
-                                .e(TAG,
-                                        deleteContext.getString(
-                                                R.string.error_deleting_note_attachment),
-                                        throwable);
-                    } else {
-                        mLogger
-                                .i(TAG,
-                                        deleteContext.getString(
-                                                R.string.success_deleting_note_attachment));
-                        mNoteAttachmentRecyclerViewAdapter.notifyItemDeleted(noteAttachmentState);
-                    }
-                })
-        );
-    }
-
-    private void initTextWatcher() {
-        if (mContentTextWatcher == null) {
-            mContentTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
-                @Override
-                public void afterTextChanged(Editable editable) {
-                    mNoteState.setNoteContent(editable.toString());
-                    mNewNoteCmd.valid(mNoteState);
-                }
-            };
-        }
-        if (mEntryDateTimeTextWatcher == null) {
-            mEntryDateTimeTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // Leave blank
-                }
-
-                @Override
-                public void afterTextChanged(Editable editable) {
-                    mNewNoteCmd.valid(mNoteState);
-                }
-            };
+        if (mNoteAttachmentSection != null) {
+            mNoteAttachmentSection.dispose(activity);
+            mNoteAttachmentSection = null;
         }
     }
 
@@ -617,7 +210,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
                 Context context = mSvProvider.getContext();
                 boolean isUpdate = isUpdate();
                 mSvProvider.get(RxDisposer.class)
-                        .add("onMenuItemClick_newNoteCmd.execute",
+                        .add("NoteDetailPage.onMenuItemClick_newNoteCmd.execute",
 mNewNoteCmd.execute(mNoteState)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe((noteState, throwable) -> {
@@ -680,93 +273,31 @@ mNewNoteCmd.execute(mNoteState)
                     });
         } else if (id == R.id.button_clear_entry_date_time) {
             updateEntryDateTime(null);
-        } else if (id == R.id.button_share_medicine) {
-            mRxDisposer.add("onClick_shareMedicine",
-                    mQueryNoteCmd.createShareMedicineText(mNoteState)
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe((s, throwable) -> {
-                                if (throwable != null) {
-                                    Throwable cause = throwable.getCause();
-                                    if (cause == null) cause = throwable;
-                                    mLogger.e(TAG, cause.getMessage(), cause);
-                                } else {
-                                    Context context = mSvProvider.getContext();
-                                    UiUtils.shareText(context, s, context.getString(R.string.share_text));
-                                }
-                            })
-            );
-        } else if (id == R.id.button_add_medicine) {
-            MedicineDetailPage.Args args;
-            if (isUpdate()) {
-                args = MedicineDetailPage.Args.save(getNoteId());
-            } else {
-                args = MedicineDetailPage.Args.dontSave();
-            }
-            mNavigator.push(Routes.MEDICINE_DETAIL_PAGE,
-                    args,
-                    (navigator, navRoute, activity, currentView) -> {
-                        MedicineDetailPage.Result result = MedicineDetailPage.Result.of(navRoute);
-                        if (result != null) {
-                            addMedicineState(result.getMedicineState());
-                        }
-                    });
-        } else if (id == R.id.container_medicine_text ||
-                id == R.id.button_expand_medicine) {
-            mMedicineListShow.onNext(!mMedicineListShow.getValue());
-        } else if (id == R.id.button_add_note_tag) {
-            NoteTagDetailSVDialog.Args args;
-            if (isUpdate()) {
-                args = NoteTagDetailSVDialog.Args.save(getNoteId());
-            } else {
-                args = NoteTagDetailSVDialog.Args.dontSave();
-            }
-            mNavigator.push(Routes.NOTE_TAG_DETAIL_DIALOG,
-                    args,
-                    (navigator, navRoute, activity, currentView) -> {
-                        NoteTagDetailSVDialog.Result result = NoteTagDetailSVDialog.Result.of(navRoute);
-                        if (result != null) {
-                            addNoteTag(result.getNoteTag());
-                        }
-                    });
-        } else if (id == R.id.container_note_tag_text || id == R.id.button_expand_note_tag) {
-            mNoteTagShow.onNext(!mNoteTagShow.getValue());
-        } else if (id == R.id.button_add_attachment) {
-            NoteAttachmentDetailPage.Args args;
-            if (isUpdate()) {
-                args = NoteAttachmentDetailPage.Args.save(getNoteId());
-            } else {
-                args = NoteAttachmentDetailPage.Args.dontSave();
-            }
-            mNavigator.push(Routes.NOTE_ATTACHMENT_DETAIL_PAGE, args,
-                    (navigator, navRoute, activity, currentView) -> {
-                        NoteAttachmentDetailPage.Result result = NoteAttachmentDetailPage.Result.of(navRoute);
-                        if (result != null) {
-                            addNoteAttachment(result.getNoteAttachmentState());
-                        }
-                    });
-        } else if (id == R.id.container_attachment_text || id == R.id.button_expand_attachment) {
-            mAttachmentShow.onNext(!mAttachmentShow.getValue());
         }
-    }
-
-    private void addNoteAttachment(NoteAttachmentState noteAttachmentState) {
-        mNoteState.addNoteAttachmentState(noteAttachmentState);
-    }
-
-    private void addNoteTag(NoteTag noteTag) {
-        mNoteState.addNoteTag(noteTag);
     }
 
     private void updateEntryDateTime(Date date) {
         mNoteState.updateNoteEntryDateTime(date);
     }
 
-    private void addMedicineState(MedicineState medicineState) {
-        mMedicineRecyclerViewAdapter.notifyItemAdded(medicineState);
-    }
-
-    private void updateMedicineState(MedicineState medicineState) {
-        mMedicineRecyclerViewAdapter.notifyItemUpdated(medicineState);
+    private void initTextWatcher() {
+        if (mContentTextWatcher == null) {
+            mContentTextWatcher = new SimpleTextWatcher() {
+                @Override
+                public void afterTextChanged(Editable editable) {
+                    mNoteState.setNoteContent(editable.toString());
+                    mNewNoteCmd.valid(mNoteState);
+                }
+            };
+        }
+        if (mEntryDateTimeTextWatcher == null) {
+            mEntryDateTimeTextWatcher = new SimpleTextWatcher() {
+                @Override
+                public void afterTextChanged(Editable editable) {
+                    mNewNoteCmd.valid(mNoteState);
+                }
+            };
+        }
     }
 
     private boolean isUpdate() {
