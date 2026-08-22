@@ -26,14 +26,16 @@ import m.co.rh.id.a_medic_log.app.provider.command.DeleteMedicineIntakeCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.PagedMedicineIntakeItemsCmd;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineIntakeChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
+import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineIntakeDetailPage;
+import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
+import m.co.rh.id.a_medic_log.app.util.UiUtils;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.RequireComponent;
-import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
 public class MedicineIntakeListSV extends StatefulView<Activity> implements RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener, MedicineIntakeItemSV.OnEditClick, MedicineIntakeItemSV.OnDeleteClick {
@@ -69,17 +71,7 @@ public class MedicineIntakeListSV extends StatefulView<Activity> implements Requ
         mPagedMedicineIntakeItemsCmd.refresh();
         mDeleteMedicineIntakeCmd = mSvProvider.get(DeleteMedicineIntakeCmd.class);
         if (mSearchTextWatcher == null) {
-            mSearchTextWatcher = new TextWatcher() {
-                @Override
-                public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // leave blank
-                }
-
-                @Override
-                public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                    // leave blank
-                }
-
+            mSearchTextWatcher = new SimpleTextWatcher() {
                 @Override
                 public void afterTextChanged(Editable editable) {
                     mSearchStringSubject.onNext(editable.toString());
@@ -183,40 +175,17 @@ public class MedicineIntakeListSV extends StatefulView<Activity> implements Requ
         Context context = mSvProvider.getContext();
         String title = context.getString(R.string.title_confirm);
         String content = context.getString(R.string.confirm_delete_medicine_intake, medicineIntake.description);
-        NavExtDialogConfig navExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
-        mNavigator.push(navExtDialogConfig.route_confirmDialog(),
-                navExtDialogConfig.args_confirmDialog(title, content),
-                (navigator, navRoute, activity, currentView) -> {
-                    Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                    Boolean result = provider.get(NavExtDialogConfig.class).result_confirmDialog(navRoute);
-                    if (result != null && result) {
-                        confirmDeleteMedicineIntake(medicineIntake);
-                    }
-                });
+        UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
+                () -> confirmDeleteMedicineIntake(medicineIntake));
     }
 
     private void confirmDeleteMedicineIntake(MedicineIntake medicineIntake) {
         Context context = mSvProvider.getContext();
-        mRxDisposer.add("confirmDeleteMedicineIntake_deleteMedicineIntake",
-                mDeleteMedicineIntakeCmd
-                        .execute(medicineIntake)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe((note, throwable) -> {
-                            String successMessage = context.getString(R.string.success_deleting_medicine_intake);
-                            if (throwable != null) {
-                                Throwable cause = throwable.getCause();
-                                if (cause == null) {
-                                    cause = throwable;
-                                }
-                                mSvProvider.get(ILogger.class)
-                                        .e(TAG, cause.getMessage(), cause);
-                            } else {
-                                mSvProvider.get(ILogger.class)
-                                        .i(TAG, successMessage);
-                                mMedicineIntakeRecyclerViewAdapter.notifyItemDeleted(medicineIntake);
-                            }
-                        })
-        );
+        String successMessage = context.getString(R.string.success_deleting_medicine_intake);
+        RxUtils.executeAndLog(mRxDisposer, "MedicineIntakeListSV.confirmDeleteMedicineIntake_deleteMedicineIntake",
+                mDeleteMedicineIntakeCmd.execute(medicineIntake),
+                mSvProvider.get(ILogger.class), TAG, successMessage,
+                medicineIntake1 -> mMedicineIntakeRecyclerViewAdapter.notifyItemDeleted(medicineIntake));
     }
 
     public void setMedicineId(long medicineId) {

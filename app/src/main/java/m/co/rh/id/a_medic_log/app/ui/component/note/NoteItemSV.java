@@ -17,7 +17,6 @@ import java.util.TreeSet;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
@@ -26,7 +25,9 @@ import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryProfileCmd;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteTagChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
+import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.page.NoteDetailPage;
+import m.co.rh.id.a_medic_log.app.util.UiUtils;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
@@ -35,7 +36,6 @@ import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.RequireComponent;
-import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
 public class NoteItemSV extends StatefulView<Activity> implements RequireComponent<Provider>, View.OnClickListener {
@@ -206,36 +206,25 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
             Context context = mSvProvider.getContext();
             String title = context.getString(R.string.title_confirm);
             String content = context.getString(R.string.confirm_delete_note);
-            NavExtDialogConfig navExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
-            mNavigator.push(navExtDialogConfig.route_confirmDialog(),
-                    navExtDialogConfig.args_confirmDialog(title, content),
-                    (navigator, navRoute, activity, currentView) -> {
-                        Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                        Boolean result = provider.get(NavExtDialogConfig.class).result_confirmDialog(navRoute);
-                        if (result != null && result) {
-                            CompositeDisposable compositeDisposable = new CompositeDisposable();
-                            compositeDisposable.add(provider.get(DeleteNoteCmd.class)
-                                    .execute(mNoteSubject.getValue())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe((note, throwable) -> {
-                                        Context deleteContext = provider.getContext();
-                                        if (throwable != null) {
-                                            provider.get(ILogger.class)
-                                                    .e(TAG,
-                                                            deleteContext.getString(
-                                                                    R.string.error_deleting_note),
-                                                            throwable);
-                                        } else {
-                                            provider.get(ILogger.class)
-                                                    .i(TAG,
-                                                            deleteContext.getString(
-                                                                    R.string.success_deleting_note));
-                                        }
-                                        compositeDisposable.dispose();
-                                    })
-                            );
-                        }
-                    });
+            UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
+                    this::deleteNote);
         }
+    }
+
+    private void deleteNote() {
+        Context context = mSvProvider.getContext();
+        String errorMessage = context.getString(R.string.error_deleting_note);
+        String successMessage = context.getString(R.string.success_deleting_note);
+        mRxDisposer.add("NoteItemSV.deleteNote_deleteNoteCmd",
+                mSvProvider.get(DeleteNoteCmd.class)
+                        .execute(mNoteSubject.getValue())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe((note, throwable) -> {
+                            if (throwable != null) {
+                                RxUtils.logError(mLogger, TAG, errorMessage, throwable);
+                            } else {
+                                mLogger.i(TAG, successMessage);
+                            }
+                        }));
     }
 }

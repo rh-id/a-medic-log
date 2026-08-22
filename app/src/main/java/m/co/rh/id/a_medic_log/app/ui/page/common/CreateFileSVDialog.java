@@ -21,6 +21,7 @@ import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Constants;
+import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.base.provider.FileHelper;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
@@ -134,11 +135,7 @@ public class CreateFileSVDialog extends StatefulViewDialog<Activity> implements 
                 .observeOn(AndroidSchedulers.mainThread())
                         .subscribe((file, throwable) -> {
                             if (throwable != null) {
-                                if (throwable.getCause() != null) {
-                                    mLogger.e(TAG, throwable.getCause().getMessage(), throwable);
-                                } else {
-                                    mLogger.e(TAG, throwable.getMessage(), throwable);
-                                }
+                                RxUtils.logError(mLogger, TAG, throwable);
                             } else {
                                 getNavigator().pop(Result.with(file));
                             }

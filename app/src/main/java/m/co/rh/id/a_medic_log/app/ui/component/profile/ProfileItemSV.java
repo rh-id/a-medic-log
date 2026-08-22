@@ -12,22 +12,22 @@ import android.widget.TextView;
 import java.io.Serializable;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteProfileCmd;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
+import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.page.NotesPage;
 import m.co.rh.id.a_medic_log.app.ui.page.ProfileDetailPage;
+import m.co.rh.id.a_medic_log.app.util.UiUtils;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.RequireComponent;
-import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
 public class ProfileItemSV extends StatefulView<Activity> implements RequireComponent<Provider>, View.OnClickListener {
@@ -176,37 +176,27 @@ public class ProfileItemSV extends StatefulView<Activity> implements RequireComp
             Context context = mSvProvider.getContext();
             String title = context.getString(R.string.title_confirm);
             String content = context.getString(R.string.confirm_delete_profile, mProfile.name);
-            NavExtDialogConfig navExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
-            mNavigator.push(navExtDialogConfig.route_confirmDialog(),
-                    navExtDialogConfig.args_confirmDialog(title, content),
-                    (navigator, navRoute, activity, currentView) -> {
-                        Provider provider = (Provider) navigator.getNavConfiguration().getRequiredComponent();
-                        Boolean result = provider.get(NavExtDialogConfig.class).result_confirmDialog(navRoute);
-                        if (result != null && result) {
-                            CompositeDisposable compositeDisposable = new CompositeDisposable();
-                            compositeDisposable.add(provider.get(DeleteProfileCmd.class)
-                                    .execute(mProfile)
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe((card, throwable) -> {
-                                        Context deleteContext = provider.getContext();
-                                        if (throwable != null) {
-                                            provider.get(ILogger.class)
-                                                    .e(TAG,
-                                                            deleteContext.getString(
-                                                                    R.string.error_deleting_profile),
-                                                            throwable);
-                                        } else {
-                                            provider.get(ILogger.class)
-                                                    .i(TAG,
-                                                            deleteContext.getString(
-                                                                    R.string.success_deleting_profile, card.name));
-                                        }
-                                        compositeDisposable.dispose();
-                                    })
-                            );
-                        }
-                    });
+            UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
+                    this::deleteProfile);
         }
+    }
+
+    private void deleteProfile() {
+        Context context = mSvProvider.getContext();
+        String errorMessage = context.getString(R.string.error_deleting_profile);
+        mSvProvider.get(RxDisposer.class)
+                .add("ProfileItemSV.deleteProfile_deleteProfileCmd",
+                        mSvProvider.get(DeleteProfileCmd.class)
+                                .execute(mProfile)
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe((profile, throwable) -> {
+                                    if (throwable != null) {
+                                        RxUtils.logError(mSvProvider.get(ILogger.class), TAG, errorMessage, throwable);
+                                    } else {
+                                        mSvProvider.get(ILogger.class)
+                                                .i(TAG, context.getString(R.string.success_deleting_profile, profile.name));
+                                    }
+                                }));
     }
 
     /**

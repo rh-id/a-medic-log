@@ -22,7 +22,9 @@ import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteTagCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
+import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
+import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
@@ -64,17 +66,7 @@ public class NoteTagDetailSVDialog extends StatefulViewDialog<Activity> implemen
             }
             mNoteTag = new SerialBehaviorSubject<>(noteTag);
         }
-        mTagTextWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // Leave blank
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // Leave blank
-            }
-
+        mTagTextWatcher = new SimpleTextWatcher() {
             @Override
             public void afterTextChanged(Editable editable) {
                 String tag = editable.toString();
@@ -146,23 +138,11 @@ public class NoteTagDetailSVDialog extends StatefulViewDialog<Activity> implemen
         if (id == R.id.button_ok) {
             if (shouldSave()) {
                 if (mNewNoteTagCmd.valid(mNoteTag.getValue())) {
-                    mRxDisposer.add("onClick_newNoteTag", mNewNoteTagCmd.execute(mNoteTag.getValue())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe((noteTag, throwable) -> {
-                                Context context = mSvProvider.getContext();
-                                String success = context.getString(R.string.success_adding_tag);
-                                if (throwable != null) {
-                                    Throwable cause = throwable.getCause();
-                                    if (cause == null) {
-                                        cause = throwable;
-                                    }
-                                    mLogger.e(TAG, cause.getMessage(), cause);
-                                } else {
-                                    mLogger.i(TAG, success);
-                                    getNavigator().pop(Result.with(noteTag));
-                                }
-                            })
-                    );
+                    Context context = mSvProvider.getContext();
+                    String success = context.getString(R.string.success_adding_tag);
+                    RxUtils.executeAndLog(mRxDisposer, "NoteTagDetailSVDialog.onClick_newNoteTag",
+                            mNewNoteTagCmd.execute(mNoteTag.getValue()), mLogger, TAG, success,
+                            noteTag -> getNavigator().pop(Result.with(noteTag)));
                 } else {
                     String error = mNewNoteTagCmd.getValidationError();
                     mLogger.i(TAG, error);

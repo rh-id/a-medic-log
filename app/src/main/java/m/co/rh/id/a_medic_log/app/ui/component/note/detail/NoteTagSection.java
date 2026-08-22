@@ -14,11 +14,11 @@ import java.util.TreeSet;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteTagCmd;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
+import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.page.NoteTagDetailSVDialog;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
@@ -38,7 +38,6 @@ public class NoteTagSection implements View.OnClickListener {
     private final ILogger mLogger;
     private final RxDisposer mRxDisposer;
     private final DeleteNoteTagCmd mDeleteNoteTagCmd;
-    private final CompositeDisposable mCompositeDisposable;
 
     private TextView mNoteTagTitle;
     private ChipGroup mNoteTagChipGroup;
@@ -54,7 +53,6 @@ public class NoteTagSection implements View.OnClickListener {
         mLogger = svProvider.get(ILogger.class);
         mRxDisposer = svProvider.get(RxDisposer.class);
         mDeleteNoteTagCmd = svProvider.get(DeleteNoteTagCmd.class);
-        mCompositeDisposable = new CompositeDisposable();
     }
 
     public void bindViews(Activity activity, ViewGroup rootLayout) {
@@ -84,22 +82,9 @@ public class NoteTagSection implements View.OnClickListener {
                                         mNoteTagTitle.setText(activity.getString(R.string.title_tag, noteTagSet.size()));
                                         if (isUpdate && noteTag.id != null) {
                                             Context context = activity.getApplicationContext();
-                                            mCompositeDisposable.add(mDeleteNoteTagCmd.execute(noteTag)
-                                                    .observeOn(AndroidSchedulers.mainThread())
-                                                    .subscribe((deletedNoteTag, throwable) -> {
-                                                        String successMessage = context.getString(R.string.success_deleting_note_tag);
-                                                        if (throwable != null) {
-                                                            Throwable cause = throwable.getCause();
-                                                            if (cause == null) {
-                                                                cause = throwable;
-                                                            }
-                                                            mLogger
-                                                                    .e(TAG, cause.getMessage(), cause);
-                                                        } else {
-                                                            mLogger
-                                                                    .i(TAG, successMessage);
-                                                        }
-                                                    }));
+                                            String successMessage = context.getString(R.string.success_deleting_note_tag);
+                                            RxUtils.executeAndLog(mRxDisposer, "NoteTagSection.onNoteTagCloseIcon_deleteNoteTagCmd",
+                                                    mDeleteNoteTagCmd.execute(noteTag), mLogger, TAG, successMessage);
                                         }
                                     });
                                     chip.setCloseIconVisible(true);
@@ -147,7 +132,6 @@ public class NoteTagSection implements View.OnClickListener {
     }
 
     public void dispose() {
-        mCompositeDisposable.dispose();
         mNoteTagTitle = null;
         mNoteTagChipGroup = null;
     }

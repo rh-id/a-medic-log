@@ -18,33 +18,24 @@ import java.util.Date;
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import m.co.rh.id.a_medic_log.R;
-import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateNoteCmd;
-import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
+import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.note.detail.MedicineListSection;
 import m.co.rh.id.a_medic_log.app.ui.component.note.detail.NoteAttachmentSection;
 import m.co.rh.id.a_medic_log.app.ui.component.note.detail.NoteTagSection;
 import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
-import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
-import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
-import m.co.rh.id.anavigator.component.INavigator;
-import m.co.rh.id.anavigator.component.RequireComponent;
-import m.co.rh.id.anavigator.component.RequireNavRoute;
-import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
-public class NoteDetailPage extends StatefulView<Activity> implements RequireNavigator, RequireNavRoute, RequireComponent<Provider>, Toolbar.OnMenuItemClickListener, View.OnClickListener {
+public class NoteDetailPage extends BaseDetailPage implements Toolbar.OnMenuItemClickListener, View.OnClickListener {
 
     private static final String TAG = NoteDetailPage.class.getName();
-    private transient INavigator mNavigator;
-    private transient NavRoute mNavRoute;
     @NavInject
     private AppBarSV mAppBarSv;
 
@@ -53,9 +44,6 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     private SerialBehaviorSubject<Boolean> mMedicineListShow;
     private SerialBehaviorSubject<Boolean> mAttachmentShow;
 
-    private transient Provider mSvProvider;
-    private transient ILogger mLogger;
-    private transient RxDisposer mRxDisposer;
     private transient QueryNoteCmd mQueryNoteCmd;
     private transient NewNoteCmd mNewNoteCmd;
     private transient TextWatcher mEntryDateTimeTextWatcher;
@@ -71,20 +59,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     }
 
     @Override
-    public void provideNavigator(INavigator navigator) {
-        mNavigator = navigator;
-    }
-
-    @Override
-    public void provideNavRoute(NavRoute navRoute) {
-        mNavRoute = navRoute;
-    }
-
-    @Override
-    public void provideComponent(Provider provider) {
-        mSvProvider = provider.get(StatefulViewProvider.class);
-        mLogger = mSvProvider.get(ILogger.class);
-        mRxDisposer = mSvProvider.get(RxDisposer.class);
+    protected void onProvideComponent(Provider provider) {
         mQueryNoteCmd = mSvProvider.get(QueryNoteCmd.class);
         boolean isUpdate = isUpdate();
         if (isUpdate) {
@@ -177,12 +152,7 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
     }
 
     @Override
-    public void dispose(Activity activity) {
-        super.dispose(activity);
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-            mSvProvider = null;
-        }
+    protected void onPageDispose(Activity activity) {
         if (mAppBarSv != null) {
             mAppBarSv.dispose(activity);
             mAppBarSv = null;
@@ -208,30 +178,15 @@ public class NoteDetailPage extends StatefulView<Activity> implements RequireNav
         if (id == R.id.menu_save) {
             if (mNewNoteCmd.valid(mNoteState)) {
                 Context context = mSvProvider.getContext();
-                boolean isUpdate = isUpdate();
-                mSvProvider.get(RxDisposer.class)
-                        .add("NoteDetailPage.onMenuItemClick_newNoteCmd.execute",
-mNewNoteCmd.execute(mNoteState)
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe((noteState, throwable) -> {
-                                            String errorMessage;
-                                            String successMessage;
-                                            if (isUpdate) {
-                                                errorMessage = context.getString(R.string.error_failed_to_update_note);
-                                                successMessage = context.getString(R.string.success_updating_note);
-                                            } else {
-                                                errorMessage = context.getString(R.string.error_failed_to_add_note);
-                                                successMessage = context.getString(R.string.success_adding_note);
-                                            }
-                                            if (throwable != null) {
-                                                mLogger
-                                                        .e(TAG, errorMessage, throwable);
-                                            } else {
-                                                mLogger
-                                                        .i(TAG, successMessage);
-                                                mNavigator.pop(Result.withNote(noteState));
-                                            }
-                                        }));
+                String successMessage;
+                if (isUpdate()) {
+                    successMessage = context.getString(R.string.success_updating_note);
+                } else {
+                    successMessage = context.getString(R.string.success_adding_note);
+                }
+                RxUtils.executeAndLog(mRxDisposer, "NoteDetailPage.onMenuItemClick_newNoteCmd",
+                        mNewNoteCmd.execute(mNoteState), mLogger, TAG, successMessage,
+                        noteState -> mNavigator.pop(Result.withNote(noteState)));
             } else {
                 String error = mNewNoteCmd.getValidationError();
                 mLogger.i(TAG, error);

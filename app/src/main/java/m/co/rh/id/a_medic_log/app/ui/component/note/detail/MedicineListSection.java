@@ -22,6 +22,7 @@ import m.co.rh.id.a_medic_log.app.provider.command.DeleteMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineReminderChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
+import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.MedicineItemSV;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.MedicineRecyclerViewAdapter;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineDetailPage;
@@ -191,26 +192,10 @@ public class MedicineListSection implements View.OnClickListener,
 
     private void confirmDeleteMedicine(MedicineState medicineState) {
         Context context = mSvProvider.getContext();
-        mRxDisposer.add("MedicineListSection.confirmDeleteMedicine_deleteMedicineCmd",
-                mDeleteMedicineCmd
-                        .execute(medicineState)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe((note, throwable) -> {
-                            String successMessage = context.getString(R.string.success_deleting_medicine);
-                            if (throwable != null) {
-                                Throwable cause = throwable.getCause();
-                                if (cause == null) {
-                                    cause = throwable;
-                                }
-                                mLogger
-                                        .e(TAG, cause.getMessage(), cause);
-                            } else {
-                                mLogger
-                                        .i(TAG, successMessage);
-                                mMedicineRecyclerViewAdapter.notifyItemDeleted(medicineState);
-                            }
-                        })
-        );
+        String successMessage = context.getString(R.string.success_deleting_medicine);
+        RxUtils.executeAndLog(mRxDisposer, "MedicineListSection.confirmDeleteMedicine_deleteMedicineCmd",
+                mDeleteMedicineCmd.execute(medicineState), mLogger, TAG, successMessage,
+                medicineState1 -> mMedicineRecyclerViewAdapter.notifyItemDeleted(medicineState));
     }
 
     @Override
@@ -240,9 +225,7 @@ public class MedicineListSection implements View.OnClickListener,
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe((s, throwable) -> {
                                 if (throwable != null) {
-                                    Throwable cause = throwable.getCause();
-                                    if (cause == null) cause = throwable;
-                                    mLogger.e(TAG, cause.getMessage(), cause);
+                                    RxUtils.logError(mLogger, TAG, throwable);
                                 } else {
                                     Context context = mSvProvider.getContext();
                                     UiUtils.shareText(context, s, context.getString(R.string.share_text));

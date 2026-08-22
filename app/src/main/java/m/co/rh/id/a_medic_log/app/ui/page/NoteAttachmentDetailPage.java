@@ -29,6 +29,7 @@ import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteAttachmentFileCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteAttachmentCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteAttachmentFileCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateNoteAttachmentCmd;
+import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.note.attachment.NoteAttachmentFileItemSV;
 import m.co.rh.id.a_medic_log.app.ui.component.note.attachment.NoteAttachmentFileRecyclerViewAdapter;
@@ -138,22 +139,16 @@ public class NoteAttachmentDetailPage extends BaseDetailPage implements Toolbar.
         if (id == R.id.menu_save) {
             if (shouldSave()) {
                 if (mNewNoteAttachmentCmd.valid(mNoteAttachmentState)) {
-                    mRxDisposer.add("NoteAttachmentDetailPage.onMenuItemClick_save",
-                            mNewNoteAttachmentCmd.execute(mNoteAttachmentState)
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe((noteAttachmentState, throwable) -> {
-                                        if (throwable != null) {
-                                            mLogger.e(TAG, throwable.getMessage(), throwable);
-                                        } else {
-                                            Context context = mSvProvider.getContext();
-                                            if (isUpdate()) {
-                                                mLogger.i(TAG, context.getString(R.string.success_updating_note_attachment));
-                                            } else {
-                                                mLogger.i(TAG, context.getString(R.string.success_adding_note_attachment));
-                                            }
-                                            mNavigator.pop(Result.with(noteAttachmentState));
-                                        }
-                                    }));
+                    Context context = mSvProvider.getContext();
+                    String successMessage;
+                    if (isUpdate()) {
+                        successMessage = context.getString(R.string.success_updating_note_attachment);
+                    } else {
+                        successMessage = context.getString(R.string.success_adding_note_attachment);
+                    }
+                    RxUtils.executeAndLog(mRxDisposer, "NoteAttachmentDetailPage.onMenuItemClick_save",
+                            mNewNoteAttachmentCmd.execute(mNoteAttachmentState), mLogger, TAG, successMessage,
+                            noteAttachmentState -> mNavigator.pop(Result.with(noteAttachmentState)));
                 } else {
                     String error = mNewNoteAttachmentCmd.getValidationError();
                     mLogger.i(TAG, error);
@@ -203,11 +198,7 @@ public class NoteAttachmentDetailPage extends BaseDetailPage implements Toolbar.
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe((noteAttachmentFile, throwable) -> {
                     if (throwable != null) {
-                        Throwable cause = throwable.getCause();
-                        if (cause == null) {
-                            cause = throwable;
-                        }
-                        mLogger.e(TAG, cause.getMessage(), cause);
+                        RxUtils.logError(mLogger, TAG, throwable);
                     } else {
                         mNoteAttachmentFileRecyclerViewAdapter.notifyItemAdded(noteAttachmentFile);
                     }
@@ -221,11 +212,10 @@ public class NoteAttachmentDetailPage extends BaseDetailPage implements Toolbar.
                     mDeleteNoteAttachmentFileCmd.execute(noteAttachmentFile)
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe((deletedNoteAttachmentFile, throwable) -> {
-                                Context context = mSvProvider.getContext();
                                 if (throwable != null) {
-                                    Throwable cause = throwable.getCause();
-                                    if (cause == null) cause = throwable;
-                                    mLogger.e(TAG, context.getString(R.string.error_deleting_note_attachment_file), cause);
+                                    Context context = mSvProvider.getContext();
+                                    RxUtils.logError(mLogger, TAG,
+                                            context.getString(R.string.error_deleting_note_attachment_file), throwable);
                                 }
                             }));
 

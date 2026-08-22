@@ -27,6 +27,7 @@ import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineIntakeCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineIntakeCmd;
+import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
 import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
@@ -157,30 +158,15 @@ public class MedicineIntakeDetailPage extends BaseDetailPage implements Toolbar.
             Context context = mSvProvider.getContext();
             MedicineIntake medicineIntake = mMedicineIntakeSubject.getValue();
             if (mNewMedicineIntakeCmd.valid(medicineIntake)) {
-                mRxDisposer.add("MedicineIntakeDetailPage.onMenuItemClick_saveMedicineIntake",
-                        mNewMedicineIntakeCmd.execute(medicineIntake)
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe((medicineIntake1, throwable) -> {
-                                    String successMessage;
-                                    if (isUpdate) {
-                                        successMessage = context.getString(R.string.success_updating_medicine_intake);
-                                    } else {
-                                        successMessage = context.getString(R.string.success_adding_medicine_intake);
-                                    }
-                                    if (throwable != null) {
-                                        Throwable cause = throwable.getCause();
-                                        if (cause == null) {
-                                            cause = throwable;
-                                        }
-                                        mLogger
-                                                .e(TAG, cause.getMessage(), cause);
-                                    } else {
-                                        mLogger
-                                                .i(TAG, successMessage);
-                                        mNavigator.pop(Result.with(medicineIntake));
-                                    }
-                                })
-                );
+                String successMessage;
+                if (isUpdate) {
+                    successMessage = context.getString(R.string.success_updating_medicine_intake);
+                } else {
+                    successMessage = context.getString(R.string.success_adding_medicine_intake);
+                }
+                RxUtils.executeAndLog(mRxDisposer, "MedicineIntakeDetailPage.onMenuItemClick_saveMedicineIntake",
+                        mNewMedicineIntakeCmd.execute(medicineIntake), mLogger, TAG, successMessage,
+                        medicineIntake1 -> mNavigator.pop(Result.with(medicineIntake)));
             } else {
                 String error = mNewMedicineIntakeCmd.getValidationError();
                 mLogger.i(TAG, error);

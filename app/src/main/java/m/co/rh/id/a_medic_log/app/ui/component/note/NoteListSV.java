@@ -23,6 +23,7 @@ import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.PagedNoteItemsCmd;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
+import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
@@ -60,17 +61,7 @@ public class NoteListSV extends StatefulView<Activity> implements RequireCompone
         mPagedNoteItemsCmd.loadWithProfileId(mProfileId);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mSearchStringSubject = PublishSubject.create();
-        mSearchTextWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // leave blank
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // leave blank
-            }
-
+        mSearchTextWatcher = new SimpleTextWatcher() {
             @Override
             public void afterTextChanged(Editable editable) {
                 mSearchStringSubject.onNext(editable.toString());

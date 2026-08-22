@@ -34,6 +34,7 @@ import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.reminder.MedicineReminderItemSV;
 import m.co.rh.id.a_medic_log.app.ui.component.medicine.reminder.MedicineReminderRecyclerViewAdapter;
+import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
 import m.co.rh.id.a_medic_log.app.util.UiUtils;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
@@ -185,29 +186,15 @@ public class MedicineDetailPage extends BaseDetailPage implements Toolbar.OnMenu
                 boolean isUpdate = isUpdate();
                 Context context = mSvProvider.getContext();
                 if (mNewMedicineCmd.valid(mMedicineState)) {
-                    mRxDisposer.add("MedicineDetailPage.onMenuItemClick_saveNewMedicine",
-                            mNewMedicineCmd.execute(mMedicineState)
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe((medicineState, throwable) -> {
-                                        String successMessage;
-                                        if (isUpdate) {
-                                            successMessage = context.getString(R.string.success_updating_medicine);
-                                        } else {
-                                            successMessage = context.getString(R.string.success_adding_medicine);
-                                        }
-                                        if (throwable != null) {
-                                            Throwable cause = throwable.getCause();
-                                            if (cause == null) {
-                                                cause = throwable;
-                                            }
-                                            mLogger
-                                                    .e(TAG, cause.getMessage(), cause);
-                                        } else {
-                                            mLogger
-                                                    .i(TAG, successMessage);
-                                            mNavigator.pop(Result.with(mMedicineState));
-                                        }
-                                    }));
+                    String successMessage;
+                    if (isUpdate) {
+                        successMessage = context.getString(R.string.success_updating_medicine);
+                    } else {
+                        successMessage = context.getString(R.string.success_adding_medicine);
+                    }
+                    RxUtils.executeAndLog(mRxDisposer, "MedicineDetailPage.onMenuItemClick_saveNewMedicine",
+                            mNewMedicineCmd.execute(mMedicineState), mLogger, TAG, successMessage,
+                            medicineState -> mNavigator.pop(Result.with(mMedicineState)));
                 } else {
                     String error = mNewMedicineCmd.getValidationError();
                     mLogger.i(TAG, error);
@@ -252,23 +239,9 @@ public class MedicineDetailPage extends BaseDetailPage implements Toolbar.OnMenu
         if (isUpdate() && shouldSave()) {
             Context context = mSvProvider.getContext();
             if (mUpdateMedicineReminderCmd.valid(medicineReminder)) {
-                mRxDisposer.add("MedicineDetailPage.onEnableSwitchClick_saveMedicineReminder",
-                        mUpdateMedicineReminderCmd.execute(medicineReminder)
-                                .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe((medicineState, throwable) -> {
-                                    String successMessage = context.getString(R.string.success_updating_medicine_reminder);
-                                    if (throwable != null) {
-                                        Throwable cause = throwable.getCause();
-                                        if (cause == null) {
-                                            cause = throwable;
-                                        }
-                                        mLogger
-                                                .e(TAG, cause.getMessage(), cause);
-                                    } else {
-                                        mLogger
-                                                .i(TAG, successMessage);
-                                    }
-                                }));
+                String successMessage = context.getString(R.string.success_updating_medicine_reminder);
+                RxUtils.executeAndLog(mRxDisposer, "MedicineDetailPage.onEnableSwitchClick_saveMedicineReminder",
+                        mUpdateMedicineReminderCmd.execute(medicineReminder), mLogger, TAG, successMessage);
             } else {
                 String error = mUpdateMedicineReminderCmd.getValidationError();
                 mLogger.i(TAG, error);
@@ -317,25 +290,9 @@ public class MedicineDetailPage extends BaseDetailPage implements Toolbar.OnMenu
 
     private void confirmDeleteMedicineReminder(MedicineReminder medicineReminder) {
         Context context = mSvProvider.getContext();
-        mRxDisposer.add("MedicineDetailPage.confirmDeleteMedicineReminder_deleteMedicineReminderCmd",
-                mDeleteMedicineReminderCmd
-                        .execute(medicineReminder)
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe((note, throwable) -> {
-                            String successMessage = context.getString(R.string.success_deleting_medicine_reminder);
-                            if (throwable != null) {
-                                Throwable cause = throwable.getCause();
-                                if (cause == null) {
-                                    cause = throwable;
-                                }
-                                mLogger
-                                        .e(TAG, cause.getMessage(), cause);
-                            } else {
-                                mLogger
-                                        .i(TAG, successMessage);
-                            }
-                        })
-        );
+        String successMessage = context.getString(R.string.success_deleting_medicine_reminder);
+        RxUtils.executeAndLog(mRxDisposer, "MedicineDetailPage.confirmDeleteMedicineReminder_deleteMedicineReminderCmd",
+                mDeleteMedicineReminderCmd.execute(medicineReminder), mLogger, TAG, successMessage);
     }
 
     private MedicineState getMedicineState() {

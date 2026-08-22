@@ -31,6 +31,7 @@ import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineReminderCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineReminderCmd;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
+import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
 import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
@@ -202,29 +203,15 @@ public class MedicineReminderDetailPage extends BaseDetailPage implements Toolba
                 boolean isUpdate = isUpdate();
                 Context context = mSvProvider.getContext();
                 if (mNewMedicineReminderCmd.valid(medicineReminder)) {
-                    mRxDisposer.add("MedicineReminderDetailPage.onMenuItemClick_saveNewMedicineReminder",
-                            mNewMedicineReminderCmd.execute(medicineReminder)
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe((medicineState, throwable) -> {
-                                        String successMessage;
-                                        if (isUpdate) {
-                                            successMessage = context.getString(R.string.success_updating_medicine_reminder);
-                                        } else {
-                                            successMessage = context.getString(R.string.success_adding_medicine_reminder);
-                                        }
-                                        if (throwable != null) {
-                                            Throwable cause = throwable.getCause();
-                                            if (cause == null) {
-                                                cause = throwable;
-                                            }
-                                            mLogger
-                                                    .e(TAG, cause.getMessage(), cause);
-                                        } else {
-                                            mLogger
-                                                    .i(TAG, successMessage);
-                                            mNavigator.pop(Result.with(medicineReminder));
-                                        }
-                                    }));
+                    String successMessage;
+                    if (isUpdate) {
+                        successMessage = context.getString(R.string.success_updating_medicine_reminder);
+                    } else {
+                        successMessage = context.getString(R.string.success_adding_medicine_reminder);
+                    }
+                    RxUtils.executeAndLog(mRxDisposer, "MedicineReminderDetailPage.onMenuItemClick_saveNewMedicineReminder",
+                            mNewMedicineReminderCmd.execute(medicineReminder), mLogger, TAG, successMessage,
+                            medicineState -> mNavigator.pop(Result.with(medicineReminder)));
                 } else {
                     String error = mNewMedicineReminderCmd.getValidationError();
                     mLogger.i(TAG, error);

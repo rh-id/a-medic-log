@@ -25,6 +25,7 @@ import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.PagedProfileItemsCmd;
 import m.co.rh.id.a_medic_log.app.provider.notifier.ProfileChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
+import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -61,17 +62,7 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireComp
         if (mSearchStringSubject == null) {
             mSearchStringSubject = PublishSubject.create();
         }
-        mSearchTextWatcher = new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // leave blank
-            }
-
-            @Override
-            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-                // leave blank
-            }
-
+        mSearchTextWatcher = new SimpleTextWatcher() {
             @Override
             public void afterTextChanged(Editable editable) {
                 mSearchStringSubject.onNext(editable.toString());
