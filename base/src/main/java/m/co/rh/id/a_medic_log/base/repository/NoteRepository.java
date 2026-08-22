@@ -10,6 +10,8 @@ import m.co.rh.id.a_medic_log.base.dao.NoteTagDao;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.entity.Note;
+import m.co.rh.id.a_medic_log.base.entity.NoteAttachment;
+import m.co.rh.id.a_medic_log.base.entity.NoteAttachmentFile;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.a_medic_log.base.state.NoteAttachmentState;
@@ -49,20 +51,21 @@ public class NoteRepository {
             if (noteTags != null && !noteTags.isEmpty()) {
                 for (NoteTag noteTag : noteTags) {
                     noteTag.noteId = noteId;
-                    mNoteTagDao.get().insert(noteTag);
+                    noteTag.id = mNoteTagDao.get().insert(noteTag);
                 }
             }
             List<NoteAttachmentState> noteAttachmentStates = noteState.getNoteAttachmentStates();
             if (noteAttachmentStates != null && !noteAttachmentStates.isEmpty()) {
                 for (NoteAttachmentState noteAttachmentState : noteAttachmentStates) {
                     noteAttachmentState.setNoteId(noteId);
-                    mNoteAttachmentDao.get().insert(noteAttachmentState.getNoteAttachment());
-                    List<m.co.rh.id.a_medic_log.base.entity.NoteAttachmentFile> files =
+                    NoteAttachment noteAttachment = noteAttachmentState.getNoteAttachment();
+                    noteAttachment.id = mNoteAttachmentDao.get().insert(noteAttachmentState.getNoteAttachment());
+                    List<NoteAttachmentFile> files =
                             noteAttachmentState.getNoteAttachmentFiles();
                     if (files != null && !files.isEmpty()) {
-                        for (m.co.rh.id.a_medic_log.base.entity.NoteAttachmentFile file : files) {
+                        for (NoteAttachmentFile file : files) {
                             file.attachmentId = noteAttachmentState.getId();
-                            mNoteAttachmentFileDao.get().insert(file);
+                            file.id = mNoteAttachmentFileDao.get().insert(file);
                         }
                     }
                 }
@@ -78,7 +81,7 @@ public class NoteRepository {
                     if (medicineReminders != null && !medicineReminders.isEmpty()) {
                         for (MedicineReminder medicineReminder : medicineReminders) {
                             medicineReminder.medicineId = medicineId;
-                            mMedicineReminderDao.get().insert(medicineReminder);
+                            medicineReminder.id = mMedicineReminderDao.get().insert(medicineReminder);
                         }
                     }
                 }
