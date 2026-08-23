@@ -126,6 +126,8 @@ public class LogPage extends StatefulView<Activity> {
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
+        mAppBarSV.dispose(activity);
+        mAppBarSV = null;
         if (mAdapter != null) {
             mAdapter.dispose(activity);
             mAdapter = null;

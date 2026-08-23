@@ -9,10 +9,6 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -35,7 +31,7 @@ import m.co.rh.id.anavigator.component.NavOnBackPressed;
 import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
-public class HomePage extends StatefulView<Activity> implements Externalizable, RequireComponent<Provider>, NavOnBackPressed<Activity>, DrawerLayout.DrawerListener, View.OnClickListener {
+public class HomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity>, DrawerLayout.DrawerListener, View.OnClickListener {
     private static final String TAG = HomePage.class.getName();
 
     @NavInject
@@ -185,20 +181,6 @@ public class HomePage extends StatefulView<Activity> implements Externalizable, 
     @Override
     public void onDrawerStateChanged(int newState) {
         // Leave blank
-    }
-
-    @Override
-    public void writeExternal(ObjectOutput objectOutput) throws IOException {
-        super.writeExternal(objectOutput);
-        objectOutput.writeObject(mAppBarSV);
-        objectOutput.writeBoolean(mIsDrawerOpen);
-    }
-
-    @Override
-    public void readExternal(ObjectInput objectInput) throws ClassNotFoundException, IOException {
-        super.readExternal(objectInput);
-        mAppBarSV = (AppBarSV) objectInput.readObject();
-        mIsDrawerOpen = objectInput.readBoolean();
     }
 
     @Override

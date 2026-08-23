@@ -7,24 +7,13 @@ import android.view.ViewGroup;
 
 import androidx.appcompat.widget.Toolbar;
 
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
-import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
-import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
-import m.co.rh.id.a_medic_log.base.BaseApplication;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.annotation.NavRouteIndex;
 import m.co.rh.id.anavigator.component.INavigator;
-import m.co.rh.id.aprovider.Provider;
 
-public class AppBarSV extends StatefulView<Activity> implements Externalizable, View.OnClickListener, Toolbar.OnMenuItemClickListener {
+public class AppBarSV extends StatefulView<Activity> implements View.OnClickListener, Toolbar.OnMenuItemClickListener {
 
     @NavInject
     private transient INavigator mNavigator;
@@ -34,8 +23,7 @@ public class AppBarSV extends StatefulView<Activity> implements Externalizable, 
     private transient View.OnClickListener mNavigationOnClickListener;
     private Integer mMenuResId;
     private transient Toolbar.OnMenuItemClickListener mOnMenuItemClickListener;
-    private transient Provider mSvProvider;
-    private transient BehaviorSubject<String> mUpdateTitle;
+    private transient Toolbar mToolbar;
 
     public AppBarSV() {
         this(null);
@@ -48,42 +36,27 @@ public class AppBarSV extends StatefulView<Activity> implements Externalizable, 
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         View view = activity.getLayoutInflater().inflate(R.layout.app_bar, container, false);
-        if (mUpdateTitle == null) {
-            if (mTitle == null) {
-                mUpdateTitle = BehaviorSubject.create();
-            } else {
-                mUpdateTitle = BehaviorSubject.createDefault(mTitle);
-            }
-        }
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-        }
-        mSvProvider = BaseApplication.of(activity).getProvider().get(StatefulViewProvider.class);
-        Toolbar toolbar = view.findViewById(R.id.toolbar);
-        mSvProvider.get(RxDisposer.class).add("updateTitle",
-                mUpdateTitle.observeOn(AndroidSchedulers.mainThread()).subscribe(toolbar::setTitle));
+        mToolbar = view.findViewById(R.id.toolbar);
+        mToolbar.setTitle(mTitle);
         if (isInitialRoute()) {
-            toolbar.setNavigationIcon(R.drawable.ic_menu_white);
+            mToolbar.setNavigationIcon(R.drawable.ic_menu_white);
         } else {
-            toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white);
+            mToolbar.setNavigationIcon(R.drawable.ic_arrow_back_white);
         }
-        toolbar.setNavigationOnClickListener(this);
+        mToolbar.setNavigationOnClickListener(this);
         if (mMenuResId != null) {
-            toolbar.inflateMenu(mMenuResId);
+            mToolbar.inflateMenu(mMenuResId);
         }
-        toolbar.setOnMenuItemClickListener(this);
+        mToolbar.setOnMenuItemClickListener(this);
         return view;
     }
 
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
-        if (mSvProvider != null) {
-            mSvProvider.dispose();
-            mSvProvider = null;
-        }
+        mToolbar = null;
         mNavigationOnClickListener = null;
-        mTitle = null;
+        mOnMenuItemClickListener = null;
         mNavigator = null;
     }
 
@@ -93,8 +66,8 @@ public class AppBarSV extends StatefulView<Activity> implements Externalizable, 
 
     public void setTitle(String title) {
         mTitle = title;
-        if (mUpdateTitle != null) {
-            mUpdateTitle.onNext(title);
+        if (mToolbar != null) {
+            mToolbar.setTitle(title);
         }
     }
 
@@ -123,19 +96,5 @@ public class AppBarSV extends StatefulView<Activity> implements Externalizable, 
             return mOnMenuItemClickListener.onMenuItemClick(item);
         }
         return false;
-    }
-
-    @Override
-    public void writeExternal(ObjectOutput objectOutput) throws IOException {
-        super.writeExternal(objectOutput);
-        objectOutput.writeObject(mTitle);
-        objectOutput.writeObject(mMenuResId);
-    }
-
-    @Override
-    public void readExternal(ObjectInput objectInput) throws ClassNotFoundException, IOException {
-        super.readExternal(objectInput);
-        mTitle = (String) objectInput.readObject();
-        mMenuResId = (Integer) objectInput.readObject();
     }
 }
