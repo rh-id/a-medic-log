@@ -1,0 +1,12 @@
+Release 1.4.2+26
+
+Peningkatan:
+* Restrukturisasi halaman detail catatan menjadi komponen bagian modular untuk kemudahan pemeliharaan yang lebih baik
+* Menambahkan pembantu bersama untuk perintah, dialog, dan pengawas teks yang digunakan di berbagai halaman
+
+Perbaikan Bug:
+* Memperbaiki ID yang dibuat secara otomatis tidak ditetapkan pada item catatan yang disisipkan
+* Memperbaiki lampiran catatan tidak dikloning dengan benar saat menyalin status catatan
+* Memperbaiki hari pengingat obat tidak disalin saat mengkloning pengingat
+* Memperbaiki inisialisasi logger item catatan
+* Memperbaiki pemformatan tanggal catatan untuk menggunakan pengaturan lokal yang benar

@@ -1,0 +1,12 @@
+Release 1.4.2+26
+
+Verbesserungen:
+* Notiz-Detailseite in modulare Abschnittskomponenten für bessere Wartbarkeit umstrukturiert
+* Gemeinsame Hilfsfunktionen für Befehle, Dialoge und Textbeobachter hinzugefügt, die auf verschiedenen Seiten verwendet werden
+
+Fehlerbehebungen:
+* Automatisch generierte IDs werden jetzt eingefügten Notizelementen zugewiesen
+* Notizenanhänge werden beim Kopieren des Notizstatus korrekt geklont
+* Tage der Medikamentenerinnerung werden beim Klonen einer Erinnerung kopiert
+* Initialisierung des Notizelement-Loggers korrigiert
+* Datumsformatierung von Notizen korrigiert, um das korrekte Gebietsschema zu verwenden

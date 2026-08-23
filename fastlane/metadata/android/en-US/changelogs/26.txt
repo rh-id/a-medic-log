@@ -1,0 +1,12 @@
+Release 1.4.2+26
+
+Improvements:
+* Refactored note detail page into modular section components for better maintainability
+* Added shared helpers for commands, dialogs and text watchers used across pages
+
+Fixes:
+* Fixed auto-generated ids not assigned to inserted note items
+* Fixed note attachments not cloned correctly when copying note state
+* Fixed medicine reminder days not copied when cloning a reminder
+* Fixed note item logger initialization
+* Fixed note date formatting to use correct locale

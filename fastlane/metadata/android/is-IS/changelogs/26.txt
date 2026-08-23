@@ -1,0 +1,12 @@
+Release 1.4.2+26
+
+Endurbætur:
+* Endurskipulagt síðu fyrir glósur í einingavædda hlutaþætti til að auka viðhaldsvænleika
+* Bætt við sameiginlegum hjálparföngum fyrir skipanir, svarglugga og textavaktara sem notuð eru á síðum
+
+Villuleiðréttingar:
+* Leiðrétt að sjálfvirk útbúin auðkenni eru ekki úthlutuð á skráða glóruhluti
+* Leiðrétt að viðhengi glóru eru ekki rétt klónuð þegar glórustaða er afritað
+* Leiðrétt að dagar lyfjaáminninga eru ekki afritaðir þegar áminningu er klónað
+* Leiðrétt frumstillingu annálskrifara glóruhluta
+* Leiðrétt dagsetningasnið glóru til að nota réttan staðfærslu

@@ -1,0 +1,12 @@
+Release 1.4.2+26
+
+Meglieraziuns:
+* Restructurà la pagina da detagls da notas en components da secziun modulars per meglierar la mantegnibladad
+* Agiuntà agids compartids per cumonds, dialogs ed observaders da text utilisads sur differentas paginas
+
+Correcziuns:
+* Corregì che IDs auto-generads na vegnan betg assignads ad elements da nota inserids
+* Corregì che agiuntas da notas na vegnan betg clonadas correctamaun cun copiar il stadi da la nota
+* Corregì che ils dis dal detg-davosters da medicaments na vegnan betg copiads cun clonar detg-davosters
+* Corregì l'inizialisaziun dal logger d'elements da nota
+* Corregì la formataziun da data da nota per utilisar il locale correct

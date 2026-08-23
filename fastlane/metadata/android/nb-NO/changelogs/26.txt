@@ -1,0 +1,12 @@
+Release 1.4.2+26
+
+Forbedringer:
+* Omstrukturert notedetaljside til modulare seksjonskomponenter for bedre vedlikeholdbarhet
+* Lagt til delte hjelpefunksjoner for kommandoer, dialoger og tekstobservatører brukt på tvers av sider
+
+Feilrettinger:
+* Rettet at automatisk genererte ID-er ikke ble tildelt innsatte notatelementer
+* Rettet at notatvedlegg ikke ble klonet korrekt ved kopiering av notattilstand
+* Rettet at medisin-påminnelsesdager ikke ble kopiert ved kloning av påminnelse
+* Rettet initialisering av logg for notatelementer
+* Rettet datoformatering for notater til å bruke korrekt locale

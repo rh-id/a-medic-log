@@ -1,0 +1,12 @@
+Release 1.4.2+26
+
+Améliorations :
+* Restructuré la page de détail des notes en composants de section modulaires pour une meilleure maintenabilité
+* Ajouté des assistants partagés pour les commandes, les boîtes de dialogue et les observateurs de texte utilisés sur plusieurs pages
+
+Corrections :
+* Correction des identifiants auto-générés non assignés aux éléments de note insérés
+* Correction des pièces jointes de notes non clonées correctement lors de la copie de l'état de la note
+* Correction des jours de rappel des médicaments non copiés lors du clonage d'un rappel
+* Correction de l'initialisation du journal des éléments de note
+* Correction du formatage de la date des notes pour utiliser les paramètres régionaux corrects

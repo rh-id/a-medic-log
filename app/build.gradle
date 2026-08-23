@@ -28,8 +28,8 @@ android {
         applicationId "m.co.rh.id.a_medic_log"
         minSdk 21
         targetSdk 37
-        versionCode 25
-        versionName "1.4.1"
+        versionCode 26
+        versionName "1.4.2"
         vectorDrawables.useSupportLibrary true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"

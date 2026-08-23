@@ -1,0 +1,12 @@
+Release 1.4.2+26
+
+Täiustused:
+* Ümber ehitatud märkme detaililehekülg modulaarseteks sektsioonikomponentideks parema hooldatavuse jaoks
+* Lisatud ühised abifunktsioonid käskude, dialoogide ja tekstivaatlejate jaoks, mida kasutatakse erinevatel lehtedel
+
+Veaparandused:
+* Parandatud automaatselt genereeritud ID-d, mida ei määratud sisestatud märkme elementidele
+* Parandatud märkme manuste kloonimine märkme oleku kopeerimisel
+* Parandatud ravimi meeldetuletuse päevade kopeerimine meeldetuletuse kloonimisel
+* Parandatud märkme elemendi loggeri initsialiseerimine
+* Parandatud märkme kuupäeva vormindamist kasutama õiget lokaali

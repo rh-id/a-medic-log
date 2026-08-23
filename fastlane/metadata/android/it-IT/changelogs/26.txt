@@ -1,0 +1,12 @@
+Release 1.4.2+26
+
+Miglioramenti:
+* Ristrutturata la pagina dei dettagli delle note in componenti di sezione modulari per migliore manutenibilità
+* Aggiunti helper condivisi per comandi, dialoghi e osservatori di testo utilizzati su diverse pagine
+
+Correzioni:
+* Corretta l'assegnazione degli ID auto-generati agli elementi nota inseriti
+* Corretto il clonaggio degli allegati delle note durante la copia dello stato della nota
+* Corretta la copia dei giorni di promemoria medicina durante il clonaggio del promemoria
+* Corretta l'inizializzazione del logger degli elementi nota
+* Corretta la formattazione della data delle note per utilizzare il locale corretto
