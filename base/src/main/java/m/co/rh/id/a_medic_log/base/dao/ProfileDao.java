@@ -16,9 +16,15 @@ public abstract class ProfileDao {
     @Query("SELECT * FROM profile ORDER BY created_date_time DESC LIMIT :limit")
     public abstract List<Profile> loadProfilesWithLimit(int limit);
 
+    @Query("SELECT * FROM profile ORDER BY created_date_time DESC")
+    public abstract List<Profile> findProfiles();
+
     @Query("SELECT * FROM profile WHERE name LIKE '%'||:search||'%' OR " +
             "about LIKE '%'||:search||'%' ORDER BY name ASC")
     public abstract List<Profile> searchProfile(String search);
+
+    @Query("SELECT * FROM profile WHERE id IN (:ids)")
+    public abstract List<Profile> findProfilesByIds(List<Long> ids);
 
     @Query("SELECT * FROM profile WHERE id = :id")
     public abstract Profile findProfileById(long id);

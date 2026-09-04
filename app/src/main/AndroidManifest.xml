@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-sdk
+        tools:overrideLibrary="m.co.rh.id.apoi_spreadsheet" />
+
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission
         android:name="android.permission.ACCESS_NETWORK_STATE"

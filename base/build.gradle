@@ -47,7 +47,8 @@ dependencies {
 
     def room_version = "2.7.2"
 
-    implementation "androidx.room:room-runtime:$room_version"
+    // api so that app module code can use RoomDatabase API (e.g. runInTransaction) directly
+    api "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
 
     def nav_version = "v0.0.71"

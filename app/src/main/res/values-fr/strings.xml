@@ -121,4 +121,37 @@
     <string name="donation_other_apps">Other apps by developer: %s</string>
     <string name="donation_thank_you">Thank you for your support</string>
     <string name="error_please_select_profile">Erreur, veuillez sélectionner un profil</string>
+    <string name="title_select_profiles">Sélectionner des profils</string>
+    <string name="title_export_all">Exporter tous les profils</string>
+    <string name="title_export_profiles">Exporter des profils</string>
+    <string name="title_import">Importer</string>
+    <string name="title_export_spreadsheet">Exporter la feuille de calcul</string>
+    <string name="title_select_profile_to_import">Sélectionner les profils à importer</string>
+    <string name="select_all">Tout sélectionner</string>
+    <string name="confirm_import_profiles">%d profil(s) sera(ont) ajouté(s) comme nouveaux enregistrements. Les données existantes ne seront pas modifiées.</string>
+    <string name="success_exporting_data">Export terminé</string>
+    <string name="error_exporting_data">Erreur lors de l\'export des données</string>
+    <string name="success_importing_data">Import terminé, %d profil(s) et %d note(s) ajoutés</string>
+    <string name="error_importing_data">Erreur lors de l\'import des données</string>
+    <string name="error_no_profile_in_import_file">Aucun profil trouvé dans le fichier d\'import</string>
+    <string name="export_progress_gathering">Collecte des données…</string>
+    <string name="import_progress_reading">Lecture de la sauvegarde…</string>
+    <string name="import_progress_importing">Import des données…</string>
+    <string name="export_spreadsheet_progress_writing">Écriture de la feuille de calcul…</string>
+    <plurals name="profile_count_notes">
+        <item quantity="one">%d note</item>
+        <item quantity="other">%d notes</item>
+    </plurals>
+    <plurals name="profile_count_medicines">
+        <item quantity="one">%d médicament</item>
+        <item quantity="other">%d médicaments</item>
+    </plurals>
+    <plurals name="profile_count_reminders">
+        <item quantity="one">%d rappel</item>
+        <item quantity="other">%d rappels</item>
+    </plurals>
+    <plurals name="profile_count_attachments">
+        <item quantity="one">%d pièce jointe</item>
+        <item quantity="other">%d pièces jointes</item>
+    </plurals>
 </resources>

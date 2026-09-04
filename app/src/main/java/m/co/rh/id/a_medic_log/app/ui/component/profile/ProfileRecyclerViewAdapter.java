@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.command.PagedProfileItemsCmd;
@@ -62,6 +63,8 @@ public class ProfileRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVie
             Profile itemFromHolder = itemViewHolder.getItem();
             if (itemFromHolder == null || !itemFromHolder.equals(item)) {
                 itemViewHolder.setItem(item);
+            } else {
+                itemViewHolder.refreshSelection();
             }
         }
     }
@@ -160,8 +163,8 @@ public class ProfileRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVie
 
         public void setItem(Profile profile) {
             mItemSV.setProfile(profile);
-            ArrayList<Profile> selectedItems = mPagedItemsCmd.getSelectedItems();
-            if (selectedItems.contains(profile)) {
+            Set<Long> selectedIds = mPagedItemsCmd.getSelectedIds();
+            if (selectedIds.contains(profile.id)) {
                 mItemSV.select();
             } else {
                 mItemSV.unSelect();
@@ -172,15 +175,37 @@ public class ProfileRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerVie
             return mItemSV.getProfile();
         }
 
+        public void refreshSelection() {
+            Profile profile = mItemSV.getProfile();
+            if (profile == null) {
+                return;
+            }
+            Set<Long> selectedIds = mPagedItemsCmd.getSelectedIds();
+            if (selectedIds.contains(profile.id)) {
+                mItemSV.select();
+            } else {
+                mItemSV.unSelect();
+            }
+        }
+
         @Override
         public void onItemSelect(Profile profile, boolean selected) {
+            boolean multiSelectMode = mItemSV.isMultiSelectMode();
             if (selected) {
-                mPagedItemsCmd.selectProfile(
-                        profile);
+                if (multiSelectMode) {
+                    mPagedItemsCmd.addSelectedProfile(profile);
+                } else {
+                    mPagedItemsCmd.selectProfile(
+                            profile);
+                }
                 mItemSV.select();
             } else {
                 mPagedItemsCmd.unSelectProfile(profile);
                 mItemSV.unSelect();
+            }
+            if (multiSelectMode) {
+                // in multi select mode prior selections must be kept
+                return;
             }
             for (StatefulView itemSv : mCreatedDeckItemSvList) {
                 if (itemSv instanceof ProfileItemSV) {

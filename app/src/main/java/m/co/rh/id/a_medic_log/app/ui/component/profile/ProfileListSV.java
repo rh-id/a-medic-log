@@ -14,10 +14,14 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import m.co.rh.id.a_medic_log.R;
@@ -40,6 +44,7 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireComp
     private transient INavigator mNavigator;
 
     private transient Provider mSvProvider;
+    private transient PagedProfileItemsCmd mPagedProfileItemsCmd;
     private transient PublishSubject<String> mSearchStringSubject;
     private transient TextWatcher mSearchTextWatcher;
     private transient ProfileRecyclerViewAdapter mProfileRecyclerViewAdapter;
@@ -58,7 +63,8 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireComp
     @Override
     public void provideComponent(Provider provider) {
         mSvProvider = provider.get(StatefulViewProvider.class);
-        mSvProvider.get(PagedProfileItemsCmd.class).refresh();
+        mPagedProfileItemsCmd = mSvProvider.get(PagedProfileItemsCmd.class);
+        mPagedProfileItemsCmd.refresh();
         if (mSearchStringSubject == null) {
             mSearchStringSubject = PublishSubject.create();
         }
@@ -72,7 +78,7 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireComp
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 if (!recyclerView.canScrollVertically(1) && newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    mSvProvider.get(PagedProfileItemsCmd.class).loadNextPage();
+                    mPagedProfileItemsCmd.loadNextPage();
                 }
             }
         };
@@ -80,10 +86,12 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireComp
         if (mListMode != null) {
             if (mListMode.mSelectMode == ListMode.SELECT_MODE) {
                 listMode = ProfileItemSV.ListMode.selectMode();
+            } else if (mListMode.mSelectMode == ListMode.MULTI_SELECT_MODE) {
+                listMode = ProfileItemSV.ListMode.multiSelectMode();
             }
         }
         mProfileRecyclerViewAdapter = new ProfileRecyclerViewAdapter(
-                mSvProvider.get(PagedProfileItemsCmd.class),
+                mPagedProfileItemsCmd,
                 mNavigator, this, listMode);
     }
 
@@ -103,14 +111,20 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireComp
                         mSearchStringSubject
                                 .debounce(700, TimeUnit.MILLISECONDS)
                                 .observeOn(Schedulers.from(mSvProvider.get(ExecutorService.class)))
-                                .subscribe(searchString -> mSvProvider.get(PagedProfileItemsCmd.class)
+                                .subscribe(searchString -> mPagedProfileItemsCmd
                                         .search(searchString))
                 );
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onItemRefreshed",
-                        mSvProvider.get(PagedProfileItemsCmd.class).getItemsFlow()
+                        mPagedProfileItemsCmd.getItemsFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(decks -> mProfileRecyclerViewAdapter.notifyItemRefreshed())
+                );
+        mSvProvider.get(RxDisposer.class)
+                .add("createView_onSelectionChanged",
+                        mPagedProfileItemsCmd.getSelectedIdsFlow()
+                                .observeOn(AndroidSchedulers.mainThread())
+                                .subscribe(selectedIds -> mProfileRecyclerViewAdapter.notifyItemRefreshed())
                 );
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onItemAdded",
@@ -127,7 +141,7 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireComp
                                 .subscribe(mProfileRecyclerViewAdapter::notifyItemUpdated));
         mSvProvider.get(RxDisposer.class)
                 .add("createView_onLoadingChanged",
-                        mSvProvider.get(PagedProfileItemsCmd.class).getLoadingFlow()
+                        mPagedProfileItemsCmd.getLoadingFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(swipeRefreshLayout::setRefreshing)
                 );
@@ -147,6 +161,7 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireComp
             mSvProvider.dispose();
             mSvProvider = null;
         }
+        mPagedProfileItemsCmd = null;
         if (mSearchStringSubject != null) {
             mSearchStringSubject.onComplete();
             mSearchStringSubject = null;
@@ -161,12 +176,51 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireComp
 
     @Override
     public void onRefresh() {
-        mSvProvider.get(PagedProfileItemsCmd.class).refresh();
+        mPagedProfileItemsCmd.refresh();
     }
 
-    public ArrayList<Profile> getSelectedProfile() {
-        if (mSvProvider == null) return new ArrayList<>();
-        return mSvProvider.get(PagedProfileItemsCmd.class).getSelectedItems();
+    /**
+     * Resolve the current selection through the database, the returned profiles
+     * preserve the selection order and may include profiles hidden by an
+     * active search filter
+     */
+    public Single<ArrayList<Profile>> getSelectedProfiles() {
+        if (mPagedProfileItemsCmd == null) {
+            return Single.just(new ArrayList<>());
+        }
+        return mPagedProfileItemsCmd.getSelectedProfiles();
+    }
+
+    /**
+     * Select every profile in the database, must only be used in multi select mode
+     */
+    public void selectAll() {
+        if (mPagedProfileItemsCmd == null) return;
+        mPagedProfileItemsCmd.selectAllProfiles();
+    }
+
+    /**
+     * Clear the current selection, must only be used in multi select mode
+     */
+    public void unSelectAll() {
+        if (mPagedProfileItemsCmd == null) return;
+        mPagedProfileItemsCmd.unSelectAllProfiles();
+    }
+
+    /**
+     * Currently displayed items, when a search is active this contains only the search results
+     */
+    public ArrayList<Profile> getItems() {
+        if (mPagedProfileItemsCmd == null) return new ArrayList<>();
+        ArrayList<Profile> items = mPagedProfileItemsCmd.getAllItems();
+        return items == null ? new ArrayList<>() : items;
+    }
+
+    public Flowable<Set<Long>> getSelectedIdsFlow() {
+        if (mPagedProfileItemsCmd == null) {
+            return Flowable.just(new LinkedHashSet<>());
+        }
+        return mPagedProfileItemsCmd.getSelectedIdsFlow();
     }
 
     public static class ListMode implements Serializable {
@@ -176,7 +230,15 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireComp
             return listMode;
         }
 
+        public static ListMode multiSelectMode() {
+            ListMode listMode = new ListMode();
+            listMode.mSelectMode = MULTI_SELECT_MODE;
+            return listMode;
+        }
+
         private static final byte SELECT_MODE = 0;
+
+        private static final byte MULTI_SELECT_MODE = 1;
 
         private byte mSelectMode;
 

@@ -21,6 +21,7 @@ The app works as a production app even though it is a demo app.
 - **Medicine Reminders** - Set up notifications to remind you to take medicine
 - **Medicine Intake History** - Log and review past medicine intakes
 - **Note Attachments** - Attach files and images to your notes
+- **Export & Import** - Export all or selected profiles to a ZIP file, import profiles from an export file, export a profile to an Excel spreadsheet / CSV
 - **Note Tags** - Tag your notes for better organization
 - **Search** - Search through your notes and profiles
 - **Dark/Light Mode** - Support for both dark mode and light mode themes
@@ -41,6 +42,7 @@ The app works as a production app even though it is a demo app.
 | Database | Room (SQLite) |
 | Reactive | RxJava3 / RxAndroid |
 | Background Work | WorkManager |
+| Spreadsheets | [a-poi-spreadsheet](https://github.com/rh-id/a-poi-spreadsheet) |
 
 ## Project Structure
 

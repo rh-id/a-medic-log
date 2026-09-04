@@ -99,9 +99,9 @@ public class NotesPage extends StatefulView<Activity> implements RequireNavigato
 
     public static void addNoteWorkFlow(INavigator iNavigator, Long profileId) {
         if (profileId == null) {
-            iNavigator.push(Routes.PROFILE_SELECT_DIALOG,
+            iNavigator.push(Routes.PROFILE_SELECT_PAGE,
                     (navigator, navRoute, activity, currentView) -> {
-                        ProfileSelectSVDialog.Result result = ProfileSelectSVDialog.Result.of(navRoute);
+                        ProfileSelectPage.Result result = ProfileSelectPage.Result.of(navRoute);
                         if (result != null) {
                             Profile profile = result.getSelectedProfile().get(0);
                             navigator.push(Routes.NOTE_DETAIL_PAGE,

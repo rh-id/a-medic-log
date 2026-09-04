@@ -6,7 +6,9 @@ public class Routes {
     public static final String SETTINGS_PAGE = "/settings";
     public static final String DONATIONS_PAGE = "/donations";
     public static final String PROFILES_PAGE = "/profiles";
-    public static final String PROFILE_SELECT_DIALOG = "/profiles/selectDialog";
+    public static final String PROFILE_SELECT_PAGE = "/profiles/selectPage";
+    public static final String PROFILE_SELECT_MULTI_PAGE = "/profiles/multiSelectPage";
+    public static final String IMPORT_PROFILE_SELECT_PAGE = "/profiles/importSelectPage";
     public static final String PROFILE_DETAIL_PAGE = "/profiles/detail";
     public static final String NOTES_PAGE = "/notes";
     public static final String NOTE_DETAIL_PAGE = "/notes/detail";
@@ -18,6 +20,7 @@ public class Routes {
     public static final String MEDICINE_INTAKE_DETAIL_PAGE = "/medicineIntakes/detail";
     public static final String COMMON_CREATE_FILE_DIALOG = "/common/createFileDialog";
     public static final String COMMON_IMAGEVIEW = "/common/imageView";
+    public static final String COMMON_PROGRESS_DIALOG = "/common/progressDialog";
 
     private Routes() {
     }

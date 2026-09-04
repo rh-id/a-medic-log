@@ -8,6 +8,8 @@ import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
@@ -118,31 +120,92 @@ public class PagedProfileItemsCmd {
     }
 
     public void selectProfile(Profile profile) {
-        Set<Long> selectedIds = mSelectedIdsSubject.getValue();
-        selectedIds.clear();
+        Set<Long> selectedIds = new LinkedHashSet<>();
+        selectedIds.add(profile.id);
+        mSelectedIdsSubject.onNext(selectedIds);
+    }
+
+    /**
+     * Add the profile into the current selection without clearing prior selections
+     *
+     * @param profile the profile to add into the selection
+     */
+    public void addSelectedProfile(Profile profile) {
+        Set<Long> selectedIds = new LinkedHashSet<>(mSelectedIdsSubject.getValue());
         selectedIds.add(profile.id);
         mSelectedIdsSubject.onNext(selectedIds);
     }
 
     public void unSelectProfile(Profile profile) {
-        Set<Long> selectedIds = mSelectedIdsSubject.getValue();
+        Set<Long> selectedIds = new LinkedHashSet<>(mSelectedIdsSubject.getValue());
         selectedIds.remove(profile.id);
         mSelectedIdsSubject.onNext(selectedIds);
     }
 
-    public ArrayList<Profile> getSelectedItems() {
-        Set<Long> selectedIds = mSelectedIdsSubject.getValue();
-        ArrayList<Profile> returnedItems = new ArrayList<>();
-        if (!selectedIds.isEmpty()) {
-            ArrayList<Profile> items = getAllItems();
-            if (!items.isEmpty()) {
-                for (Profile profile : items) {
-                    if (selectedIds.contains(profile.id)) {
-                        returnedItems.add(profile);
-                    }
+    /**
+     * Select every profile matching the active search, or every profile when no
+     * search is active. The displayed item list is left unchanged.
+     * Must only be used in multi select mode.
+     */
+    public void selectAllProfiles() {
+        mExecutorService.execute(() -> {
+            try {
+                List<Profile> profileList = isSearching()
+                        ? mProfileDao.searchProfile(mSearch)
+                        : mProfileDao.findProfiles();
+                Set<Long> selectedIds = new LinkedHashSet<>();
+                for (Profile profile : profileList) {
+                    selectedIds.add(profile.id);
                 }
+                mSelectedIdsSubject.onNext(selectedIds);
+            } catch (Throwable throwable) {
+                mLogger.e(TAG, throwable.getMessage(), throwable);
             }
-        }
-        return returnedItems;
+        });
+    }
+
+    /**
+     * Clear the whole current selection, must only be used in multi select mode
+     */
+    public void unSelectAllProfiles() {
+        mSelectedIdsSubject.onNext(new LinkedHashSet<>());
+    }
+
+    public Flowable<Set<Long>> getSelectedIdsFlow() {
+        return Flowable.fromObservable(mSelectedIdsSubject, BackpressureStrategy.BUFFER);
+    }
+
+    /**
+     * @return the current selected ids, this is the full selection which may
+     * include ids hidden by an active search filter
+     */
+    public Set<Long> getSelectedIds() {
+        return mSelectedIdsSubject.getValue();
+    }
+
+    /**
+     * Resolve the current selection through the database, so profiles selected
+     * before a search hid them are still included regardless of the displayed list
+     *
+     * @return the selected profiles in selection order
+     */
+    public Single<ArrayList<Profile>> getSelectedProfiles() {
+        return Single.fromCallable(() -> {
+                    Set<Long> selectedIds = new LinkedHashSet<>(mSelectedIdsSubject.getValue());
+                    if (selectedIds.isEmpty()) return new ArrayList<Profile>();
+                    List<Profile> profileList = mProfileDao.findProfilesByIds(new ArrayList<>(selectedIds));
+                    // preserve the selection order (LinkedHashSet insertion order)
+                    ArrayList<Profile> ordered = new ArrayList<>(selectedIds.size());
+                    for (Long id : selectedIds) {
+                        for (Profile profile : profileList) {
+                            if (profile.id.equals(id)) {
+                                ordered.add(profile);
+                                break;
+                            }
+                        }
+                    }
+                    return ordered;
+                })
+                .subscribeOn(Schedulers.from(mExecutorService));
     }
 }

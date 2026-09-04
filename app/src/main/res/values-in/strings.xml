@@ -121,4 +121,33 @@
     <string name="donation_other_apps">Aplikasi lain oleh developer: %s</string>
     <string name="donation_thank_you">Terima kasih untuk bantuan anda</string>
     <string name="error_please_select_profile">Error, silakan pilih profil</string>
+    <string name="title_select_profiles">Pilih Profil</string>
+    <string name="title_export_all">Ekspor Semua Profil</string>
+    <string name="title_export_profiles">Ekspor Profil</string>
+    <string name="title_import">Impor</string>
+    <string name="title_export_spreadsheet">Ekspor Spreadsheet</string>
+    <string name="title_select_profile_to_import">Pilih Profil untuk Diimpor</string>
+    <string name="select_all">Pilih Semua</string>
+    <string name="confirm_import_profiles">%d profil akan ditambahkan sebagai catatan baru. Data yang sudah ada tidak akan diubah.</string>
+    <string name="success_exporting_data">Ekspor selesai</string>
+    <string name="error_exporting_data">Gagal mengekspor data</string>
+    <string name="success_importing_data">Impor selesai, %d profil dan %d catatan ditambahkan</string>
+    <string name="error_importing_data">Gagal mengimpor data</string>
+    <string name="error_no_profile_in_import_file">Tidak ada profil di file impor</string>
+    <string name="export_progress_gathering">Mengumpulkan data…</string>
+    <string name="import_progress_reading">Membaca cadangan…</string>
+    <string name="import_progress_importing">Mengimpor data…</string>
+    <string name="export_spreadsheet_progress_writing">Menulis spreadsheet…</string>
+    <plurals name="profile_count_notes">
+        <item quantity="other">%d catatan</item>
+    </plurals>
+    <plurals name="profile_count_medicines">
+        <item quantity="other">%d obat</item>
+    </plurals>
+    <plurals name="profile_count_reminders">
+        <item quantity="other">%d pengingat</item>
+    </plurals>
+    <plurals name="profile_count_attachments">
+        <item quantity="other">%d lampiran</item>
+    </plurals>
 </resources>

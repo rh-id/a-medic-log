@@ -121,4 +121,37 @@
     <string name="donation_other_apps">Other apps by developer: %s</string>
     <string name="donation_thank_you">Thank you for your support</string>
     <string name="error_please_select_profile">Viga, palun valige profiil</string>
+    <string name="title_select_profiles">Vali profiilid</string>
+    <string name="title_export_all">Ekspordi kõik profiilid</string>
+    <string name="title_export_profiles">Ekspordi profiilid</string>
+    <string name="title_import">Impordi</string>
+    <string name="title_export_spreadsheet">Ekspordi arvutustabel</string>
+    <string name="title_select_profile_to_import">Vali imporditavad profiilid</string>
+    <string name="select_all">Vali kõik</string>
+    <string name="confirm_import_profiles">%d profiil(i) lisatakse uute kirjetena. Olemasolevaid andmeid ei muudeta.</string>
+    <string name="success_exporting_data">Eksportimine lõpetatud</string>
+    <string name="error_exporting_data">Viga andmete ekspordil</string>
+    <string name="success_importing_data">Import lõpetatud, lisati %d profiil(i) ja %d märkus(e)</string>
+    <string name="error_importing_data">Viga andmete impordil</string>
+    <string name="error_no_profile_in_import_file">Impordifailis ei leitud ühtegi profiili</string>
+    <string name="export_progress_gathering">Kogun andmeid…</string>
+    <string name="import_progress_reading">Loen varukoopiat…</string>
+    <string name="import_progress_importing">Impordin andmeid…</string>
+    <string name="export_spreadsheet_progress_writing">Kirjutan arvutustabelit…</string>
+    <plurals name="profile_count_notes">
+        <item quantity="one">%d märkus</item>
+        <item quantity="other">%d märkust</item>
+    </plurals>
+    <plurals name="profile_count_medicines">
+        <item quantity="one">%d ravim</item>
+        <item quantity="other">%d ravimit</item>
+    </plurals>
+    <plurals name="profile_count_reminders">
+        <item quantity="one">%d meeldetuletus</item>
+        <item quantity="other">%d meeldetuletust</item>
+    </plurals>
+    <plurals name="profile_count_attachments">
+        <item quantity="one">%d manus</item>
+        <item quantity="other">%d manust</item>
+    </plurals>
 </resources>

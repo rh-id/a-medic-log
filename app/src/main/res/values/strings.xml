@@ -34,6 +34,7 @@
     <string name="success_deleting_note">Note deleted</string>
     <string name="title_notes">Notes</string>
     <string name="title_select_profile">Select Profile</string>
+    <string name="title_select_profiles">Select Profiles</string>
     <string name="title_add_note">Add Note</string>
     <string name="content_is_required">Content is required</string>
     <string name="entry_date_time_is_required">Entry date time is required</string>
@@ -121,4 +122,36 @@
     <string name="donation_other_apps">Other apps by developer: %s</string>
     <string name="donation_thank_you">Thank you for your support</string>
     <string name="error_please_select_profile">Error, please select profile</string>
+    <string name="title_export_all">Export All Profile</string>
+    <string name="title_export_profiles">Export Profiles</string>
+    <string name="title_import">Import</string>
+    <string name="title_export_spreadsheet">Export Spreadsheet</string>
+    <string name="title_select_profile_to_import">Select Profiles to Import</string>
+    <string name="select_all">Select all</string>
+    <string name="confirm_import_profiles">%d profile(s) will be added as new records. Existing data will not be modified.</string>
+    <string name="success_exporting_data">Export completed</string>
+    <string name="error_exporting_data">Error exporting data</string>
+    <string name="success_importing_data">Import completed, %d profile(s) and %d note(s) added</string>
+    <string name="error_importing_data">Error importing data</string>
+    <string name="error_no_profile_in_import_file">No profile found in the import file</string>
+    <string name="export_progress_gathering">Gathering data…</string>
+    <string name="import_progress_reading">Reading backup…</string>
+    <string name="import_progress_importing">Importing data…</string>
+    <string name="export_spreadsheet_progress_writing">Writing spreadsheet…</string>
+    <plurals name="profile_count_notes">
+        <item quantity="one">%d note</item>
+        <item quantity="other">%d notes</item>
+    </plurals>
+    <plurals name="profile_count_medicines">
+        <item quantity="one">%d medicine</item>
+        <item quantity="other">%d medicines</item>
+    </plurals>
+    <plurals name="profile_count_reminders">
+        <item quantity="one">%d reminder</item>
+        <item quantity="other">%d reminders</item>
+    </plurals>
+    <plurals name="profile_count_attachments">
+        <item quantity="one">%d attachment</item>
+        <item quantity="other">%d attachments</item>
+    </plurals>
 </resources>

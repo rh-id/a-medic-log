@@ -121,4 +121,37 @@
     <string name="donation_other_apps">Other apps by developer: %s</string>
     <string name="donation_thank_you">Thank you for your support</string>
     <string name="error_please_select_profile">Villa, vinsamlegast veldu snið</string>
+    <string name="title_select_profiles">Veldu snið</string>
+    <string name="title_export_all">Flytja út öll snið</string>
+    <string name="title_export_profiles">Flytja út snið</string>
+    <string name="title_import">Flytja inn</string>
+    <string name="title_export_spreadsheet">Flytja út töflureikni</string>
+    <string name="title_select_profile_to_import">Veldu snið til að flytja inn</string>
+    <string name="select_all">Velja allt</string>
+    <string name="confirm_import_profiles">%d snið(i) verða bætt við sem nýjar færslur. Fyrirliggjandi gögnum verður ekki breytt.</string>
+    <string name="success_exporting_data">Útflutningi lokið</string>
+    <string name="error_exporting_data">Villa við útflutning gagna</string>
+    <string name="success_importing_data">Innflutningi lokið, %d snið(i) og %d minnispunkti bætt við</string>
+    <string name="error_importing_data">Villa við innflutning gagna</string>
+    <string name="error_no_profile_in_import_file">Engin snið fundust í innflutningsskránni</string>
+    <string name="export_progress_gathering">Sæki gögn…</string>
+    <string name="import_progress_reading">Les afritun…</string>
+    <string name="import_progress_importing">Flyt inn gögn…</string>
+    <string name="export_spreadsheet_progress_writing">Skrifa töflureikni…</string>
+    <plurals name="profile_count_notes">
+        <item quantity="one">%d minnispunktur</item>
+        <item quantity="other">%d minnispunktar</item>
+    </plurals>
+    <plurals name="profile_count_medicines">
+        <item quantity="one">%d lyf</item>
+        <item quantity="other">%d lyf</item>
+    </plurals>
+    <plurals name="profile_count_reminders">
+        <item quantity="one">%d lyfminning</item>
+        <item quantity="other">%d lyfminningar</item>
+    </plurals>
+    <plurals name="profile_count_attachments">
+        <item quantity="one">%d viðhengi</item>
+        <item quantity="other">%d viðhengi</item>
+    </plurals>
 </resources>

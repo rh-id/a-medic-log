@@ -121,4 +121,37 @@
     <string name="donation_other_apps">Other apps by developer: %s</string>
     <string name="donation_thank_you">Thank you for your support</string>
     <string name="error_please_select_profile">Errur, tscherna per plaschair profil</string>
+    <string name="title_select_profiles">Tscherner Profiles</string>
+    <string name="title_export_all">Exportar tuts ils Profiles</string>
+    <string name="title_export_profiles">Exportar Profiles</string>
+    <string name="title_import">Importar</string>
+    <string name="title_export_spreadsheet">Exportar il fol da calcul</string>
+    <string name="title_select_profile_to_import">Tscherner ils Profiles da importar</string>
+    <string name="select_all">Tscherner tut</string>
+    <string name="confirm_import_profiles">%d profil(s) vegnan agiunts sco novs registers. Datas existentas vegnan betg midadas.</string>
+    <string name="success_exporting_data">Export terminà</string>
+    <string name="error_exporting_data">Errur tar l\'export da las datas</string>
+    <string name="success_importing_data">Import terminà, %d profil(s) e %d nota(s) agiunts</string>
+    <string name="error_importing_data">Errur tar l\'import da las datas</string>
+    <string name="error_no_profile_in_import_file">Chattà nagin profil en la datoteca d\'import</string>
+    <string name="export_progress_gathering">Raccurt las datas…</string>
+    <string name="import_progress_reading">Legia la copia da segirezza…</string>
+    <string name="import_progress_importing">Importa las datas…</string>
+    <string name="export_spreadsheet_progress_writing">Scrive il fol da calcul…</string>
+    <plurals name="profile_count_notes">
+        <item quantity="one">%d nota</item>
+        <item quantity="other">%d notas</item>
+    </plurals>
+    <plurals name="profile_count_medicines">
+        <item quantity="one">%d medikament</item>
+        <item quantity="other">%d medikaments</item>
+    </plurals>
+    <plurals name="profile_count_reminders">
+        <item quantity="one">%d promemoria</item>
+        <item quantity="other">%d promemoria</item>
+    </plurals>
+    <plurals name="profile_count_attachments">
+        <item quantity="one">%d agiunta</item>
+        <item quantity="other">%d agiuntas</item>
+    </plurals>
 </resources>

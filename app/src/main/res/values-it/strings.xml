@@ -121,4 +121,37 @@
     <string name="donation_other_apps">Other apps by developer: %s</string>
     <string name="donation_thank_you">Thank you for your support</string>
     <string name="error_please_select_profile">Errore, selezionare un profilo</string>
+    <string name="title_select_profiles">Seleziona profili</string>
+    <string name="title_export_all">Esporta tutti i profili</string>
+    <string name="title_export_profiles">Esporta profili</string>
+    <string name="title_import">Importa</string>
+    <string name="title_export_spreadsheet">Esporta foglio di calcolo</string>
+    <string name="title_select_profile_to_import">Seleziona i profili da importare</string>
+    <string name="select_all">Seleziona tutto</string>
+    <string name="confirm_import_profiles">%d profilo/i verranno aggiunti come nuovi record. I dati esistenti non verranno modificati.</string>
+    <string name="success_exporting_data">Esportazione completata</string>
+    <string name="error_exporting_data">Errore durante l\'esportazione dei dati</string>
+    <string name="success_importing_data">Importazione completata, %d profilo/i e %d nota/e aggiunti</string>
+    <string name="error_importing_data">Errore durante l\'importazione dei dati</string>
+    <string name="error_no_profile_in_import_file">Nessun profilo trovato nel file di importazione</string>
+    <string name="export_progress_gathering">Raccolta dei dati…</string>
+    <string name="import_progress_reading">Lettura del backup…</string>
+    <string name="import_progress_importing">Importazione dei dati…</string>
+    <string name="export_spreadsheet_progress_writing">Scrittura del foglio di calcolo…</string>
+    <plurals name="profile_count_notes">
+        <item quantity="one">%d nota</item>
+        <item quantity="other">%d note</item>
+    </plurals>
+    <plurals name="profile_count_medicines">
+        <item quantity="one">%d medicinale</item>
+        <item quantity="other">%d medicinali</item>
+    </plurals>
+    <plurals name="profile_count_reminders">
+        <item quantity="one">%d promemoria</item>
+        <item quantity="other">%d promemoria</item>
+    </plurals>
+    <plurals name="profile_count_attachments">
+        <item quantity="one">%d allegato</item>
+        <item quantity="other">%d allegati</item>
+    </plurals>
 </resources>

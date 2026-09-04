@@ -18,6 +18,10 @@ public abstract class NoteDao {
             "ORDER BY entry_date_time DESC LIMIT :limit")
     public abstract List<Note> findNotesByProfileIdWithLimit(long profileId, int limit);
 
+    @Query("SELECT * FROM note where profile_id = :profileId " +
+            "ORDER BY entry_date_time DESC")
+    public abstract List<Note> findNotesByProfileId(long profileId);
+
     @Query("SELECT * FROM note " +
             "ORDER BY entry_date_time DESC LIMIT :limit")
     public abstract List<Note> findNotesWithLimit(int limit);

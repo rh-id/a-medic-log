@@ -41,6 +41,52 @@
                 app:layout_gravity="fill" />
         </androidx.gridlayout.widget.GridLayout>
 
+        <androidx.gridlayout.widget.GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:columnCount="@integer/grid_column_count">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_export_all"
+                style="@style/Theme.Amediclog.HomeMenuButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/title_export_all"
+                app:icon="@drawable/ic_upload_file_black"
+                app:layout_columnWeight="1"
+                app:layout_gravity="fill" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_export_profiles"
+                style="@style/Theme.Amediclog.HomeMenuButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/title_export_profiles"
+                app:icon="@drawable/ic_upload_file_black"
+                app:layout_columnWeight="1"
+                app:layout_gravity="fill" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_import"
+                style="@style/Theme.Amediclog.HomeMenuButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/title_import"
+                app:icon="@drawable/ic_download_file_black"
+                app:layout_columnWeight="1"
+                app:layout_gravity="fill" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_export_spreadsheet"
+                style="@style/Theme.Amediclog.HomeMenuButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/title_export_spreadsheet"
+                app:icon="@drawable/ic_table_chart_black"
+                app:layout_columnWeight="1"
+                app:layout_gravity="fill" />
+        </androidx.gridlayout.widget.GridLayout>
+
     </LinearLayout>
 
     <androidx.appcompat.widget.LinearLayoutCompat

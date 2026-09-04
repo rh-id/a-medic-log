@@ -121,4 +121,37 @@
     <string name="donation_other_apps">Other apps by developer: %s</string>
     <string name="donation_thank_you">Thank you for your support</string>
     <string name="error_please_select_profile">Feil, velg profil</string>
+    <string name="title_select_profiles">Velg profiler</string>
+    <string name="title_export_all">Eksporter alle profiler</string>
+    <string name="title_export_profiles">Eksporter profiler</string>
+    <string name="title_import">Importer</string>
+    <string name="title_export_spreadsheet">Eksporter regneark</string>
+    <string name="title_select_profile_to_import">Velg profiler som skal importeres</string>
+    <string name="select_all">Velg alle</string>
+    <string name="confirm_import_profiles">%d profil(er) legges til som nye oppføringer. Eksisterende data endres ikke.</string>
+    <string name="success_exporting_data">Eksport fullført</string>
+    <string name="error_exporting_data">Feil under eksport av data</string>
+    <string name="success_importing_data">Import fullført, %d profil(er) og %d notat(er) lagt til</string>
+    <string name="error_importing_data">Feil under import av data</string>
+    <string name="error_no_profile_in_import_file">Ingen profil funnet i importfilen</string>
+    <string name="export_progress_gathering">Samler data…</string>
+    <string name="import_progress_reading">Leser sikkerhetskopi…</string>
+    <string name="import_progress_importing">Importerer data…</string>
+    <string name="export_spreadsheet_progress_writing">Skriver regneark…</string>
+    <plurals name="profile_count_notes">
+        <item quantity="one">%d notat</item>
+        <item quantity="other">%d notater</item>
+    </plurals>
+    <plurals name="profile_count_medicines">
+        <item quantity="one">%d medisin</item>
+        <item quantity="other">%d medisiner</item>
+    </plurals>
+    <plurals name="profile_count_reminders">
+        <item quantity="one">%d påminnelse</item>
+        <item quantity="other">%d påminnelser</item>
+    </plurals>
+    <plurals name="profile_count_attachments">
+        <item quantity="one">%d vedlegg</item>
+        <item quantity="other">%d vedlegg</item>
+    </plurals>
 </resources>

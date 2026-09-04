@@ -5,6 +5,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -65,6 +66,7 @@ public class ProfileItemSV extends StatefulView<Activity> implements RequireComp
                 R.layout.item_profile, container, false);
         rootLayout.setOnClickListener(this);
         RadioButton radioSelect = rootLayout.findViewById(R.id.radio_select);
+        CheckBox checkBoxSelect = rootLayout.findViewById(R.id.checkbox_select);
         Button buttonEdit = rootLayout.findViewById(R.id.button_edit);
         Button buttonDelete = rootLayout.findViewById(R.id.button_delete);
         buttonEdit.setOnClickListener(this);
@@ -72,7 +74,11 @@ public class ProfileItemSV extends StatefulView<Activity> implements RequireComp
         if (mListMode != null) {
             buttonEdit.setVisibility(View.GONE);
             buttonDelete.setVisibility(View.GONE);
-            if (mListMode.mSelectMode == ListMode.SELECT_MODE) {
+            if (mListMode.mSelectMode == ListMode.MULTI_SELECT_MODE) {
+                checkBoxSelect.setVisibility(View.VISIBLE);
+                checkBoxSelect.setChecked(mIsSelected);
+                mSelectedUiButton = checkBoxSelect;
+            } else if (mListMode.mSelectMode == ListMode.SELECT_MODE) {
                 radioSelect.setVisibility(View.VISIBLE);
                 radioSelect.setChecked(mIsSelected);
                 mSelectedUiButton = radioSelect;
@@ -147,13 +153,21 @@ public class ProfileItemSV extends StatefulView<Activity> implements RequireComp
         }
     }
 
+    public boolean isMultiSelectMode() {
+        return mListMode != null && mListMode.mSelectMode == ListMode.MULTI_SELECT_MODE;
+    }
+
 
     @Override
     public void onClick(View view) {
         int id = view.getId();
         if (id == R.id.root_layout) {
             if (mListMode != null) {
-                mIsSelected = true;
+                if (mListMode.mSelectMode == ListMode.MULTI_SELECT_MODE) {
+                    mIsSelected = !mIsSelected;
+                } else {
+                    mIsSelected = true;
+                }
                 if (mSelectedUiButton != null) {
                     mSelectedUiButton.setChecked(mIsSelected);
                 }
@@ -213,10 +227,21 @@ public class ProfileItemSV extends StatefulView<Activity> implements RequireComp
             return listMode;
         }
 
+        public static ListMode multiSelectMode() {
+            ListMode listMode = new ListMode();
+            listMode.mSelectMode = MULTI_SELECT_MODE;
+            return listMode;
+        }
+
         /**
          * Selection with radio button or only one selection
          */
         private static final byte SELECT_MODE = 0;
+
+        /**
+         * Selection with checkbox or multiple selection
+         */
+        private static final byte MULTI_SELECT_MODE = 1;
 
         private byte mSelectMode;
 
