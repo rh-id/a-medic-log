@@ -1,0 +1,6 @@
+Release 1.5.0+27
+
+Uued funktsioonid:
+* Eksport ja import: kõikide või valitud profiilide eksportimine ZIP-arhiivi (JSON + manuste pildid) ja profiilide tagasiimportimine eksportfailist
+* Profiili eksportimine Exceli arvutustabelisse (XLSX, Android 8+) või CSV-failide ZIP-arhiivi vanematel Androidi versioonidel
+* Rakendusesisene avatud lähtekoodiga litsentside lehekülg, mis luuakse ehituse ajal rakenduse tegelikest sõltuvustest

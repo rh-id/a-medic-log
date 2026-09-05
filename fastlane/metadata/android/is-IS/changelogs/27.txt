@@ -1,0 +1,6 @@
+Release 1.5.0+27
+
+Nýjungar:
+* Út- og innflutningur: flytja út alla eða valda prófíla í ZIP-safn (JSON + myndir viðhengja) og flytja prófíla aftur inn úr útflutningsskrá
+* Flytja út prófíl í Excel-töflureikni (XLSX, Android 8+) eða ZIP-safn með CSV-skrám á eldri Android-útgáfum
+* Síða með hugbúnaðarleyfum opins hugbúnaðar inni í appinu, mynduð við byggingu út frá raunverulegum ósjálfstæðum appsins

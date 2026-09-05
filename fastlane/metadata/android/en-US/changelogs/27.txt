@@ -1,0 +1,6 @@
+Release 1.5.0+27
+
+Features:
+* Export & Import: export all or selected profiles to a ZIP archive (JSON + attachment images) and import profiles back from an export file
+* Export a profile to an Excel spreadsheet (XLSX, Android 8+) or a ZIP of CSV files on older Android versions
+* In-app open-source licenses page generated at build time from the app's actual dependencies

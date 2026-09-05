@@ -1,0 +1,6 @@
+Release 1.5.0+27
+
+Novità:
+* Esportazione e importazione di tutti i profili o dei profili selezionati in un archivio ZIP (JSON + immagini degli allegati) e reimportazione dei profili da un file di esportazione
+* Esportazione di un profilo in un foglio di calcolo Excel (XLSX, Android 8+) o in un archivio ZIP di file CSV sulle versioni Android precedenti
+* Pagina delle licenze open source integrata nell'app, generata in fase di build dalle dipendenze effettive dell'app

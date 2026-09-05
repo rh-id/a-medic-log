@@ -1,0 +1,6 @@
+Release 1.5.0+27
+
+Nova funcziuns:
+* Export ed import: exportar tut u profils tschernids en in archiv ZIP (JSON + maletgs da las agiuntas) ed importar puspè profils dad ina datoteca d'export
+* Exportar in profil en ina folgia da calcul Excel (XLSX, Android 8+) u en in archiv ZIP da datotecas CSV sin versiuns Android pli veglias
+* Pagina da licenzas open source en l'app, generada tar la construcziun da las dependanzas actualas da l'app

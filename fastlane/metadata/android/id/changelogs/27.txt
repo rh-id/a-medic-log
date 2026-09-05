@@ -1,0 +1,6 @@
+Release 1.5.0+27
+
+Fitur Baru:
+* Ekspor & Impor: mengekspor semua atau profil terpilih ke arsip ZIP (JSON + gambar lampiran) dan mengimpor kembali profil dari file ekspor
+* Mengekspor profil ke spreadsheet Excel (XLSX, Android 8+) atau ZIP berisi file CSV pada versi Android yang lebih lama
+* Halaman lisensi open source dalam aplikasi yang dibuat saat build dari dependensi aktual aplikasi

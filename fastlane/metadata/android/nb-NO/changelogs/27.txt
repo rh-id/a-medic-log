@@ -1,0 +1,6 @@
+Release 1.5.0+27
+
+Nyheter:
+* Eksport og import: eksporter alle eller valgte profiler til et ZIP-arkiv (JSON + bilder av vedlegg) og importer profiler tilbake fra en eksportfil
+* Eksporter en profil til et Excel-regneark (XLSX, Android 8+) eller et ZIP-arkiv med CSV-filer på eldre Android-versjoner
+* Innebygd lisensside for åpen kildekode som genereres ved bygging fra appens faktiske avhengigheter
