@@ -21,7 +21,8 @@ The app works as a production app even though it is a demo app.
 - **Medicine Reminders** - Set up notifications to remind you to take medicine
 - **Medicine Intake History** - Log and review past medicine intakes
 - **Note Attachments** - Attach files and images to your notes
-- **Export & Import** - Export all or selected profiles to a ZIP file, import profiles from an export file, export a profile to an Excel spreadsheet / CSV
+- **Export & Import** - Export all or selected profiles to a ZIP archive (JSON + attachment images), import profiles from an export file, export a profile to an Excel spreadsheet (XLSX, Android 8+) or a ZIP of CSV files on older versions
+- **In-app License Viewer** - Open-source licenses page generated at build time from actual app dependencies
 - **Note Tags** - Tag your notes for better organization
 - **Search** - Search through your notes and profiles
 - **Dark/Light Mode** - Support for both dark mode and light mode themes
@@ -35,13 +36,15 @@ The app works as a production app even though it is a demo app.
 | Min SDK | 21 (Android 5.0) |
 | Target SDK | 37 (Android 17) |
 | Compile SDK | 37 |
-| Build System | Gradle (AGP 9.2.1) |
+| Build System | Gradle 9.4.1 (AGP 9.2.1) |
 | Architecture | Single-Activity + StatefulView |
 | Navigation | [a-navigator](https://github.com/rh-id/a-navigator) |
 | Dependency Injection | [a-provider](https://github.com/rh-id/a-provider) |
-| Database | Room (SQLite) |
-| Reactive | RxJava3 / RxAndroid |
-| Background Work | WorkManager |
+| Database | Room 2.7.2 (SQLite) |
+| Reactive | RxJava 3.1.12 / RxAndroid 3.0.2 |
+| Background Work | WorkManager 2.10.5 |
+| UI | Material Components 1.13.0, PhotoView |
+| Desugaring | coreLibraryDesugaring (desugar_jdk_libs 2.1.5) |
 | Spreadsheets | [a-poi-spreadsheet](https://github.com/rh-id/a-poi-spreadsheet) |
 
 ## Project Structure
@@ -79,6 +82,9 @@ The app utilizes a hierarchical provider structure to manage dependency scopes e
 *   **RxDisposer:** A custom helper class that manages `Disposable` objects.
     *   It is provided via DI and linked to the lifecycle of the Provider/Component.
     *   When a `StatefulView` is disposed, its associated Provider (and thus `RxDisposer`) cleans up all active subscriptions, preventing memory leaks.
+
+#### 4. Reminder Notifications
+*   **AndroidNotification:** Room table that tracks posted reminder notifications so they can be cancelled/updated.
 
 ### Architecture Diagram
 
@@ -172,13 +178,20 @@ erDiagram
     NOTE ||--o{ NOTE_ATTACHMENT : has
     MEDICINE ||--o{ MEDICINE_REMINDER : schedules
     MEDICINE ||--o{ MEDICINE_INTAKE : history
+    NOTE ||--o{ NOTE_TAG : "tagged-with"
 ```
+
+## How Reminders Work
+
+Reminders are scheduled with WorkManager. For each enabled reminder, a one-time work request is enqueued with an initial delay until the next occurrence. The worker posts the notification on the configured days of week and re-enqueues itself for the next day. Notification actions let the user log a medicine intake or disable the reminder directly from the notification.
 
 ## Building
 
 ### Prerequisites
 - JDK 17
 - Android SDK with Compile SDK 37
+- An internet connection on first build (Gradle fetches dependency POMs to generate the licenses page)
+- JitPack repository is required (already configured in settings.gradle)
 
 ### Build commands
 ```bash
@@ -189,6 +202,12 @@ erDiagram
 ./gradlew connectedCheck     # Run instrumented tests (requires device/emulator)
 ```
 
+### Licenses page
+The `generateLicenseHtml` Gradle task (from `gradle/license-html-generator.gradle`) resolves all external dependencies' POMs and generates `app/src/main/assets/licenses.html`, which is shown in the in-app licenses page. It runs automatically before every build (`preBuild`). Per-artifact overrides live in `app/licenses.yml`. The generated file is committed to the repo.
+
+### Release signing
+Release signing is configured via environment variables: `SIGNING_KEY` (base64 keystore), `KEY_STORE_PASSWORD`, `ALIAS`, and `KEY_PASSWORD`. When `SIGNING_KEY` is not set, the release build is unsigned (this is how CI signs release APKs).
+
 ## CI/CD
 
 The project uses GitHub Actions for continuous integration and deployment:
@@ -196,8 +215,10 @@ The project uses GitHub Actions for continuous integration and deployment:
 | Workflow | Trigger | Description |
 |---|---|---|
 | **Android CI** | Push/PR to `master` | Builds the project with Gradle |
-| **Emulator Test** | Push/PR to `master` | Runs instrumented tests on API 23 & 29 emulators |
-| **Release APKs** | Tag push (`v*`) | Builds signed APKs and creates a GitHub Release with changelog |
+| **Android Emulator Test** | Push/PR to `master` | Runs instrumented tests on API 23, 26, 31 & 36 emulators |
+| **Android Release APKs** | Tag push (`v*`) | Builds signed debug and release APKs and creates a GitHub Release with the changelog from `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt` |
+
+The release body is produced automatically: a Gradle hook copies the fastlane changelog file for the current versionCode to `app/build/changelog.txt`, which the release workflow uses as the GitHub Release body.
 
 ## Screenshots
 <img src="https://github.com/rh-id/a-medic-log/blob/master/fastlane/metadata/android/en-US/images/featureGraphic.png" width="1024"/>
