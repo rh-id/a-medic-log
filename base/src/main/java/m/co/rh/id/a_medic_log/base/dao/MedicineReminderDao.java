@@ -22,6 +22,9 @@ public abstract class MedicineReminderDao {
     @Query("SELECT * FROM medicine_reminder WHERE message LIKE '%'||:search||'%' ORDER BY created_date_time DESC")
     public abstract List<MedicineReminder> searchMedicineReminderMessage(String search);
 
+    @Query("SELECT * FROM medicine_reminder WHERE reminder_enabled = 1 ORDER BY created_date_time DESC")
+    public abstract List<MedicineReminder> findMedicineRemindersEnabled();
+
     @Insert
     public abstract long insert(MedicineReminder medicineReminder);
 

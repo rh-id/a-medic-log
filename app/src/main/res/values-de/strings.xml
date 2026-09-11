@@ -58,8 +58,8 @@
     <string name="notification_title_medicine_reminder">%s, %s</string>
     <string name="notification_channel_name_medicine_reminder">Medikamentenerinnerung</string>
     <string name="notification_channel_description_medicine_reminder">Erinnert Sie an Ihre Medikamente</string>
-    <string name="take_medicine">Medikament einnehmen</string>
-    <string name="disable_reminder">Erinnerung deaktivieren</string>
+    <string name="take_medicine">Einnehmen</string>
+    <string name="disable_reminder">Deaktivieren</string>
     <string name="snooze">Später</string>
     <string name="title_take_medicine">Medikament einnehmen</string>
     <string name="taken_date_time_is_required">Einnahmedatum/-uhrzeit ist erforderlich</string>
@@ -123,6 +123,7 @@
     <string name="donation_thank_you">Thank you for your support</string>
     <string name="error_please_select_profile">Fehler, bitte wählen Sie ein Profil aus</string>
     <string name="title_select_profiles">Profile auswählen</string>
+    <string name="profile">Profil</string>
     <string name="title_export_all">Alle Profile exportieren</string>
     <string name="title_export_profiles">Profile exportieren</string>
     <string name="title_import">Importieren</string>
@@ -155,4 +156,10 @@
         <item quantity="one">%d Anhang</item>
         <item quantity="other">%d Anhänge</item>
     </plurals>
+    <string name="title_adherence">Therapietreue</string>
+    <string name="adherence_last_7_days">Letzte 7 Tage</string>
+    <string name="adherence_last_30_days">Letzte 30 Tage</string>
+    <string name="adherence_taken">Genommen</string>
+    <string name="adherence_missed">Verpasst</string>
+    <string name="adherence_no_data">Keine Daten für diesen Zeitraum</string>
 </resources>

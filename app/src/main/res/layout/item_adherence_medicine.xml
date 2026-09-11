@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="@dimen/text_margin"
+    android:paddingTop="@dimen/text_margin"
+    android:paddingEnd="@dimen/text_margin"
+    android:paddingBottom="@dimen/text_margin">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text_medicine_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:text="Paracetamol" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text_profile_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/daynight_gray_700_white"
+        android:textSize="14sp"
+        tools:text="Grandpa" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text_adherence_stats"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        tools:text="20 · 3 · 87%" />
+</LinearLayout>

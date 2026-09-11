@@ -58,9 +58,9 @@
     <string name="notification_title_medicine_reminder">%s, %s</string>
     <string name="notification_channel_name_medicine_reminder">Medisinpåminnelse</string>
     <string name="notification_channel_description_medicine_reminder">Påminn deg om medisinen din</string>
-    <string name="take_medicine">Ta medisin</string>
-    <string name="disable_reminder">Deaktiver påminnelse</string>
-    <string name="snooze">Utsett</string>
+    <string name="take_medicine">Ta</string>
+    <string name="disable_reminder">Slå av</string>
+    <string name="snooze">Senere</string>
     <string name="title_take_medicine">Ta medisin</string>
     <string name="taken_date_time_is_required">Tidspunkt for inntak er obligatorisk</string>
     <string name="description_is_required">Beskrivelse er obligatorisk</string>
@@ -123,6 +123,7 @@
     <string name="donation_thank_you">Thank you for your support</string>
     <string name="error_please_select_profile">Feil, velg profil</string>
     <string name="title_select_profiles">Velg profiler</string>
+    <string name="profile">Profil</string>
     <string name="title_export_all">Eksporter alle profiler</string>
     <string name="title_export_profiles">Eksporter profiler</string>
     <string name="title_import">Importer</string>
@@ -155,4 +156,10 @@
         <item quantity="one">%d vedlegg</item>
         <item quantity="other">%d vedlegg</item>
     </plurals>
+    <string name="title_adherence">Etterlevelse</string>
+    <string name="adherence_last_7_days">Siste 7 dager</string>
+    <string name="adherence_last_30_days">Siste 30 dager</string>
+    <string name="adherence_taken">Tatt</string>
+    <string name="adherence_missed">Savnet</string>
+    <string name="adherence_no_data">Ingen data for denne perioden</string>
 </resources>

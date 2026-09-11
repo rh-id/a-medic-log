@@ -21,6 +21,9 @@ public abstract class MedicineDao {
     @Query("SELECT * FROM medicine WHERE name LIKE '%'||:search||'%' ORDER BY created_date_time DESC")
     public abstract List<Medicine> searchMedicineName(String search);
 
+    @Query("SELECT * FROM medicine ORDER BY created_date_time DESC")
+    public abstract List<Medicine> findAllMedicines();
+
     @Insert
     public abstract long insert(Medicine medicine);
 

@@ -58,8 +58,8 @@
     <string name="notification_title_medicine_reminder">%s, %s</string>
     <string name="notification_channel_name_medicine_reminder">Lyfminning</string>
     <string name="notification_channel_description_medicine_reminder">Minni á þig á lyfin</string>
-    <string name="take_medicine">Taka lyf</string>
-    <string name="disable_reminder">Afvirkja minningu</string>
+    <string name="take_medicine">Taka</string>
+    <string name="disable_reminder">Gera óvirkt</string>
     <string name="snooze">Seinna</string>
     <string name="title_take_medicine">Taka Lyf</string>
     <string name="taken_date_time_is_required">Tökuð tími er krafist</string>
@@ -123,6 +123,7 @@
     <string name="donation_thank_you">Thank you for your support</string>
     <string name="error_please_select_profile">Villa, vinsamlegast veldu snið</string>
     <string name="title_select_profiles">Veldu snið</string>
+    <string name="profile">Prófíll</string>
     <string name="title_export_all">Flytja út öll snið</string>
     <string name="title_export_profiles">Flytja út snið</string>
     <string name="title_import">Flytja inn</string>
@@ -155,4 +156,10 @@
         <item quantity="one">%d viðhengi</item>
         <item quantity="other">%d viðhengi</item>
     </plurals>
+    <string name="title_adherence">Eftirfylgni</string>
+    <string name="adherence_last_7_days">Síðustu 7 dagar</string>
+    <string name="adherence_last_30_days">Síðustu 30 dagar</string>
+    <string name="adherence_taken">Tekið</string>
+    <string name="adherence_missed">Ekki tekið</string>
+    <string name="adherence_no_data">Engin gögn fyrir þetta tímabil</string>
 </resources>

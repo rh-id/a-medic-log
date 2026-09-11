@@ -14,4 +14,6 @@
     <color name="daynight_gray_700_white">@color/gray_700</color>
     <color name="daynight_white_black">@color/white</color>
     <color name="daynight_black_white">@color/black</color>
+    <color name="adherence_taken">#4CAF50</color>
+    <color name="adherence_missed">#F44336</color>
 </resources>

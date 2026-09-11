@@ -30,6 +30,9 @@ public abstract class NoteDao {
             "ORDER BY entry_date_time DESC")
     public abstract List<Note> searchNote(String search);
 
+    @Query("SELECT * FROM note ORDER BY entry_date_time DESC")
+    public abstract List<Note> findAllNotes();
+
     @Query("SELECT * FROM note WHERE id = :noteId")
     public abstract Note findNoteById(Long noteId);
 

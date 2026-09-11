@@ -58,8 +58,8 @@
     <string name="notification_title_medicine_reminder">%s, %s</string>
     <string name="notification_channel_name_medicine_reminder">Ravimi meeldetuletus</string>
     <string name="notification_channel_description_medicine_reminder">Meenutab teile ravimeid</string>
-    <string name="take_medicine">Võta ravim</string>
-    <string name="disable_reminder">Keela meeldetuletus</string>
+    <string name="take_medicine">Võta</string>
+    <string name="disable_reminder">Keela</string>
     <string name="snooze">Hiljem</string>
     <string name="title_take_medicine">Võta ravim</string>
     <string name="taken_date_time_is_required">Võtmise kuupäev ja kellaaeg on kohustuslikud</string>
@@ -123,6 +123,7 @@
     <string name="donation_thank_you">Thank you for your support</string>
     <string name="error_please_select_profile">Viga, palun valige profiil</string>
     <string name="title_select_profiles">Vali profiilid</string>
+    <string name="profile">Profiil</string>
     <string name="title_export_all">Ekspordi kõik profiilid</string>
     <string name="title_export_profiles">Ekspordi profiilid</string>
     <string name="title_import">Impordi</string>
@@ -155,4 +156,10 @@
         <item quantity="one">%d manus</item>
         <item quantity="other">%d manust</item>
     </plurals>
+    <string name="title_adherence">Järgimine</string>
+    <string name="adherence_last_7_days">Viimased 7 päeva</string>
+    <string name="adherence_last_30_days">Viimased 30 päeva</string>
+    <string name="adherence_taken">Võetud</string>
+    <string name="adherence_missed">Puuduv</string>
+    <string name="adherence_no_data">Sellel perioodil puuduvad andmed</string>
 </resources>

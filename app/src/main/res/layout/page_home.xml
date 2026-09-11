@@ -119,6 +119,14 @@
             app:icon="@drawable/ic_menu_book_black" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/menu_adherence"
+            style="@style/Theme.Amediclog.BorderlessMenuButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/title_adherence"
+            app:icon="@drawable/ic_bar_chart_black" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/menu_settings"
             style="@style/Theme.Amediclog.BorderlessMenuButton"
             android:layout_width="match_parent"

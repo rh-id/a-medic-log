@@ -35,6 +35,7 @@
     <string name="title_notes">Notes</string>
     <string name="title_select_profile">Select Profile</string>
     <string name="title_select_profiles">Select Profiles</string>
+    <string name="profile">Profile</string>
     <string name="title_add_note">Add Note</string>
     <string name="content_is_required">Content is required</string>
     <string name="entry_date_time_is_required">Entry date time is required</string>
@@ -59,9 +60,9 @@
     <string name="notification_title_medicine_reminder">%s, %s</string>
     <string name="notification_channel_name_medicine_reminder">Medicine Reminder</string>
     <string name="notification_channel_description_medicine_reminder">Remind you of your medicine</string>
-    <string name="take_medicine">Take medicine</string>
-    <string name="disable_reminder">Disable reminder</string>
-    <string name="snooze">Snooze</string>
+    <string name="take_medicine">Take</string>
+    <string name="disable_reminder">Disable</string>
+    <string name="snooze">Later</string>
     <string name="title_take_medicine">Take Medicine</string>
     <string name="taken_date_time_is_required">Taken date time is required</string>
     <string name="description_is_required">Description is required</string>
@@ -155,4 +156,13 @@
         <item quantity="one">%d attachment</item>
         <item quantity="other">%d attachments</item>
     </plurals>
+    <string name="title_adherence">Adherence</string>
+    <string name="adherence_last_7_days">Last 7 days</string>
+    <string name="adherence_last_30_days">Last 30 days</string>
+    <string name="adherence_taken">Taken</string>
+    <string name="adherence_missed">Missed</string>
+    <string name="adherence_no_data">No data for this period</string>
+    <string name="adherence_percent" translatable="false">%d%%</string>
+    <string name="adherence_taken_missed_format" translatable="false">%1$s %2$d · %3$s %4$d</string>
+    <string name="adherence_chart_summary" translatable="false">Adherence chart: %d taken, %d missed over %d days</string>
 </resources>

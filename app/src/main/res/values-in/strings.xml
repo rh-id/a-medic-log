@@ -58,9 +58,9 @@
     <string name="notification_title_medicine_reminder">%s, %s</string>
     <string name="notification_channel_name_medicine_reminder">Pengingat Obat</string>
     <string name="notification_channel_description_medicine_reminder">Mengingatkan obat kamu</string>
-    <string name="take_medicine">Ambil obat</string>
-    <string name="disable_reminder">Matikan pengingat</string>
-    <string name="snooze">Tunda</string>
+    <string name="take_medicine">Minum</string>
+    <string name="disable_reminder">Matikan</string>
+    <string name="snooze">Nanti</string>
     <string name="title_take_medicine">Ambil Obat</string>
     <string name="taken_date_time_is_required">Tanggal waktu pengambilan diperlukan</string>
     <string name="description_is_required">Deskripsi diperlukan</string>
@@ -123,6 +123,7 @@
     <string name="donation_thank_you">Terima kasih untuk bantuan anda</string>
     <string name="error_please_select_profile">Error, silakan pilih profil</string>
     <string name="title_select_profiles">Pilih Profil</string>
+    <string name="profile">Profil</string>
     <string name="title_export_all">Ekspor Semua Profil</string>
     <string name="title_export_profiles">Ekspor Profil</string>
     <string name="title_import">Impor</string>
@@ -151,4 +152,10 @@
     <plurals name="profile_count_attachments">
         <item quantity="other">%d lampiran</item>
     </plurals>
+    <string name="title_adherence">Kepatuhan</string>
+    <string name="adherence_last_7_days">7 hari terakhir</string>
+    <string name="adherence_last_30_days">30 hari terakhir</string>
+    <string name="adherence_taken">Dikonsumsi</string>
+    <string name="adherence_missed">Terlewat</string>
+    <string name="adherence_no_data">Tidak ada data untuk periode ini</string>
 </resources>

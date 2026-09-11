@@ -18,6 +18,7 @@ public class Routes {
     public static final String MEDICINE_REMINDER_DETAIL_PAGE = "/medicines/reminders/detail";
     public static final String MEDICINE_INTAKES_PAGE = "/medicineIntakes";
     public static final String MEDICINE_INTAKE_DETAIL_PAGE = "/medicineIntakes/detail";
+    public static final String ADHERENCE_PAGE = "/adherence";
     public static final String COMMON_CREATE_FILE_DIALOG = "/common/createFileDialog";
     public static final String COMMON_IMAGEVIEW = "/common/imageView";
     public static final String COMMON_PROGRESS_DIALOG = "/common/progressDialog";

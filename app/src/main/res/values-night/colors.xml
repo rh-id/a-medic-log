@@ -3,4 +3,6 @@
     <color name="daynight_gray_700_white">@color/white</color>
     <color name="daynight_white_black">@color/black</color>
     <color name="daynight_black_white">@color/white</color>
+    <color name="adherence_taken">#66BB6A</color>
+    <color name="adherence_missed">#EF5350</color>
 </resources>

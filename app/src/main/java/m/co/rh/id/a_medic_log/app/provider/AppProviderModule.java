@@ -24,6 +24,7 @@ import m.co.rh.id.a_medic_log.app.provider.notifier.NoteAttachmentFileChangeNoti
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteTagChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.ProfileChangeNotifier;
+import m.co.rh.id.a_medic_log.app.ui.page.AdherencePage;
 import m.co.rh.id.a_medic_log.app.ui.page.DonationsPage;
 import m.co.rh.id.a_medic_log.app.ui.page.HomePage;
 import m.co.rh.id.a_medic_log.app.ui.page.ImportProfileSelectPage;
@@ -110,6 +111,7 @@ public class AppProviderModule implements ProviderModule {
         navMap.put(Routes.MEDICINE_REMINDER_DETAIL_PAGE, (args, activity) -> new MedicineReminderDetailPage());
         navMap.put(Routes.MEDICINE_INTAKES_PAGE, (args, activity) -> new MedicineIntakeListPage());
         navMap.put(Routes.MEDICINE_INTAKE_DETAIL_PAGE, (args, activity) -> new MedicineIntakeDetailPage());
+        navMap.put(Routes.ADHERENCE_PAGE, (args, activity) -> new AdherencePage());
         navMap.put(Routes.COMMON_CREATE_FILE_DIALOG, (args, activity) -> new CreateFileSVDialog());
         navMap.put(Routes.COMMON_IMAGEVIEW, (args, activity) -> new ImageViewPage());
         navMap.put(Routes.COMMON_PROGRESS_DIALOG, (args, activity) -> new ProgressSVDialog());

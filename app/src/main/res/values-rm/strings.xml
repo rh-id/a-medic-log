@@ -58,9 +58,9 @@
     <string name="notification_title_medicine_reminder">%s, %s</string>
     <string name="notification_channel_name_medicine_reminder">Erinner da medikaments</string>
     <string name="notification_channel_description_medicine_reminder">Te regorda da tes medikaments</string>
-    <string name="take_medicine">Prender medikament</string>
-    <string name="disable_reminder">Deactivar erinner</string>
-    <string name="snooze">Renviar</string>
+    <string name="take_medicine">Prender</string>
+    <string name="disable_reminder">Deactivar</string>
+    <string name="snooze">Pli tard</string>
     <string name="title_take_medicine">Prender Medikament</string>
     <string name="taken_date_time_is_required">Data ed temp necessari</string>
     <string name="description_is_required">Descripziun necessaria</string>
@@ -123,6 +123,7 @@
     <string name="donation_thank_you">Thank you for your support</string>
     <string name="error_please_select_profile">Errur, tscherna per plaschair profil</string>
     <string name="title_select_profiles">Tscherner Profiles</string>
+    <string name="profile">Profil</string>
     <string name="title_export_all">Exportar tuts ils Profiles</string>
     <string name="title_export_profiles">Exportar Profiles</string>
     <string name="title_import">Importar</string>
@@ -155,4 +156,10 @@
         <item quantity="one">%d agiunta</item>
         <item quantity="other">%d agiuntas</item>
     </plurals>
+    <string name="title_adherence">Observanza</string>
+    <string name="adherence_last_7_days">Ultims 7 dis</string>
+    <string name="adherence_last_30_days">Ultims 30 dis</string>
+    <string name="adherence_taken">Prendì</string>
+    <string name="adherence_missed">Manchà</string>
+    <string name="adherence_no_data">Nagins datas per quest interval</string>
 </resources>
