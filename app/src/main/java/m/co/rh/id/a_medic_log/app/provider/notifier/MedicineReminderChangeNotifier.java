@@ -43,6 +43,17 @@ public class MedicineReminderChangeNotifier {
         return Flowable.fromObservable(mDeletedMedicineReminderSubject, BackpressureStrategy.BUFFER);
     }
 
+    /**
+     * Merges the added, updated and deleted streams into a single change stream,
+     * updated events are flattened to the state after the update.
+     */
+    public Flowable<MedicineReminder> getAnyChanged() {
+        return Flowable.merge(
+                getAddedMedicineReminder(),
+                getUpdatedMedicineReminder().map(MedicineReminderUpdatedEvent::getAfter),
+                getDeletedMedicineReminder());
+    }
+
     public static class MedicineReminderUpdatedEvent implements Serializable {
         private MedicineReminder mBefore;
         private MedicineReminder mAfter;

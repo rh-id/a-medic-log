@@ -43,6 +43,17 @@ public class MedicineChangeNotifier {
         return Flowable.fromObservable(mDeletedMedicineSubject, BackpressureStrategy.BUFFER);
     }
 
+    /**
+     * Merges the added, updated and deleted streams into a single change stream,
+     * updated events are flattened to the state after the update.
+     */
+    public Flowable<MedicineState> getAnyChanged() {
+        return Flowable.merge(
+                getAddedMedicine(),
+                getUpdatedMedicine().map(MedicineUpdatedEvent::getAfter),
+                getDeletedMedicine());
+    }
+
     public static class MedicineUpdatedEvent implements Serializable {
         private MedicineState mBefore;
         private MedicineState mAfter;

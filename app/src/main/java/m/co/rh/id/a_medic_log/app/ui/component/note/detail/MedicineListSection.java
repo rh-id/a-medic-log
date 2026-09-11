@@ -117,34 +117,8 @@ public class MedicineListSection implements View.OnClickListener,
                             mMedicineRecyclerViewAdapter.notifyItemRefreshed();
                         })
         );
-        mRxDisposer.add("MedicineListSection.bindViews_onMedicineReminderAdded",
-                mMedicineReminderChangeNotifier.getAddedMedicineReminder()
-                        .observeOn(Schedulers.from(mExecutorService))
-                        .flatMapSingle(medicineReminder -> {
-                            if (isUpdate()) {
-                                return mQueryNoteCmd.queryMedicineInfo(mNoteState);
-                            }
-                            return Single.just(mNoteState.getMedicineList());
-                        })
-                        .subscribe(
-                                medicineStates -> {},
-                                throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)
-                        ));
-        mRxDisposer.add("MedicineListSection.bindViews_onMedicineReminderUpdated",
-                mMedicineReminderChangeNotifier.getUpdatedMedicineReminder()
-                        .observeOn(Schedulers.from(mExecutorService))
-                        .flatMapSingle(medicineReminder -> {
-                            if (isUpdate()) {
-                                return mQueryNoteCmd.queryMedicineInfo(mNoteState);
-                            }
-                            return Single.just(mNoteState.getMedicineList());
-                        })
-                        .subscribe(
-                                medicineStates -> {},
-                                throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)
-                        ));
-        mRxDisposer.add("MedicineListSection.bindViews_onMedicineReminderDeleted",
-                mMedicineReminderChangeNotifier.getDeletedMedicineReminder()
+        mRxDisposer.add("MedicineListSection.bindViews_onMedicineReminderChanged",
+                mMedicineReminderChangeNotifier.getAnyChanged()
                         .observeOn(Schedulers.from(mExecutorService))
                         .flatMapSingle(medicineReminder -> {
                             if (isUpdate()) {

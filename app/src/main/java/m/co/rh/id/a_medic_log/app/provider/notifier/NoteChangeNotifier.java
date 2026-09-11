@@ -43,6 +43,17 @@ public class NoteChangeNotifier {
         return Flowable.fromObservable(mDeletedNoteSubject, BackpressureStrategy.BUFFER);
     }
 
+    /**
+     * Merges the added, updated and deleted streams into a single change stream,
+     * updated events are flattened to the state after the update.
+     */
+    public Flowable<NoteState> getAnyChanged() {
+        return Flowable.merge(
+                getAddedNote(),
+                getUpdatedNote().map(NoteUpdatedEvent::getAfter),
+                getDeletedNote());
+    }
+
     public static class NoteUpdatedEvent implements Serializable {
         private NoteState mBefore;
         private NoteState mAfter;

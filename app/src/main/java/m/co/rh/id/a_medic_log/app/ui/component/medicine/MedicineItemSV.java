@@ -144,29 +144,8 @@ public class MedicineItemSV extends StatefulView<Activity> implements RequireCom
                                 lastIntakeText.setVisibility(View.GONE);
                             }
                         }));
-        mRxDisposer.add("createView_onMedicineIntakeAdded",
-                mMedicineIntakeChangeNotifier.getAddedMedicineIntake()
-                        .observeOn(Schedulers.from(mExecutorService))
-                        .subscribe(medicineIntake -> {
-                            if (medicineIntake.medicineId != null &&
-                                    medicineIntake.medicineId.equals(
-                                            mMedicineStateSubject.getValue().getMedicineId())) {
-                                queryLastMedicineIntake(medicineIntake.medicineId);
-                            }
-                        }));
-        mRxDisposer.add("createView_onMedicineIntakeUpdated",
-                mMedicineIntakeChangeNotifier.getUpdatedMedicineIntake()
-                        .observeOn(Schedulers.from(mExecutorService))
-                        .subscribe(updateMedicineIntakeEvent -> {
-                            MedicineIntake medicineIntake = updateMedicineIntakeEvent.getAfter();
-                            if (medicineIntake.medicineId != null &&
-                                    medicineIntake.medicineId.equals(
-                                            mMedicineStateSubject.getValue().getMedicineId())) {
-                                queryLastMedicineIntake(medicineIntake.medicineId);
-                            }
-                        }));
-        mRxDisposer.add("createView_onMedicineIntakeDeleted",
-                mMedicineIntakeChangeNotifier.getDeletedMedicineIntake()
+        mRxDisposer.add("createView_onMedicineIntakeChanged",
+                mMedicineIntakeChangeNotifier.getAnyChanged()
                         .observeOn(Schedulers.from(mExecutorService))
                         .subscribe(medicineIntake -> {
                             if (medicineIntake.medicineId != null &&

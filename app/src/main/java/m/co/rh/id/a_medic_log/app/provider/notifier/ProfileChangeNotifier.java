@@ -40,4 +40,11 @@ public class ProfileChangeNotifier {
     public Flowable<Profile> getDeletedProfile() {
         return Flowable.fromObservable(mDeletedProfileSubject, BackpressureStrategy.BUFFER);
     }
+
+    /**
+     * Merges the added, updated and deleted streams into a single change stream.
+     */
+    public Flowable<Profile> getAnyChanged() {
+        return Flowable.merge(getAddedProfile(), getUpdatedProfile(), getDeletedProfile());
+    }
 }
