@@ -60,6 +60,7 @@
     <string name="notification_channel_description_medicine_reminder">Meenutab teile ravimeid</string>
     <string name="take_medicine">Võta ravim</string>
     <string name="disable_reminder">Keela meeldetuletus</string>
+    <string name="snooze">Hiljem</string>
     <string name="title_take_medicine">Võta ravim</string>
     <string name="taken_date_time_is_required">Võtmise kuupäev ja kellaaeg on kohustuslikud</string>
     <string name="description_is_required">Kirjeldus on kohustuslik</string>

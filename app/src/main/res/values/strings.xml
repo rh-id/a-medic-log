@@ -61,6 +61,7 @@
     <string name="notification_channel_description_medicine_reminder">Remind you of your medicine</string>
     <string name="take_medicine">Take medicine</string>
     <string name="disable_reminder">Disable reminder</string>
+    <string name="snooze">Snooze</string>
     <string name="title_take_medicine">Take Medicine</string>
     <string name="taken_date_time_is_required">Taken date time is required</string>
     <string name="description_is_required">Description is required</string>

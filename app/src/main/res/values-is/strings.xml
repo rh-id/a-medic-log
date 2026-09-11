@@ -60,6 +60,7 @@
     <string name="notification_channel_description_medicine_reminder">Minni á þig á lyfin</string>
     <string name="take_medicine">Taka lyf</string>
     <string name="disable_reminder">Afvirkja minningu</string>
+    <string name="snooze">Seinna</string>
     <string name="title_take_medicine">Taka Lyf</string>
     <string name="taken_date_time_is_required">Tökuð tími er krafist</string>
     <string name="description_is_required">Lýsing er krefð</string>

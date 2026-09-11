@@ -6,10 +6,15 @@ import android.content.Intent;
 
 import androidx.annotation.RequiresPermission;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.work.Data;
+import androidx.work.ExistingWorkPolicy;
+import androidx.work.OneTimeWorkRequest;
+import androidx.work.WorkManager;
 
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import co.rh.id.lib.rx3_utils.subject.QueueSubject;
@@ -19,6 +24,9 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineIntakeCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineReminderCmd;
+import m.co.rh.id.a_medic_log.app.workmanager.MedicineReminderSnoozeWorker;
+import m.co.rh.id.a_medic_log.app.workmanager.Keys;
+import m.co.rh.id.a_medic_log.app.workmanager.Tags;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
@@ -48,6 +56,7 @@ public class AppNotificationHandler {
     private final ProviderValue<NewMedicineIntakeCmd> mNewMedicineIntakeCmd;
     private final ProviderValue<UpdateMedicineReminderCmd> mUpdateMedicineReminderCmd;
     private final ProviderValue<MedicineReminderEventHandler> mMedicineReminderEventHandler;
+    private final ProviderValue<WorkManager> mWorkManager;
     private final MedicineReminderNotificationBuilder mNotificationBuilder;
     private final ReentrantLock mLock;
     private QueueSubject<MedicineReminder> mMedicineReminderSubject;
@@ -64,6 +73,7 @@ public class AppNotificationHandler {
         mNewMedicineIntakeCmd = provider.lazyGet(NewMedicineIntakeCmd.class);
         mUpdateMedicineReminderCmd = provider.lazyGet(UpdateMedicineReminderCmd.class);
         mMedicineReminderEventHandler = provider.lazyGet(MedicineReminderEventHandler.class);
+        mWorkManager = provider.lazyGet(WorkManager.class);
         mNotificationBuilder = new MedicineReminderNotificationBuilder(mAppContext);
         mLock = new ReentrantLock();
         mMedicineReminderSubject = new QueueSubject<>();
@@ -154,6 +164,32 @@ public class AppNotificationHandler {
         }
     }
 
+    public void snoozeMedicineReminder(Intent intent) {
+        Serializable serializable = intent.getSerializableExtra(MedicineReminderNotificationBuilder.KEY_INT_REQUEST_ID);
+        if (serializable instanceof Integer) {
+            mExecutorService.get().execute(() -> {
+                mLock.lock();
+                try {
+                    AndroidNotification androidNotification =
+                            mAndroidNotificationRepo.get().findByRequestId((int) serializable);
+                    if (androidNotification != null && androidNotification.groupKey.equals(MedicineReminderNotificationBuilder.GROUP_KEY_MEDICINE_REMINDER)) {
+                        MedicineReminder medicineReminder = mMedicineReminderDao.get().findMedicineReminderById(androidNotification.refId);
+                        cancelNotificationSync(medicineReminder);
+                        OneTimeWorkRequest snoozeWorkRequest = new OneTimeWorkRequest.Builder(MedicineReminderSnoozeWorker.class)
+                                .setInitialDelay(15, TimeUnit.MINUTES)
+                                .setInputData(new Data.Builder().putLong(Keys.LONG_MEDICINE_REMINDER_ID, medicineReminder.id).build())
+                                .build();
+                        mWorkManager.get().enqueueUniqueWork(Tags.SNOOZE_TAG + medicineReminder.id, ExistingWorkPolicy.REPLACE, snoozeWorkRequest);
+                    }
+                } catch (Exception e) {
+                    mLogger.get().d(TAG, "Failed to snooze medicine reminder: " + e.getMessage(), e);
+                } finally {
+                    mLock.unlock();
+                }
+            });
+        }
+    }
+
     public void disableMedicineReminder(Intent intent) {
         Serializable serializable = intent.getSerializableExtra(MedicineReminderNotificationBuilder.KEY_INT_REQUEST_ID);
         if (serializable instanceof Integer) {
@@ -169,6 +205,7 @@ public class AppNotificationHandler {
                         cancelNotificationSync(medicineReminder);
                         mMedicineReminderEventHandler.get()
                                 .cancelMedicineReminderNotificationWork(Collections.singletonList(medicineReminder));
+                        mWorkManager.get().cancelUniqueWork(Tags.SNOOZE_TAG + medicineReminder.id);
                     }
                 } catch (Exception e) {
                     mLogger.get().d(TAG, "Failed to disable medicine reminder: " + e.getMessage(), e);

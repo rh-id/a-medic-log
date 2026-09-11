@@ -60,6 +60,7 @@
     <string name="notification_channel_description_medicine_reminder">Te regorda da tes medikaments</string>
     <string name="take_medicine">Prender medikament</string>
     <string name="disable_reminder">Deactivar erinner</string>
+    <string name="snooze">Renviar</string>
     <string name="title_take_medicine">Prender Medikament</string>
     <string name="taken_date_time_is_required">Data ed temp necessari</string>
     <string name="description_is_required">Descripziun necessaria</string>

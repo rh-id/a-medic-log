@@ -60,6 +60,7 @@
     <string name="notification_channel_description_medicine_reminder">Erinnert Sie an Ihre Medikamente</string>
     <string name="take_medicine">Medikament einnehmen</string>
     <string name="disable_reminder">Erinnerung deaktivieren</string>
+    <string name="snooze">Später</string>
     <string name="title_take_medicine">Medikament einnehmen</string>
     <string name="taken_date_time_is_required">Einnahmedatum/-uhrzeit ist erforderlich</string>
     <string name="description_is_required">Beschreibung ist erforderlich</string>

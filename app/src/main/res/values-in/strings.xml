@@ -60,6 +60,7 @@
     <string name="notification_channel_description_medicine_reminder">Mengingatkan obat kamu</string>
     <string name="take_medicine">Ambil obat</string>
     <string name="disable_reminder">Matikan pengingat</string>
+    <string name="snooze">Tunda</string>
     <string name="title_take_medicine">Ambil Obat</string>
     <string name="taken_date_time_is_required">Tanggal waktu pengambilan diperlukan</string>
     <string name="description_is_required">Deskripsi diperlukan</string>

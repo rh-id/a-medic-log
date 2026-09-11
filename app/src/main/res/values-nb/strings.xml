@@ -60,6 +60,7 @@
     <string name="notification_channel_description_medicine_reminder">Påminn deg om medisinen din</string>
     <string name="take_medicine">Ta medisin</string>
     <string name="disable_reminder">Deaktiver påminnelse</string>
+    <string name="snooze">Utsett</string>
     <string name="title_take_medicine">Ta medisin</string>
     <string name="taken_date_time_is_required">Tidspunkt for inntak er obligatorisk</string>
     <string name="description_is_required">Beskrivelse er obligatorisk</string>

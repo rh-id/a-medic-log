@@ -15,6 +15,7 @@ import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.MainActivity;
 import m.co.rh.id.a_medic_log.app.receiver.NotificationDeleteReceiver;
 import m.co.rh.id.a_medic_log.app.receiver.NotificationDisableMedicineReminderReceiver;
+import m.co.rh.id.a_medic_log.app.receiver.NotificationSnoozeMedicineReminderReceiver;
 import m.co.rh.id.a_medic_log.app.receiver.NotificationTakeMedicineReceiver;
 import m.co.rh.id.a_medic_log.base.entity.AndroidNotification;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
@@ -87,6 +88,11 @@ public class MedicineReminderNotificationBuilder {
         PendingIntent pendingIntentDisableMedicineReminder = PendingIntent.getBroadcast(mAppContext, requestId, intentDisableMedicineReminder,
                 intentFlag);
         builder.addAction(R.drawable.ic_timer_off_black, mAppContext.getString(R.string.disable_reminder), pendingIntentDisableMedicineReminder);
+        Intent intentSnoozeMedicineReminder = new Intent(mAppContext, NotificationSnoozeMedicineReminderReceiver.class);
+        intentSnoozeMedicineReminder.putExtra(KEY_INT_REQUEST_ID, requestId);
+        PendingIntent pendingIntentSnooze = PendingIntent.getBroadcast(mAppContext, requestId, intentSnoozeMedicineReminder,
+                intentFlag);
+        builder.addAction(R.drawable.ic_snooze_black, mAppContext.getString(R.string.snooze), pendingIntentSnooze);
         return builder.build();
     }
 }

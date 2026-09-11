@@ -60,6 +60,7 @@
     <string name="notification_channel_description_medicine_reminder">Vous rappelle de prendre vos médicaments</string>
     <string name="take_medicine">Prendre le médicament</string>
     <string name="disable_reminder">Désactiver le rappel</string>
+    <string name="snooze">Répéter</string>
     <string name="title_take_medicine">Prendre le médicament</string>
     <string name="taken_date_time_is_required">La date et l\'heure de prise sont requises</string>
     <string name="description_is_required">La description est requise</string>
