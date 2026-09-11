@@ -31,6 +31,9 @@ import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderDisposable;
 
 public class MedicineReminderEventHandler implements ProviderDisposable {
+    // grace covers the lag between the form's pre-filled "now" start time and the actual save;
+    // the worker's re-enqueue path passes false so the daily recurrence stays exact
+    private static final long CATCH_UP_GRACE_PERIOD_MS = TimeUnit.MINUTES.toMillis(5);
     private final ExecutorService mExecutorService;
     private final WorkManager mWorkManager;
     private final MedicineDao mMedicineDao;
@@ -202,10 +205,14 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
     }
 
     public void startMedicineReminderNotificationWork(List<MedicineReminder> medicineReminders) {
+        startMedicineReminderNotificationWork(medicineReminders, true);
+    }
+
+    public void startMedicineReminderNotificationWork(List<MedicineReminder> medicineReminders, boolean catchUpIfJustPassed) {
         if (!medicineReminders.isEmpty()) {
             for (MedicineReminder medicineReminder : medicineReminders) {
                 if (medicineReminder.reminderEnabled) {
-                    long initialDelay = calculateInitialDelayMs(medicineReminder.startDateTime);
+                    long initialDelay = calculateInitialDelayMs(medicineReminder.startDateTime, catchUpIfJustPassed);
                     String tag = calculateTag(medicineReminder);
                     OneTimeWorkRequest notificationWorkRequest =
                             new OneTimeWorkRequest.Builder(MedicineReminderNotificationWorker.class)
@@ -252,12 +259,15 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
         return Tags.MEDICINE_REMINDER_TAG + medicineReminder.id;
     }
 
-    private long calculateInitialDelayMs(Date startDate) {
+    static long calculateInitialDelayMs(Date startDate, boolean catchUpIfJustPassed) {
         long result = 0;
         if (startDate != null) {
             long currentDateTime = System.currentTimeMillis();
             long startDateTime = startDate.getTime();
             result = startDateTime - currentDateTime;
+            if (catchUpIfJustPassed && result < 0 && result >= -CATCH_UP_GRACE_PERIOD_MS) {
+                return 0;
+            }
             while (result < 0) {
                 Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(startDateTime);

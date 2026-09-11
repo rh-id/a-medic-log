@@ -56,7 +56,7 @@ public class MedicineReminderNotificationWorker extends Worker {
                 }
             }
 
-            mMedicineReminderEventHandler.get().startMedicineReminderNotificationWork(Collections.singletonList(medicineReminder));
+            mMedicineReminderEventHandler.get().startMedicineReminderNotificationWork(Collections.singletonList(medicineReminder), false);
         }
 
         // previously this worker is enqueued as periodic work, so remove it
