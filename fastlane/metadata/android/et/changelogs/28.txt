@@ -1,0 +1,10 @@
+Release 2.0.0+28
+
+Uued funktsioonid:
+* „Tänased doosid“ kaart avakuval: üks rida profili kohta, kellel on täna doose — võetud/oodatud arv, maha jäänud doos või järgmise doosi aeg
+* Uus ravijärgi käsitlev leht, kus on iga profili ravijärg viimase 7 või 30 päeva jooksul: koguprotsent, päevane diagramm ja jaotus ravimite kaupa
+* Toiming „Hiljem“ ravimite meeldetuletustes (uus meeldetuletus 15 minuti pärast)
+
+Parandused:
+* Ravimite meeldetuletus käivitub nüüd kohe, kui algusaeg on just möödunud, selle asemel et oodata järgmise päevani
+* Eemaldati liigne vahe teema seadete raadionuppude vahel

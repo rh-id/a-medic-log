@@ -1,0 +1,10 @@
+Release 2.0.0+28
+
+Features:
+* Today's doses card on the home screen: one row per profile with doses due today — taken/expected count, missed dose or next dose time
+* New adherence page with per-profile medication adherence over the last 7 or 30 days: overall percent, daily chart and per-medicine breakdown
+* New "Later" (snooze) action on medicine reminder notifications (re-posts the reminder 15 minutes later)
+
+Fixes:
+* Medicine reminder now fires immediately when the start time has just passed, instead of waiting until the next day
+* Removed extra spacing between radio buttons on the theme setting

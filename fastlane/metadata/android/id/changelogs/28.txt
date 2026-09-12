@@ -1,0 +1,10 @@
+Release 2.0.0+28
+
+Fitur Baru:
+* Kartu "Dosis hari ini" di layar utama: satu baris per profil dengan dosis yang jatuh tempo hari ini — jumlah yang diminum/diharapkan, dosis yang terlewat, atau waktu dosis berikutnya
+* Halaman kepatuhan baru dengan kepatuhan minum obat per profil selama 7 atau 30 hari terakhir: persentase keseluruhan, grafik harian, dan rincian per obat
+* Aksi "Nanti" pada notifikasi pengingat obat (mengingatkan kembali 15 menit kemudian)
+
+Perbaikan:
+* Pengingat obat kini langsung berbunyi ketika waktu mulai baru saja terlewat, alih-alih menunggu sampai hari berikutnya
+* Menghapus spasi berlebih antara tombol radio pada pengaturan tema

@@ -1,0 +1,10 @@
+Release 2.0.0+28
+
+Nouveautés :
+* Carte « Doses du jour » sur l'écran d'accueil : une ligne par profil ayant des doses dues aujourd'hui — nombre prises/prévues, dose manquée ou heure de la prochaine dose
+* Nouvelle page d'observance avec l'observance médicamenteuse par profil sur les 7 ou 30 derniers jours : pourcentage global, graphique quotidien et détail par médicament
+* Action « Plus tard » sur les notifications de rappel de médicament (nouveau rappel 15 minutes plus tard)
+
+Corrections :
+* Le rappel de médicament se déclenche désormais immédiatement lorsque l'heure de début vient de passer, au lieu d'attendre le lendemain
+* Suppression de l'espacement superflu entre les boutons radio du réglage du thème

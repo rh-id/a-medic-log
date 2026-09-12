@@ -1,0 +1,10 @@
+Release 2.0.0+28
+
+Neuheiten:
+* Karte „Heutige Dosen“ auf dem Startbildschirm: eine Zeile pro Profil mit heutigen Dosen — genommene/erwartete Anzahl, verpasste Dosis oder Zeitpunkt der nächsten Dosis
+* Neue Adhärenz-Seite mit der Medikamenten-Adhärenz pro Profil über die letzten 7 oder 30 Tage: Gesamtprozent, Tagesdiagramm und Aufschlüsselung pro Medikament
+* Aktion „Später“ bei Medikamenten-Erinnerungen (erinnert 15 Minuten später erneut)
+
+Fehlerbehebungen:
+* Medikamenten-Erinnerung wird jetzt sofort ausgelöst, wenn die Startzeit gerade erst vergangen ist, statt bis zum nächsten Tag zu warten
+* Zusätzliche Abstände zwischen den Optionsfeldern der Theme-Einstellung entfernt

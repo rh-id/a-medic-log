@@ -1,0 +1,10 @@
+Release 2.0.0+28
+
+Novità:
+* Scheda «Dosi di oggi» nella schermata principale: una riga per profilo con dosi previste oggi — numero assunte/previste, dose persa o ora della prossima dose
+* Nuova pagina di aderenza con l'aderenza ai farmaci per profilo negli ultimi 7 o 30 giorni: percentuale complessiva, grafico giornaliero e dettaglio per farmaco
+* Azione «Più tardi» nelle notifiche dei promemoria dei farmaci (nuovo promemoria dopo 15 minuti)
+
+Correzioni:
+* Il promemoria dei farmaci ora si attiva immediatamente quando l'ora di inizio è appena passata, invece di attendere il giorno successivo
+* Rimossi gli spazi in più tra i pulsanti di opzione dell'impostazione del tema

@@ -1,0 +1,10 @@
+Release 2.0.0+28
+
+Nova funcziuns:
+* Charta «Dosas d'oz» sin l'ecran principal: ina lingia per profil cun dosas d'oz — dumber da prendidas/spetgadas, dosa manchenta u temp da la proxima dosa
+* Nova pagina d'aderenza cun l'aderenza als medicaments per profil dals ultims 7 u 30 dis: procent total, diagramm da di e repartiziun per medicament
+* Azure «Pli tard» sin las notificaziuns da promemoria da medicaments (nova promemoria 15 minutas pli tard)
+
+Correcturas:
+* Il promemoria da medicaments vegn ussa activà immediatamain cura che il temp d'entschatta è gist passà, empè da spetgar fin il di suandant
+* Allontanà spazis additional tranter ils buttuns radio en la configuraziun dal tema

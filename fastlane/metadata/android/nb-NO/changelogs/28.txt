@@ -1,0 +1,10 @@
+Release 2.0.0+28
+
+Nyheter:
+* «Dagens doser»-kort på hjemskjermen: én rad per profil med doser i dag — antall tatt/forventet, savnet dose eller tidspunkt for neste dose
+* Ny adherensside med medikamentadherens per profil de siste 7 eller 30 dagene: total prosent, daglig diagram og fordeling per medisin
+* «Senere»-handling på medisinpåminnelser (ny påminnelse 15 minutter senere)
+
+Feilrettinger:
+* Medisinpåminnelsen utløses nå umiddelbart når starttidspunktet nettopp har passert, i stedet for å vente til neste dag
+* Fjernet ekstra mellomrom mellom radioknappene i temainnstillingen

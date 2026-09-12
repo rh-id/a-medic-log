@@ -1,0 +1,10 @@
+Release 2.0.0+28
+
+Nytt:
+* «Dagens dosar»-kort på heimeskjermen: ei rad per profil med dosar i dag — tal tatt/venta, missa dose eller klokkeslett for neste dose
+* Ny etterfylgingsside med medikamentetterfylging per profil dei siste 7 eller 30 dagane: total prosent, dagleg diagram og fordeling per medisin
+* «Seinare»-handling på medisinpåminningar (ny påminning 15 minutt seinare)
+
+Feilrettingar:
+* Medisinpåminninga blir no utløyst med ein gong når starttidspunktet nettopp har passert, i staden for å vente til neste dag
+* Fjerna ekstra mellomrom mellom radioknappane i temainnstillinga

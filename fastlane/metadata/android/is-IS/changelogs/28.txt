@@ -1,0 +1,10 @@
+Release 2.0.0+28
+
+Nýjungar:
+* „Dagskamir“-spjald á heimaskjá: ein lína fyrir hvern prófíl með skammta í dag — fjöldi teknir/væntir, misstur skammtur eða tími næsta skammts
+* Ný lyfjasamræmissíða með lyfjasamræmi fyrir hvern prófíl síðustu 7 eða 30 daga: heildarprósentu, daglegan graaf og sundurliðun eftir lyfjum
+* „Seinna“-aðgerð í áminningum um lyf (ný áminning 15 mínútum síðar)
+
+Villuleiðréttingar:
+* Lyfjaáminning fer nú strax af stað ef upphafstíminn hefur nýlega liðið, í stað þess að bíða til næsta dags
+* Fjarlægðum auka bil milli valsahnappa í þemastillingu
