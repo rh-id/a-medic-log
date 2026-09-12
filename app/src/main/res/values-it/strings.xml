@@ -162,4 +162,11 @@
     <string name="adherence_taken">Preso</string>
     <string name="adherence_missed">Saltate</string>
     <string name="adherence_no_data">Nessun dato per questo periodo</string>
+    <string name="title_today_doses">Dosi di oggi</string>
+    <string name="today_doses_format">%1$d dose su %2$d</string>
+    <string name="today_next_dose_format">prossima %1$s</string>
+    <string name="today_missed_format">%1$s %2$s persa</string>
+    <string name="today_all_done">Tutto preso</string>
+    <string name="today_more_profiles">Altri %1$d profili</string>
+    <string name="today_show_less">Mostra meno</string>
 </resources>

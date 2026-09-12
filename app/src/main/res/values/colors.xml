@@ -16,4 +16,5 @@
     <color name="daynight_black_white">@color/black</color>
     <color name="adherence_taken">#4CAF50</color>
     <color name="adherence_missed">#F44336</color>
+    <color name="today_done">#9E9E9E</color>
 </resources>

@@ -15,77 +15,96 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
-        <androidx.gridlayout.widget.GridLayout
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:columnCount="@integer/grid_column_count">
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/button_add_profile"
-                style="@style/Theme.Amediclog.HomeMenuButton"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:id="@+id/container_home_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/title_add_profile"
-                app:icon="@drawable/ic_person_add_black"
-                app:layout_columnWeight="1"
-                app:layout_gravity="fill" />
+                android:orientation="vertical">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/button_add_note"
-                style="@style/Theme.Amediclog.HomeMenuButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/title_add_note"
-                app:icon="@drawable/ic_note_add_black"
-                app:layout_columnWeight="1"
-                app:layout_gravity="fill" />
-        </androidx.gridlayout.widget.GridLayout>
+                <FrameLayout
+                    android:id="@+id/container_today"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
 
-        <androidx.gridlayout.widget.GridLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:columnCount="@integer/grid_column_count">
+                <androidx.gridlayout.widget.GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:columnCount="@integer/grid_column_count">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/button_export_all"
-                style="@style/Theme.Amediclog.HomeMenuButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/title_export_all"
-                app:icon="@drawable/ic_upload_file_black"
-                app:layout_columnWeight="1"
-                app:layout_gravity="fill" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_add_profile"
+                        style="@style/Theme.Amediclog.HomeMenuButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/title_add_profile"
+                        app:icon="@drawable/ic_person_add_black"
+                        app:layout_columnWeight="1"
+                        app:layout_gravity="fill" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/button_export_profiles"
-                style="@style/Theme.Amediclog.HomeMenuButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/title_export_profiles"
-                app:icon="@drawable/ic_upload_file_black"
-                app:layout_columnWeight="1"
-                app:layout_gravity="fill" />
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_add_note"
+                        style="@style/Theme.Amediclog.HomeMenuButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/title_add_note"
+                        app:icon="@drawable/ic_note_add_black"
+                        app:layout_columnWeight="1"
+                        app:layout_gravity="fill" />
+                </androidx.gridlayout.widget.GridLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/button_import"
-                style="@style/Theme.Amediclog.HomeMenuButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/title_import"
-                app:icon="@drawable/ic_download_file_black"
-                app:layout_columnWeight="1"
-                app:layout_gravity="fill" />
+                <androidx.gridlayout.widget.GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:columnCount="@integer/grid_column_count">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/button_export_spreadsheet"
-                style="@style/Theme.Amediclog.HomeMenuButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/title_export_spreadsheet"
-                app:icon="@drawable/ic_table_chart_black"
-                app:layout_columnWeight="1"
-                app:layout_gravity="fill" />
-        </androidx.gridlayout.widget.GridLayout>
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_export_all"
+                        style="@style/Theme.Amediclog.HomeMenuButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/title_export_all"
+                        app:icon="@drawable/ic_upload_file_black"
+                        app:layout_columnWeight="1"
+                        app:layout_gravity="fill" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_export_profiles"
+                        style="@style/Theme.Amediclog.HomeMenuButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/title_export_profiles"
+                        app:icon="@drawable/ic_upload_file_black"
+                        app:layout_columnWeight="1"
+                        app:layout_gravity="fill" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_import"
+                        style="@style/Theme.Amediclog.HomeMenuButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/title_import"
+                        app:icon="@drawable/ic_download_file_black"
+                        app:layout_columnWeight="1"
+                        app:layout_gravity="fill" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_export_spreadsheet"
+                        style="@style/Theme.Amediclog.HomeMenuButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/title_export_spreadsheet"
+                        app:icon="@drawable/ic_table_chart_black"
+                        app:layout_columnWeight="1"
+                        app:layout_gravity="fill" />
+                </androidx.gridlayout.widget.GridLayout>
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
 
     </LinearLayout>
 

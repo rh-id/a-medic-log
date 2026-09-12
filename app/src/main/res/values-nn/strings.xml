@@ -162,4 +162,11 @@
     <string name="adherence_taken">Teke</string>
     <string name="adherence_missed">Savnad</string>
     <string name="adherence_no_data">Ingen data for denne perioda</string>
+    <string name="title_today_doses">Dosar i dag</string>
+    <string name="today_doses_format">%1$d av %2$d dosar</string>
+    <string name="today_next_dose_format">neste %1$s</string>
+    <string name="today_missed_format">%1$s %2$s glippa av</string>
+    <string name="today_all_done">Alt teke</string>
+    <string name="today_more_profiles">%1$d fleire profilar</string>
+    <string name="today_show_less">Vis mindre</string>
 </resources>

@@ -158,4 +158,11 @@
     <string name="adherence_taken">Dikonsumsi</string>
     <string name="adherence_missed">Terlewat</string>
     <string name="adherence_no_data">Tidak ada data untuk periode ini</string>
+    <string name="title_today_doses">Dosis hari ini</string>
+    <string name="today_doses_format">%1$d dari %2$d dosis</string>
+    <string name="today_next_dose_format">berikutnya pukul %1$s</string>
+    <string name="today_missed_format">%1$s %2$s terlewat</string>
+    <string name="today_all_done">Semua selesai</string>
+    <string name="today_more_profiles">%1$d profil lainnya</string>
+    <string name="today_show_less">Tampilkan lebih sedikit</string>
 </resources>

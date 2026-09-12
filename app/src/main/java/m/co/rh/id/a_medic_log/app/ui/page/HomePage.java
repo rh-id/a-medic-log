@@ -35,6 +35,7 @@ import m.co.rh.id.a_medic_log.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
+import m.co.rh.id.a_medic_log.app.ui.component.report.TodayCardSV;
 import m.co.rh.id.a_medic_log.app.ui.page.common.ProgressSVDialog;
 import m.co.rh.id.a_medic_log.app.util.UiUtils;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
@@ -70,6 +71,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient INavigator mNavigator;
     @NavInject
     private AppBarSV mAppBarSV;
+    @NavInject
+    private transient TodayCardSV mTodayCardSV;
     private boolean mIsDrawerOpen;
     private transient long mLastBackPressMilis;
 
@@ -109,6 +112,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
 
     public HomePage() {
         mAppBarSV = new AppBarSV();
+        mTodayCardSV = new TodayCardSV();
         mReminderNavigationGate = new SerialBehaviorSubject<>(true);
     }
 
@@ -131,6 +135,12 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             // constructor), where the gate must restart open because no
             // export/import can still be running
             mReminderNavigationGate = new SerialBehaviorSubject<>(true);
+        }
+        if (mTodayCardSV == null) {
+            // mTodayCardSV is transient, so it is also null when this page is
+            // restored from the process-death snapshot (deserialization skips
+            // the constructor)
+            mTodayCardSV = new TodayCardSV();
         }
     }
 
@@ -163,6 +173,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         }
         ViewGroup containerAppBar = view.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSV.buildView(activity, container));
+        ViewGroup containerToday = view.findViewById(R.id.container_today);
+        containerToday.addView(mTodayCardSV.buildView(activity, (ViewGroup) view));
         Button addProfileButton = view.findViewById(R.id.button_add_profile);
         addProfileButton.setOnClickListener(this);
         Button addNoteButton = view.findViewById(R.id.button_add_note);
@@ -224,6 +236,10 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         super.dispose(activity);
         mAppBarSV.dispose(activity);
         mAppBarSV = null;
+        if (mTodayCardSV != null) {
+            mTodayCardSV.dispose(activity);
+            mTodayCardSV = null;
+        }
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;

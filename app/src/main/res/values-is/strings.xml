@@ -162,4 +162,11 @@
     <string name="adherence_taken">Tekið</string>
     <string name="adherence_missed">Ekki tekið</string>
     <string name="adherence_no_data">Engin gögn fyrir þetta tímabil</string>
+    <string name="title_today_doses">Skammtar í dag</string>
+    <string name="today_doses_format">%1$d af %2$d skömmdum</string>
+    <string name="today_next_dose_format">næst %1$s</string>
+    <string name="today_missed_format">%1$s %2$s ekki tekið</string>
+    <string name="today_all_done">Allt klárað</string>
+    <string name="today_more_profiles">%1$d prófílar í viðbót</string>
+    <string name="today_show_less">Sýna minna</string>
 </resources>

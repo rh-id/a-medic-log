@@ -162,4 +162,11 @@
     <string name="adherence_taken">Pris</string>
     <string name="adherence_missed">Manqués</string>
     <string name="adherence_no_data">Aucune donnée pour cette période</string>
+    <string name="title_today_doses">Doses du jour</string>
+    <string name="today_doses_format">%1$d dose sur %2$d</string>
+    <string name="today_next_dose_format">prochaine %1$s</string>
+    <string name="today_missed_format">%1$s %2$s manqué</string>
+    <string name="today_all_done">Tout est pris</string>
+    <string name="today_more_profiles">%1$d autres profils</string>
+    <string name="today_show_less">Afficher moins</string>
 </resources>

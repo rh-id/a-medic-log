@@ -165,4 +165,11 @@
     <string name="adherence_percent" translatable="false">%d%%</string>
     <string name="adherence_taken_missed_format" translatable="false">%1$s %2$d · %3$s %4$d</string>
     <string name="adherence_chart_summary" translatable="false">Adherence chart: %d taken, %d missed over %d days</string>
+    <string name="title_today_doses">Today\'s doses</string>
+    <string name="today_doses_format">%1$d of %2$d doses</string>
+    <string name="today_next_dose_format">next %1$s</string>
+    <string name="today_missed_format">%1$s %2$s missed</string>
+    <string name="today_all_done">All done</string>
+    <string name="today_more_profiles">%1$d more profiles</string>
+    <string name="today_show_less">Show less</string>
 </resources>

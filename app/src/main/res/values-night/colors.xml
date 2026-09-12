@@ -5,4 +5,5 @@
     <color name="daynight_black_white">@color/white</color>
     <color name="adherence_taken">#66BB6A</color>
     <color name="adherence_missed">#EF5350</color>
+    <color name="today_done">#757575</color>
 </resources>

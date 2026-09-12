@@ -162,4 +162,11 @@
     <string name="adherence_taken">Prendì</string>
     <string name="adherence_missed">Manchà</string>
     <string name="adherence_no_data">Nagins datas per quest interval</string>
+    <string name="title_today_doses">Dosas dad oz</string>
+    <string name="today_doses_format">%1$d da %2$d dosas</string>
+    <string name="today_next_dose_format">proxima %1$s</string>
+    <string name="today_missed_format">%1$s %2$s manchà</string>
+    <string name="today_all_done">Tut prendì</string>
+    <string name="today_more_profiles">%1$d profils pli</string>
+    <string name="today_show_less">Mussa main</string>
 </resources>

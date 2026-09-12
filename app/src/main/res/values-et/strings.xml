@@ -162,4 +162,11 @@
     <string name="adherence_taken">Võetud</string>
     <string name="adherence_missed">Puuduv</string>
     <string name="adherence_no_data">Sellel perioodil puuduvad andmed</string>
+    <string name="title_today_doses">Tänased annused</string>
+    <string name="today_doses_format">%1$d / %2$d annust</string>
+    <string name="today_next_dose_format">järgmine %1$s</string>
+    <string name="today_missed_format">%1$s %2$s jäi võtmata</string>
+    <string name="today_all_done">Kõik võetud</string>
+    <string name="today_more_profiles">%1$d profiili veel</string>
+    <string name="today_show_less">Kuva vähem</string>
 </resources>
