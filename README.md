@@ -222,11 +222,14 @@ The project uses GitHub Actions for continuous integration and deployment:
 The release body is produced automatically: a Gradle hook copies the fastlane changelog file for the current versionCode to `app/build/changelog.txt`, which the release workflow uses as the GitHub Release body.
 
 ## Screenshots
-<img src="https://github.com/rh-id/a-medic-log/blob/master/fastlane/metadata/android/en-US/images/featureGraphic.png" width="1024"/>
+<img src="https://raw.githubusercontent.com/rh-id/a-medic-log/master/fastlane/metadata/android/en-US/images/featureGraphic.png" width="1024"/>
 
-<img src="https://github.com/rh-id/a-medic-log/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" height="512"/>
-<img src="https://github.com/rh-id/a-medic-log/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" height="512"/>
-<img src="https://github.com/rh-id/a-medic-log/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" height="512"/>
+<img src="https://raw.githubusercontent.com/rh-id/a-medic-log/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" height="512"/>
+<img src="https://raw.githubusercontent.com/rh-id/a-medic-log/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" height="512"/>
+<img src="https://raw.githubusercontent.com/rh-id/a-medic-log/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" height="512"/>
+<img src="https://raw.githubusercontent.com/rh-id/a-medic-log/master/fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" height="512"/>
+<img src="https://raw.githubusercontent.com/rh-id/a-medic-log/master/fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" height="512"/>
+<img src="https://raw.githubusercontent.com/rh-id/a-medic-log/master/fastlane/metadata/android/en-US/images/phoneScreenshots/6.png" height="512"/>
 
 ## Support this project
 Consider donation to support this project
