@@ -2,7 +2,9 @@ package m.co.rh.id.a_medic_log.app;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.WindowManager;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -55,7 +57,24 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
         mAppNotificationHandler.processNotification(getIntent());
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // let the system show the app icon in recents instead of a content snapshot
+            setRecentsScreenshotEnabled(false);
+        }
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onPause() {
+        // blank the app-switcher/recents snapshot so health data is not visible
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
     }
 
     @Override
