@@ -162,6 +162,8 @@
     <string name="adherence_taken">Prendì</string>
     <string name="adherence_missed">Manchà</string>
     <string name="adherence_no_data">Nagins datas per quest interval</string>
+    <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
+    <string name="adherence_chart_summary">Grafic d\'observanza: %1$d prendì, %2$d manchà en %3$d dis</string>
     <string name="title_today_doses">Dosas dad oz</string>
     <string name="today_doses_format">%1$d da %2$d dosas</string>
     <string name="today_next_dose_format">proxima %1$s</string>

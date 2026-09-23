@@ -158,6 +158,8 @@
     <string name="adherence_taken">Dikonsumsi</string>
     <string name="adherence_missed">Terlewat</string>
     <string name="adherence_no_data">Tidak ada data untuk periode ini</string>
+    <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
+    <string name="adherence_chart_summary">Grafik kepatuhan: %1$d dikonsumsi, %2$d terlewat selama %3$d hari</string>
     <string name="title_today_doses">Dosis hari ini</string>
     <string name="today_doses_format">%1$d dari %2$d dosis</string>
     <string name="today_next_dose_format">berikutnya pukul %1$s</string>

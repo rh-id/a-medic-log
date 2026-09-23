@@ -162,6 +162,8 @@
     <string name="adherence_taken">Genommen</string>
     <string name="adherence_missed">Verpasst</string>
     <string name="adherence_no_data">Keine Daten für diesen Zeitraum</string>
+    <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
+    <string name="adherence_chart_summary">Therapietreue-Diagramm: %1$d genommen, %2$d verpasst in den letzten %3$d Tagen</string>
     <string name="title_today_doses">Heutige Einnahmen</string>
     <string name="today_doses_format">%1$d von %2$d Dosen</string>
     <string name="today_next_dose_format">nächste %1$s</string>

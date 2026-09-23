@@ -162,6 +162,8 @@
     <string name="adherence_taken">Teke</string>
     <string name="adherence_missed">Savnad</string>
     <string name="adherence_no_data">Ingen data for denne perioda</string>
+    <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
+    <string name="adherence_chart_summary">Diagram for etterlevnad: %1$d teke, %2$d savnad på %3$d dagar</string>
     <string name="title_today_doses">Dosar i dag</string>
     <string name="today_doses_format">%1$d av %2$d dosar</string>
     <string name="today_next_dose_format">neste %1$s</string>

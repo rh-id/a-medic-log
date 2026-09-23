@@ -162,6 +162,8 @@
     <string name="adherence_taken">Tatt</string>
     <string name="adherence_missed">Savnet</string>
     <string name="adherence_no_data">Ingen data for denne perioden</string>
+    <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
+    <string name="adherence_chart_summary">Etterlevelsesdiagram: %1$d tatt, %2$d savnet på %3$d dager</string>
     <string name="title_today_doses">Doser i dag</string>
     <string name="today_doses_format">%1$d av %2$d doser</string>
     <string name="today_next_dose_format">neste %1$s</string>

@@ -162,6 +162,8 @@
     <string name="adherence_taken">Tekið</string>
     <string name="adherence_missed">Ekki tekið</string>
     <string name="adherence_no_data">Engin gögn fyrir þetta tímabil</string>
+    <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
+    <string name="adherence_chart_summary">Eftirfylgnirit: %1$d tekið, %2$d ekki tekið yfir %3$d daga</string>
     <string name="title_today_doses">Skammtar í dag</string>
     <string name="today_doses_format">%1$d af %2$d skömmdum</string>
     <string name="today_next_dose_format">næst %1$s</string>

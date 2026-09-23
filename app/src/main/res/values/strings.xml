@@ -163,8 +163,8 @@
     <string name="adherence_missed">Missed</string>
     <string name="adherence_no_data">No data for this period</string>
     <string name="adherence_percent" translatable="false">%d%%</string>
-    <string name="adherence_taken_missed_format" translatable="false">%1$s %2$d · %3$s %4$d</string>
-    <string name="adherence_chart_summary" translatable="false">Adherence chart: %d taken, %d missed over %d days</string>
+    <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
+    <string name="adherence_chart_summary">Adherence chart: %d taken, %d missed over %d days</string>
     <string name="title_today_doses">Today\'s doses</string>
     <string name="today_doses_format">%1$d of %2$d doses</string>
     <string name="today_next_dose_format">next %1$s</string>

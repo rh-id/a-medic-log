@@ -162,6 +162,8 @@
     <string name="adherence_taken">Preso</string>
     <string name="adherence_missed">Saltate</string>
     <string name="adherence_no_data">Nessun dato per questo periodo</string>
+    <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
+    <string name="adherence_chart_summary">Grafico di aderenza: %1$d presi, %2$d saltati su %3$d giorni</string>
     <string name="title_today_doses">Dosi di oggi</string>
     <string name="today_doses_format">%1$d dose su %2$d</string>
     <string name="today_next_dose_format">prossima %1$s</string>
