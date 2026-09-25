@@ -1,0 +1,7 @@
+Release 2.1.0+29
+
+Features:
+* App content is now hidden in the recent apps (app switcher) preview, so your health data stays private
+
+Fixes:
+* The adherence report is now fully translated into all supported languages

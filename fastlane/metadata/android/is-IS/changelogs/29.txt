@@ -1,0 +1,7 @@
+Release 2.1.0+29
+
+Nýjungar:
+* Innihald appsins er nú falið í forskoðun nýlegra appa (appaskiptanum), svo heilsugögnin þín haldist leynd
+
+Villuleiðréttingar:
+* Lyfjasamræmisskýrslan er nú þýdd að fullu á öll studd tungumál

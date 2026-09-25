@@ -1,0 +1,7 @@
+Release 2.1.0+29
+
+Uued funktsioonid:
+* Rakenduse sisu peidetakse nüüd hiljutiste rakenduste (rakenduste vahetaja) eelvaates, et terviseandmed jääksid privaatsed
+
+Parandused:
+* Ravijärgu aruanne on nüüd täielikult tõlgitud kõikidesse toetatud keeltesse

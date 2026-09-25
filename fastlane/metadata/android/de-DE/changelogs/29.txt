@@ -1,0 +1,7 @@
+Release 2.1.0+29
+
+Neuheiten:
+* App-Inhalte werden jetzt in der Vorschau der zuletzt verwendeten Apps (App-Wechsler) ausgeblendet, damit Ihre Gesundheitsdaten privat bleiben
+
+Fehlerbehebungen:
+* Der Adhärenz-Bericht ist jetzt vollständig in alle unterstützten Sprachen übersetzt

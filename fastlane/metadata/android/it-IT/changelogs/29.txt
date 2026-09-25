@@ -1,0 +1,7 @@
+Release 2.1.0+29
+
+Novità:
+* Il contenuto dell'app è ora nascosto nell'anteprima delle app recenti (selettore app), così i tuoi dati di salute restano privati
+
+Correzioni:
+* Il report di aderenza è ora completamente tradotto in tutte le lingue supportate

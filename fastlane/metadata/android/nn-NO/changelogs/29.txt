@@ -1,0 +1,7 @@
+Release 2.1.0+29
+
+Nytt:
+* Innhaldet i appen blir no gøymt i førehandsvisinga av nylege appar (appbytaren), slik at helseopplysningane dine held seg private
+
+Feilrettingar:
+* Etterfylgingsrapporten er no fullstendig omsett til alle støtta språk

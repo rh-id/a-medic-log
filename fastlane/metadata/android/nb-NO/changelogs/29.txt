@@ -1,0 +1,7 @@
+Release 2.1.0+29
+
+Nyheter:
+* Innholdet i appen skjules nå i forhåndsvisningen av nylige apper (appveksleren), slik at helsedataene dine forblir private
+
+Feilrettinger:
+* Adherensrapporten er nå fullstendig oversatt til alle støttede språk

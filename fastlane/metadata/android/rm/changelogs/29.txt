@@ -1,0 +1,7 @@
+Release 2.1.0+29
+
+Nova funcziuns:
+* Il cuntegn da l'app vegn ussa zuppentà en la prevista da las apps recentas (il scambiader d'apps), per che tias datas da sanedad restian privatas
+
+Correcturas:
+* Il rapport d'aderenza è ussa cumplettamain translatà en tut las linguas sustegnidas

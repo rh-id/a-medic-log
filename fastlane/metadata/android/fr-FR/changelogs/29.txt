@@ -1,0 +1,7 @@
+Release 2.1.0+29
+
+Nouveautés :
+* Le contenu de l'application est désormais masqué dans l'aperçu des applications récentes (sélecteur d'applications), afin que vos données de santé restent privées
+
+Corrections :
+* Le rapport d'observance est désormais entièrement traduit dans toutes les langues prises en charge

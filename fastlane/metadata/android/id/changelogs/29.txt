@@ -1,0 +1,7 @@
+Release 2.1.0+29
+
+Fitur Baru:
+* Konten aplikasi kini disembunyikan pada pratinjau aplikasi terbaru (pengalih aplikasi), sehingga privasi data kesehatan Anda tetap terjaga
+
+Perbaikan:
+* Laporan kepatuhan kini diterjemahkan sepenuhnya ke dalam semua bahasa yang didukung
