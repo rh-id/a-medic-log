@@ -255,19 +255,19 @@
   copyrightHolder: The Android Open Source Project
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: https://developer.android.com/jetpack/androidx/releases/room#2.6.1
+  url: https://developer.android.com/jetpack/androidx/releases/room#2.7.2
 - artifact: androidx.room:room-ktx:+
   name: room-ktx
   copyrightHolder: The Android Open Source Project
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: https://developer.android.com/jetpack/androidx/releases/room#2.6.1
+  url: https://developer.android.com/jetpack/androidx/releases/room#2.7.2
 - artifact: androidx.room:room-runtime:+
   name: room-runtime
   copyrightHolder: The Android Open Source Project
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: https://developer.android.com/jetpack/androidx/releases/room#2.6.1
+  url: https://developer.android.com/jetpack/androidx/releases/room#2.7.2
 - artifact: androidx.savedstate:savedstate:+
   name: savedstate
   copyrightHolder: The Android Open Source Project
@@ -345,7 +345,7 @@
   copyrightHolder: The Android Open Source Project
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: https://developer.android.com/jetpack/androidx/releases/work#2.9.1
+  url: https://developer.android.com/jetpack/androidx/releases/work#2.10.5
 - artifact: com.github.rh-id:a-logger:+
   name: a-logger
   copyrightHolder: Ruby Hartono

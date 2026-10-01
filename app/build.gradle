@@ -64,34 +64,34 @@ android {
 }
 
 dependencies {
-    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.5'
+    coreLibraryDesugaring libs.desugar.jdk.libs
 
     implementation project(path: ':base')
 
-    implementation 'com.github.rh-id:a-poi-spreadsheet:v0.1.0'
+    implementation libs.a.poi.spreadsheet
 
-    implementation 'com.google.android.material:material:1.13.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
-    implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
-    implementation 'androidx.recyclerview:recyclerview:1.4.0'
-    implementation "androidx.gridlayout:gridlayout:1.1.0"
-    implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.2.0"
-    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
+    implementation libs.material
+    implementation libs.androidx.constraintlayout
+    implementation libs.androidx.drawerlayout
+    implementation libs.androidx.recyclerview
+    implementation libs.androidx.gridlayout
+    implementation libs.androidx.swiperefreshlayout
+    implementation libs.photoview
 
-    implementation 'androidx.work:work-runtime:2.10.5'
-    implementation 'com.squareup.leakcanary:plumber-android:2.14'
+    implementation libs.work.runtime
+    implementation libs.leakcanary.plumber
 
-    testImplementation 'junit:junit:4.13.2'
-    androidTestImplementation 'androidx.test.ext:junit:1.3.0'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.7.0'
-    androidTestImplementation 'androidx.work:work-testing:2.10.5'
+    testImplementation libs.junit
+    androidTestImplementation libs.androidx.test.junit
+    androidTestImplementation libs.espresso.core
+    androidTestImplementation libs.work.testing
 }
 
 project.afterEvaluate {
     def versionCode = android.defaultConfig.versionCode
     File changeLogTxt = new File(project.rootDir, "fastlane/metadata/android/en-US/changelogs/" + versionCode + ".txt")
     if (changeLogTxt.exists()) {
-        File outputChangeLog = new File(project.buildDir, "changelog.txt")
+        File outputChangeLog = new File(project.layout.buildDirectory.get().asFile, "changelog.txt")
         if (!outputChangeLog.exists()) {
             outputChangeLog.parentFile.mkdirs()
             outputChangeLog.createNewFile()
