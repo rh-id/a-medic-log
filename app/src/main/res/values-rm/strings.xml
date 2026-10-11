@@ -84,6 +84,7 @@
     <string name="follow_system">Seguir sistem</string>
     <string name="light_mode">Modus cler</string>
     <string name="dark_mode">Modus stgir</string>
+    <string name="settings_use_dynamic_colors">Utilisar las colurs dal sistem (Material You)</string>
     <string name="title_reminder_days">Dis da promemoria</string>
     <string name="days_mon">Gli</string>
     <string name="days_tue">Ma</string>

@@ -84,6 +84,7 @@
     <string name="follow_system">System folgen</string>
     <string name="light_mode">Heller Modus</string>
     <string name="dark_mode">Dunkler Modus</string>
+    <string name="settings_use_dynamic_colors">Systemfarben verwenden (Material You)</string>
     <string name="title_reminder_days">Erinnerungstage</string>
     <string name="days_mon">Mo</string>
     <string name="days_tue">Di</string>

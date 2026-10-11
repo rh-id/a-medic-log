@@ -84,6 +84,7 @@
     <string name="follow_system">Ukuti Sistem</string>
     <string name="light_mode">Mode Terang</string>
     <string name="dark_mode">Mode Gelap</string>
+    <string name="settings_use_dynamic_colors">Gunakan warna sistem (Material You)</string>
     <string name="title_reminder_days">Hari Pengingat</string>
     <string name="days_mon">Sen</string>
     <string name="days_tue">Sel</string>

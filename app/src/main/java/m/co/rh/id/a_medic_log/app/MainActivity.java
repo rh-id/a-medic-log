@@ -2,14 +2,19 @@ package m.co.rh.id.a_medic_log.app;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.TypedValue;
 import android.view.WindowManager;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+import com.google.android.material.color.DynamicColors;
 
 import java.util.concurrent.TimeUnit;
 
@@ -18,6 +23,7 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.RxProviderModule;
 import m.co.rh.id.a_medic_log.app.provider.component.AppNotificationHandler;
+import m.co.rh.id.a_medic_log.app.provider.component.AppSharedPreferences;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.base.BaseApplication;
 import m.co.rh.id.aprovider.Provider;
@@ -34,6 +40,12 @@ public class MainActivity extends AppCompatActivity {
                 BaseApplication.of(this).getProvider(), getApplicationContext()
                 , new RxProviderModule());
         mAppNotificationHandler = mActivityProvider.get(AppNotificationHandler.class);
+        // apply Material You dynamic colors before super.onCreate installs
+        // the theme; gated on both the user setting and device support
+        if (mActivityProvider.get(AppSharedPreferences.class).isDynamicColorsEnabled()
+                && DynamicColors.isDynamicColorAvailable()) {
+            getTheme().applyStyle(R.style.Theme_Amediclog_Overlay_DynamicColors, true);
+        }
         mRebuildUi = BehaviorSubject.create();
         // rebuild UI is expensive and error prone, avoid spam rebuild (especially due to day and night mode)
         mActivityProvider.get(RxDisposer.class)
@@ -41,10 +53,39 @@ public class MainActivity extends AppCompatActivity {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(aBoolean -> {
                             if (aBoolean) {
+                                // re-evaluate the gate at each rebuild event, the setting can change
+                                // while the activity is alive
+                                boolean dynamicColorsActive = mActivityProvider.get(AppSharedPreferences.class)
+                                        .isDynamicColorsEnabled()
+                                        && DynamicColors.isDynamicColorAvailable();
+                                if (dynamicColorsActive) {
+                                    // the activity handles uiMode config changes without recreation,
+                                    // so re-apply the overlay to re-resolve its DayNight variant
+                                    // (light/dark) for the new configuration before views rebuild
+                                    getTheme().applyStyle(R.style.Theme_Amediclog_Overlay_DynamicColors, true);
+                                    // the window background drawable was instantiated under the previous
+                                    // configuration and is never re-created by applyStyle, so re-resolve
+                                    // it explicitly
+                                    TypedValue windowBackground = new TypedValue();
+                                    getTheme().resolveAttribute(android.R.attr.windowBackground, windowBackground, true);
+                                    if (windowBackground.type >= TypedValue.TYPE_FIRST_COLOR_INT
+                                            && windowBackground.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+                                        getWindow().setBackgroundDrawable(new ColorDrawable(windowBackground.data));
+                                    } else if (windowBackground.resourceId != 0) {
+                                        getWindow().setBackgroundDrawableResource(windowBackground.resourceId);
+                                    }
+                                } else {
+                                    // Switching to night mode didn't update window background for some reason?
+                                    // seemed to occur on android 8 and below
+                                    getWindow().setBackgroundDrawableResource(R.color.daynight_white_black);
+                                    getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.daynight_status_bar_color));
+                                }
                                 BaseApplication.of(this).getNavigator(this).reBuildAllRoute();
-                                // Switching to night mode didn't update window background for some reason?
-                                // seemed to occur on android 8 and below
-                                getWindow().setBackgroundDrawableResource(R.color.daynight_white_black);
+                                // reBuildAllRoute re-installs the activity content view while the
+                                // activity is running; the new hierarchy misses the initial inset
+                                // dispatch, so request one explicitly or content lays out under the
+                                // transparent status bar on Android 15+ (enforced edge-to-edge)
+                                getWindow().getDecorView().requestApplyInsets();
                             }
                         })
                 );

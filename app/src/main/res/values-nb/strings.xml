@@ -84,6 +84,7 @@
     <string name="follow_system">Følg system</string>
     <string name="light_mode">Lys modus</string>
     <string name="dark_mode">Mørk modus</string>
+    <string name="settings_use_dynamic_colors">Bruk systemfargene (Material You)</string>
     <string name="title_reminder_days">Påminnelsesdager</string>
     <string name="days_mon">Man</string>
     <string name="days_tue">Tir</string>

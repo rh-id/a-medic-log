@@ -6,4 +6,7 @@
     <color name="adherence_taken">#66BB6A</color>
     <color name="adherence_missed">#EF5350</color>
     <color name="today_done">#757575</color>
+    <color name="dynamic_primary_variant">@color/m3_sys_color_dynamic_dark_primary</color>
+    <color name="dynamic_secondary_variant">@color/m3_sys_color_dynamic_dark_secondary</color>
+    <color name="daynight_status_bar_color">@color/indigo_700</color>
 </resources>

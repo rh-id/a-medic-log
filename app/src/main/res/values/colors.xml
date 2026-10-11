@@ -17,4 +17,7 @@
     <color name="adherence_taken">#4CAF50</color>
     <color name="adherence_missed">#F44336</color>
     <color name="today_done">#9E9E9E</color>
+    <color name="dynamic_primary_variant">@color/m3_sys_color_dynamic_light_primary</color>
+    <color name="dynamic_secondary_variant">@color/m3_sys_color_dynamic_light_secondary</color>
+    <color name="daynight_status_bar_color">@color/indigo_700</color>
 </resources>

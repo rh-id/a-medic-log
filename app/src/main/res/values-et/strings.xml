@@ -84,6 +84,7 @@
     <string name="follow_system">Järjestuse järgi</string>
     <string name="light_mode">Hele režiim</string>
     <string name="dark_mode">Tume režiim</string>
+    <string name="settings_use_dynamic_colors">Kasuta süsteemi värve (Material You)</string>
     <string name="title_reminder_days">Meeldetuletuse päevad</string>
     <string name="days_mon">E</string>
     <string name="days_tue">T</string>

@@ -84,6 +84,7 @@
     <string name="follow_system">Fylgja kerfi</string>
     <string name="light_mode">Ljóshamur</string>
     <string name="dark_mode">Dökkurhamur</string>
+    <string name="settings_use_dynamic_colors">Nota kerfisliti (Material You)</string>
     <string name="title_reminder_days">Minningaragar</string>
     <string name="days_mon">Mán</string>
     <string name="days_tue">Þri</string>

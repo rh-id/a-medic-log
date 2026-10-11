@@ -13,12 +13,16 @@ import m.co.rh.id.aprovider.ProviderValue;
 
 public class AppSharedPreferences {
     private static final String SHARED_PREFERENCES_NAME = "AppSharedPreferences";
+    private static final boolean DEFAULT_DYNAMIC_COLORS_ENABLED = true;
     private ProviderValue<ExecutorService> mExecutorService;
     private ProviderValue<Handler> mHandler;
     private SharedPreferences mSharedPreferences;
 
     private int mSelectedTheme;
     private String mSelectedThemeKey;
+
+    private boolean mDynamicColorsEnabled;
+    private String mDynamicColorsEnabledKey;
 
     public AppSharedPreferences(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
@@ -36,6 +40,11 @@ public class AppSharedPreferences {
                 mSelectedThemeKey,
                 AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         setSelectedTheme(selectedTheme);
+
+        mDynamicColorsEnabledKey = SHARED_PREFERENCES_NAME
+                + ".dynamicColorsEnabled";
+        mDynamicColorsEnabled = mSharedPreferences.getBoolean(
+                mDynamicColorsEnabledKey, DEFAULT_DYNAMIC_COLORS_ENABLED);
     }
 
     private void selectedTheme(int setting) {
@@ -53,5 +62,20 @@ public class AppSharedPreferences {
 
     public int getSelectedTheme() {
         return mSelectedTheme;
+    }
+
+    private void dynamicColorsEnabled(boolean enabled) {
+        mDynamicColorsEnabled = enabled;
+        mExecutorService.get().execute(() ->
+                mSharedPreferences.edit().putBoolean(mDynamicColorsEnabledKey, enabled)
+                        .commit());
+    }
+
+    public void setDynamicColorsEnabled(boolean enabled) {
+        dynamicColorsEnabled(enabled);
+    }
+
+    public boolean isDynamicColorsEnabled() {
+        return mDynamicColorsEnabled;
     }
 }
