@@ -2,7 +2,7 @@
 agp = "9.4.1"
 room = "2.7.2"
 work = "2.10.5"
-a-navigator = "v0.0.72"
+a-navigator = "v0.0.73"
 a-provider = "v0.0.27"
 junit = "4.13.2"
 androidx-test-ext-junit = "1.3.0"
