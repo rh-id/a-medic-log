@@ -172,4 +172,14 @@
     <string name="today_all_done">Allt klárað</string>
     <string name="today_more_profiles">%1$d prófílar í viðbót</string>
     <string name="today_show_less">Sýna minna</string>
+    <string name="settings_app_lock">Forritunarlás</string>
+    <string name="settings_app_lock_summary_available">Krefst fingrafars, andlits eða skjálæsingar til að opna forritið</string>
+    <string name="settings_app_lock_summary_no_authentication">Krefst skjálæsingar (PIN-númer, mynstur eða lykilorð) eða líffæraauðkennis uppsett á tækinu</string>
+    <string name="settings_app_lock_summary_hw_unavailable">Líffæraauðkenni er tímabundið ekki tiltækt, reyndu aftur síðar</string>
+    <string name="app_lock_no_auth_hint">Settu upp skjálæsingu (PIN-númer, mynstur eða lykilorð) á tækinu til að nota forritunarlás</string>
+    <string name="app_lock_enable_prompt_title">Opnaðu til að virkja forritunarlás</string>
+    <string name="app_lock_unlock">Opna</string>
+    <string name="app_lock_locked_subtitle">Opnaðu til að halda áfram</string>
+    <string name="app_lock_lockout_hint">Of margar tilraunir. Notaðu skjálæsingu eða reyndu aftur síðar.</string>
+    <string name="app_lock_error_prefix">Villa við auðkenningu: %s</string>
 </resources>

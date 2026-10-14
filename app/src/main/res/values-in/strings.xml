@@ -168,4 +168,14 @@
     <string name="today_all_done">Semua selesai</string>
     <string name="today_more_profiles">%1$d profil lainnya</string>
     <string name="today_show_less">Tampilkan lebih sedikit</string>
+    <string name="settings_app_lock">Kunci aplikasi</string>
+    <string name="settings_app_lock_summary_available">Wajibkan sidik jari, wajah, atau kunci layar untuk membuka aplikasi</string>
+    <string name="settings_app_lock_summary_no_authentication">Perlu kunci layar (PIN, pola, atau kata sandi) atau biometrik yang disiapkan di perangkat ini</string>
+    <string name="settings_app_lock_summary_hw_unavailable">Biometrik sementara tidak tersedia, coba lagi nanti</string>
+    <string name="app_lock_no_auth_hint">Siapkan kunci layar (PIN, pola, atau kata sandi) di perangkat ini untuk memakai kunci aplikasi</string>
+    <string name="app_lock_enable_prompt_title">Buka kunci untuk mengaktifkan kunci aplikasi</string>
+    <string name="app_lock_unlock">Buka kunci</string>
+    <string name="app_lock_locked_subtitle">Buka kunci untuk melanjutkan</string>
+    <string name="app_lock_lockout_hint">Terlalu banyak percobaan. Gunakan kunci layar atau coba lagi nanti.</string>
+    <string name="app_lock_error_prefix">Error autentikasi: %s</string>
 </resources>

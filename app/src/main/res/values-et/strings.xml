@@ -172,4 +172,14 @@
     <string name="today_all_done">Kõik võetud</string>
     <string name="today_more_profiles">%1$d profiili veel</string>
     <string name="today_show_less">Kuva vähem</string>
+    <string name="settings_app_lock">Rakenduse lukustus</string>
+    <string name="settings_app_lock_summary_available">Nõuab rakenduse avamiseks sõrmejälge, nägu või ekraanilukku</string>
+    <string name="settings_app_lock_summary_no_authentication">Nõuab seadmesse seadistatud ekraanilukku (PIN-kood, muster või parool) või biomeetriat</string>
+    <string name="settings_app_lock_summary_hw_unavailable">Biomeetria pole praegu saadaval, proovi hiljem uuesti</string>
+    <string name="app_lock_no_auth_hint">Seadista sellesse seadmesse ekraanilukk (PIN-kood, muster või parool), et kasutada rakenduse lukustust</string>
+    <string name="app_lock_enable_prompt_title">Ava lukk rakenduse lukustuse lubamiseks</string>
+    <string name="app_lock_unlock">Ava</string>
+    <string name="app_lock_locked_subtitle">Jätkamiseks ava lukk</string>
+    <string name="app_lock_lockout_hint">Liiga palju katseid. Kasuta ekraanilukku või proovi hiljem uuesti.</string>
+    <string name="app_lock_error_prefix">Autentimise viga: %s</string>
 </resources>

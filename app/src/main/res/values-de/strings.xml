@@ -172,4 +172,14 @@
     <string name="today_all_done">Alles erledigt</string>
     <string name="today_more_profiles">%1$d weitere Profile</string>
     <string name="today_show_less">Weniger anzeigen</string>
+    <string name="settings_app_lock">App-Sperre</string>
+    <string name="settings_app_lock_summary_available">Fingerabdruck, Gesicht oder Ihre Displaysperre zum Öffnen der App erforderlich</string>
+    <string name="settings_app_lock_summary_no_authentication">Erfordert eine auf diesem Gerät eingerichtete Displaysperre (PIN, Muster oder Passwort) oder Biometrie</string>
+    <string name="settings_app_lock_summary_hw_unavailable">Biometrie ist vorübergehend nicht verfügbar, versuchen Sie es später erneut</string>
+    <string name="app_lock_no_auth_hint">Richten Sie auf diesem Gerät eine Displaysperre (PIN, Muster oder Passwort) ein, um die App-Sperre zu verwenden</string>
+    <string name="app_lock_enable_prompt_title">Entsperren, um die App-Sperre zu aktivieren</string>
+    <string name="app_lock_unlock">Entsperren</string>
+    <string name="app_lock_locked_subtitle">Entsperren, um fortzufahren</string>
+    <string name="app_lock_lockout_hint">Zu viele Versuche. Verwenden Sie Ihre Displaysperre oder versuchen Sie es später erneut.</string>
+    <string name="app_lock_error_prefix">Authentifizierungsfehler: %s</string>
 </resources>

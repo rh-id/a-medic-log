@@ -172,4 +172,14 @@
     <string name="today_all_done">Alt teke</string>
     <string name="today_more_profiles">%1$d fleire profilar</string>
     <string name="today_show_less">Vis mindre</string>
+    <string name="settings_app_lock">Applås</string>
+    <string name="settings_app_lock_summary_available">Krev fingeravtrykk, ansikt eller skjermlåsen din for å opna appen</string>
+    <string name="settings_app_lock_summary_no_authentication">Krev ein skjermlås (PIN-kode, mønster eller passord) eller biometri sett opp på eininga</string>
+    <string name="settings_app_lock_summary_hw_unavailable">Biometri er mellombels utilgjengeleg, prøv igjen seinare</string>
+    <string name="app_lock_no_auth_hint">Set opp ein skjermlås (PIN-kode, mønster eller passord) på eininga for å bruka applås</string>
+    <string name="app_lock_enable_prompt_title">Lås opp for å slå på applås</string>
+    <string name="app_lock_unlock">Lås opp</string>
+    <string name="app_lock_locked_subtitle">Lås opp for å halda fram</string>
+    <string name="app_lock_lockout_hint">For mange forsøk. Bruk skjermlåsen eller prøv igjen seinare.</string>
+    <string name="app_lock_error_prefix">Autentiseringsfeil: %s</string>
 </resources>

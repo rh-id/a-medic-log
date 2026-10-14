@@ -172,4 +172,14 @@
     <string name="today_all_done">Tutto preso</string>
     <string name="today_more_profiles">Altri %1$d profili</string>
     <string name="today_show_less">Mostra meno</string>
+    <string name="settings_app_lock">Blocco app</string>
+    <string name="settings_app_lock_summary_available">Richiede impronta, volto o blocco schermo per aprire l\'app</string>
+    <string name="settings_app_lock_summary_no_authentication">Richiede un blocco schermo (PIN, sequenza o password) o dati biometrici configurati su questo dispositivo</string>
+    <string name="settings_app_lock_summary_hw_unavailable">Biometria temporaneamente non disponibile, riprova più tardi</string>
+    <string name="app_lock_no_auth_hint">Configura un blocco schermo (PIN, sequenza o password) su questo dispositivo per usare il blocco app</string>
+    <string name="app_lock_enable_prompt_title">Sblocca per attivare il blocco app</string>
+    <string name="app_lock_unlock">Sblocca</string>
+    <string name="app_lock_locked_subtitle">Sblocca per continuare</string>
+    <string name="app_lock_lockout_hint">Troppi tentativi. Usa il blocco schermo o riprova più tardi.</string>
+    <string name="app_lock_error_prefix">Errore di autenticazione: %s</string>
 </resources>

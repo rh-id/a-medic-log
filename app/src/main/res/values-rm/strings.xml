@@ -172,4 +172,14 @@
     <string name="today_all_done">Tut prendì</string>
     <string name="today_more_profiles">%1$d profils pli</string>
     <string name="today_show_less">Mussa main</string>
+    <string name="settings_app_lock">Bloccada da l\'app</string>
+    <string name="settings_app_lock_summary_available">Exiga dalv l\'digit, la fatscha u la bloccada da l\'ecran per avrir l\'app</string>
+    <string name="settings_app_lock_summary_no_authentication">Basegna d\'ina bloccada da l\'ecran (PIN, muster u pled-clav) u da biometria configurada sin quest apparat</string>
+    <string name="settings_app_lock_summary_hw_unavailable">La biometria è temporanmain betg disponibla, emprova pli tard anc ina giada</string>
+    <string name="app_lock_no_auth_hint">Configurescha ina bloccada da l\'ecran (PIN, muster u pled-clav) sin quest apparat per utilisar la bloccada da l\'app</string>
+    <string name="app_lock_enable_prompt_title">Avra la bloccada per activar la bloccada da l\'app</string>
+    <string name="app_lock_unlock">Avrir</string>
+    <string name="app_lock_locked_subtitle">Avra la bloccada per cuntinuar</string>
+    <string name="app_lock_lockout_hint">Memia bleras emprovas. Utilisescha la bloccada da l\'ecran u emprova pli tard anc ina giada.</string>
+    <string name="app_lock_error_prefix">Errur d\'autentificaziun: %s</string>
 </resources>

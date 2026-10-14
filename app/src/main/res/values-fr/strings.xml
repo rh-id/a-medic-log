@@ -172,4 +172,14 @@
     <string name="today_all_done">Tout est pris</string>
     <string name="today_more_profiles">%1$d autres profils</string>
     <string name="today_show_less">Afficher moins</string>
+    <string name="settings_app_lock">Verrouillage de l\'application</string>
+    <string name="settings_app_lock_summary_available">Exige vos empreintes, votre visage ou votre verrouillage de l\'écran pour ouvrir l\'application</string>
+    <string name="settings_app_lock_summary_no_authentication">Nécessite un verrouillage de l\'écran (code, schéma ou mot de passe) ou la biométrie configurés sur cet appareil</string>
+    <string name="settings_app_lock_summary_hw_unavailable">La biométrie est temporairement indisponible, réessayez plus tard</string>
+    <string name="app_lock_no_auth_hint">Configurez un verrouillage de l\'écran (code, schéma ou mot de passe) sur cet appareil pour utiliser le verrouillage de l\'application</string>
+    <string name="app_lock_enable_prompt_title">Déverrouillez pour activer le verrouillage de l\'application</string>
+    <string name="app_lock_unlock">Déverrouiller</string>
+    <string name="app_lock_locked_subtitle">Déverrouillez pour continuer</string>
+    <string name="app_lock_lockout_hint">Trop de tentatives. Utilisez votre verrouillage de l\'écran ou réessayez plus tard.</string>
+    <string name="app_lock_error_prefix">Erreur d\'authentification : %s</string>
 </resources>
