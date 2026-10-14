@@ -71,6 +71,7 @@ dependencies {
     implementation libs.a.poi.spreadsheet
 
     implementation libs.material
+    implementation libs.androidx.biometric
     implementation libs.androidx.constraintlayout
     implementation libs.androidx.drawerlayout
     implementation libs.androidx.recyclerview

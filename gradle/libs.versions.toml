@@ -10,6 +10,7 @@ espresso = "3.7.0"
 rxjava = "3.1.12"
 rxandroid = "3.0.2"
 appcompat = "1.7.1"
+biometric = "1.1.0"
 material = "1.13.0"
 constraintlayout = "2.2.2"
 drawerlayout = "1.2.0"
@@ -40,6 +41,7 @@ espresso-core = { group = "androidx.test.espresso", name = "espresso-core", vers
 rxjava = { group = "io.reactivex.rxjava3", name = "rxjava", version.ref = "rxjava" }
 rxandroid = { group = "io.reactivex.rxjava3", name = "rxandroid", version.ref = "rxandroid" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+androidx-biometric = { group = "androidx.biometric", name = "biometric", version.ref = "biometric" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-drawerlayout = { group = "androidx.drawerlayout", name = "drawerlayout", version.ref = "drawerlayout" }
 androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }

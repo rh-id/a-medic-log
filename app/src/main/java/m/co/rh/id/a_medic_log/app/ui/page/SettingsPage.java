@@ -1,6 +1,7 @@
 package m.co.rh.id.a_medic_log.app.ui.page;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -11,13 +12,16 @@ import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.settings.LicensesMenuSV;
 import m.co.rh.id.a_medic_log.app.ui.component.settings.LogMenuSV;
+import m.co.rh.id.a_medic_log.app.ui.component.settings.SecurityMenuSV;
 import m.co.rh.id.a_medic_log.app.ui.component.settings.ThemeMenuSV;
 import m.co.rh.id.a_medic_log.app.ui.component.settings.VersionMenuSV;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
+import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.NavOnActivityResult;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class SettingsPage extends StatefulView<Activity> {
+public class SettingsPage extends StatefulView<Activity> implements NavOnActivityResult<Activity> {
 
     @NavInject
     private AppBarSV mAppBarSV;
@@ -29,6 +33,8 @@ public class SettingsPage extends StatefulView<Activity> {
         mStatefulViews = new ArrayList<>();
         ThemeMenuSV themeMenuSV = new ThemeMenuSV();
         mStatefulViews.add(themeMenuSV);
+        SecurityMenuSV securityMenuSV = new SecurityMenuSV();
+        mStatefulViews.add(securityMenuSV);
         LogMenuSV logMenuSV = new LogMenuSV();
         mStatefulViews.add(logMenuSV);
         LicensesMenuSV licensesMenuSV = new LicensesMenuSV();
@@ -51,6 +57,26 @@ public class SettingsPage extends StatefulView<Activity> {
             content.addView(statefulView.buildView(activity, content), lparams);
         }
         return view;
+    }
+
+    /**
+     * The navigator routes activity results to the StatefulView on top of the
+     * route stack (this page), forward them to the child menu StatefulViews
+     * that launched an external flow (e.g. SecurityMenuSV opening the system
+     * security settings)
+     */
+    @Override
+    public void onActivityResult(View currentView, Activity activity, INavigator navigator,
+                                 int requestCode, int resultCode, Intent data) {
+        if (mStatefulViews != null) {
+            for (StatefulView statefulView : mStatefulViews) {
+                if (statefulView instanceof NavOnActivityResult) {
+                    ((NavOnActivityResult) statefulView)
+                            .onActivityResult(currentView, activity, navigator,
+                                    requestCode, resultCode, data);
+                }
+            }
+        }
     }
 
     @Override

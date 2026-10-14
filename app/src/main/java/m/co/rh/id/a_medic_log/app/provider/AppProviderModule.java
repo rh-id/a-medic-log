@@ -13,6 +13,8 @@ import java.util.Map;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.MainActivity;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
+import m.co.rh.id.a_medic_log.app.provider.component.AppLockAuthHandler;
+import m.co.rh.id.a_medic_log.app.provider.component.AppLockManager;
 import m.co.rh.id.a_medic_log.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_medic_log.app.provider.component.AppSharedPreferences;
 import m.co.rh.id.a_medic_log.app.provider.component.FileCleanUpTask;
@@ -74,6 +76,8 @@ public class AppProviderModule implements ProviderModule {
 
         providerRegistry.registerAsync(WorkManager.class, () -> WorkManager.getInstance(provider.getContext()));
         providerRegistry.registerAsync(AppSharedPreferences.class, () -> new AppSharedPreferences(provider));
+        providerRegistry.registerAsync(AppLockManager.class, AppLockManager::new);
+        providerRegistry.registerAsync(AppLockAuthHandler.class, () -> new AppLockAuthHandler(provider));
         providerRegistry.registerAsync(ProfileChangeNotifier.class, ProfileChangeNotifier::new);
         providerRegistry.registerAsync(NoteChangeNotifier.class, NoteChangeNotifier::new);
         providerRegistry.registerAsync(NoteTagChangeNotifier.class, NoteTagChangeNotifier::new);

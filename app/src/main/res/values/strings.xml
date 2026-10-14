@@ -173,4 +173,14 @@
     <string name="today_all_done">All done</string>
     <string name="today_more_profiles">%1$d more profiles</string>
     <string name="today_show_less">Show less</string>
+    <string name="settings_app_lock">App lock</string>
+    <string name="settings_app_lock_summary_available">Require fingerprint, face, or your screen lock to open the app</string>
+    <string name="settings_app_lock_summary_no_authentication">Requires a screen lock (PIN, pattern or password) or biometrics set up on this device</string>
+    <string name="settings_app_lock_summary_hw_unavailable">Biometrics are temporarily unavailable, try again later</string>
+    <string name="app_lock_no_auth_hint">Set up a screen lock (PIN, pattern or password) on this device to use app lock</string>
+    <string name="app_lock_enable_prompt_title">Unlock to enable app lock</string>
+    <string name="app_lock_unlock">Unlock</string>
+    <string name="app_lock_locked_subtitle">Unlock to continue</string>
+    <string name="app_lock_lockout_hint">Too many attempts. Use your screen lock or try again later.</string>
+    <string name="app_lock_error_prefix">Authentication error: %s</string>
 </resources>

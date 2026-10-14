@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.TypedValue;
 import android.view.WindowManager;
 
@@ -22,9 +23,12 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.RxProviderModule;
+import m.co.rh.id.a_medic_log.app.provider.component.AppLockAuthHandler;
+import m.co.rh.id.a_medic_log.app.provider.component.AppLockManager;
 import m.co.rh.id.a_medic_log.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_medic_log.app.provider.component.AppSharedPreferences;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
+import m.co.rh.id.a_medic_log.app.ui.component.LockDialog;
 import m.co.rh.id.a_medic_log.base.BaseApplication;
 import m.co.rh.id.aprovider.Provider;
 
@@ -33,6 +37,10 @@ public class MainActivity extends AppCompatActivity {
     private BehaviorSubject<Boolean> mRebuildUi;
     private Provider mActivityProvider;
     private AppNotificationHandler mAppNotificationHandler;
+    private AppLockManager mAppLockManager;
+    private AppLockAuthHandler mAuthHandler;
+    private LockDialog mLockDialog;
+    private OnBackPressedCallback mLockBackCallback;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -40,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
                 BaseApplication.of(this).getProvider(), getApplicationContext()
                 , new RxProviderModule());
         mAppNotificationHandler = mActivityProvider.get(AppNotificationHandler.class);
+        mAppLockManager = mActivityProvider.get(AppLockManager.class);
+        mAuthHandler = mActivityProvider.get(AppLockAuthHandler.class);
         // apply Material You dynamic colors before super.onCreate installs
         // the theme; gated on both the user setting and device support
         if (mActivityProvider.get(AppSharedPreferences.class).isDynamicColorsEnabled()
@@ -86,6 +96,12 @@ public class MainActivity extends AppCompatActivity {
                                 // dispatch, so request one explicitly or content lays out under the
                                 // transparent status bar on Android 15+ (enforced edge-to-edge)
                                 getWindow().getDecorView().requestApplyInsets();
+                                // the navigator re-created every route (incl. dialog routes) whose
+                                // windows land above the lock window, re-stack the lock by showing
+                                // it last again or app content would sit interactive above the lock
+                                if (isLockRequired() && !mAuthHandler.isPresenting()) {
+                                    mActivityProvider.get(Handler.class).post(this::showLockDialog);
+                                }
                             }
                         })
                 );
@@ -97,7 +113,22 @@ public class MainActivity extends AppCompatActivity {
                                 .getNavigator(MainActivity.this).onBackPressed();
                     }
                 });
-        mAppNotificationHandler.processNotification(getIntent());
+        // registered after the navigator callback above, the LIFO dispatch order
+        // lets this empty callback intercept (block) back presses while locked
+        OnBackPressedCallback lockBackCallback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackPressed() {
+                // intentionally empty, back is blocked while the app is locked
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this, lockBackCallback);
+        mLockBackCallback = lockBackCallback;
+        if (isLockRequired()) {
+            // defer notification processing until the app is unlocked
+            mAppLockManager.stashIntent(getIntent());
+        } else {
+            mAppNotificationHandler.processNotification(getIntent());
+        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             // let the system show the app icon in recents instead of a content snapshot
             setRecentsScreenshotEnabled(false);
@@ -115,18 +146,81 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        boolean appLockEnabled = mActivityProvider.get(AppSharedPreferences.class).isAppLockEnabled();
+        if (!appLockEnabled) {
+            // the feature is disabled, treat the manager as unlocked so stale
+            // locked state can never linger
+            mAppLockManager.unlock();
+        }
+        boolean lockRequired = isLockRequired();
+        mLockBackCallback.setEnabled(lockRequired);
+        if (lockRequired) {
+            // keep the recents snapshot blanked while locked, the authenticated
+            // callback clears the flag once the app is unlocked
+            if (!mAuthHandler.isPresenting()) {
+                // post to the main handler so the lock dialog is shown after (and its
+                // window stacks above) any dialog route the navigator re-shows in its
+                // own onActivityResumed
+                mActivityProvider.get(Handler.class).post(this::showLockDialog);
+            }
+        } else {
+            getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        }
+    }
+
+    private boolean isLockRequired() {
+        return mActivityProvider.get(AppSharedPreferences.class).isAppLockEnabled()
+                && mAppLockManager.isLocked();
+    }
+
+    /**
+     * Unlock side effects of a successful authentication, invoked by the lock
+     * dialog BEFORE it dismisses the lock window.
+     */
+    private void onUnlocked() {
+        mAppLockManager.unlock();
+        // process all notification taps that arrived while the app was locked
+        Intent stashedIntent;
+        while ((stashedIntent = mAppLockManager.consumeStashedIntent()) != null) {
+            mAppNotificationHandler.processNotification(stashedIntent);
+        }
+        // the lock is going away, show the real content again
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        mLockBackCallback.setEnabled(false);
+    }
+
+    private void showLockDialog() {
+        if (isFinishing() || isDestroyed()) {
+            return;
+        }
+        if (mLockDialog == null) {
+            // the dialog owns the presentation kick-off and the auth callbacks,
+            // the activity only owns the unlock side effects above
+            mLockDialog = new LockDialog(this, mAuthHandler, this::onUnlocked);
+        }
+        mLockDialog.show();
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
-        mAppNotificationHandler.processNotification(intent);
+        if (isLockRequired()) {
+            // defer notification processing until the app is unlocked
+            mAppLockManager.stashIntent(intent);
+        } else {
+            mAppNotificationHandler.processNotification(intent);
+        }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        // Q-only keyguard credential fallback result, consumed before the
+        // navigator forward; the navigator ignores unknown request codes, so
+        // the forward below stays intact
+        if (requestCode == AppLockAuthHandler.REQUEST_CONFIRM_CREDENTIAL) {
+            mAuthHandler.onCredentialResult(resultCode);
+        }
         // this is required to let navigator handle onActivityResult
         BaseApplication.of(this).getNavigator(this).onActivityResult(requestCode, resultCode, data);
     }
@@ -141,6 +235,12 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        // dismiss before super.onDestroy tears the activity window down to avoid
+        // leaking the lock dialog window
+        if (mLockDialog != null) {
+            mLockDialog.dismiss();
+            mLockDialog = null;
+        }
         super.onDestroy();
         mActivityProvider.dispose();
         mActivityProvider = null;

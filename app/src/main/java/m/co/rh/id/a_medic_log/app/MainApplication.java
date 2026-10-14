@@ -9,6 +9,7 @@ import androidx.work.Configuration;
 import java.util.concurrent.ScheduledExecutorService;
 
 import m.co.rh.id.a_medic_log.app.provider.AppProviderModule;
+import m.co.rh.id.a_medic_log.app.provider.component.AppLockManager;
 import m.co.rh.id.a_medic_log.base.BaseApplication;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.component.INavigator;
@@ -22,6 +23,10 @@ public class MainApplication extends BaseApplication implements Configuration.Pr
     public void onCreate() {
         super.onCreate();
         mProvider = Provider.createProvider(this, new AppProviderModule(this));
+        // register the screen-off receiver as early as possible (even when the
+        // process is started in the background by WorkManager) so the screen
+        // going off always re-locks the app
+        mProvider.get(AppLockManager.class).registerScreenOffReceiver(this);
         final Thread.UncaughtExceptionHandler defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
             mProvider.get(ILogger.class)

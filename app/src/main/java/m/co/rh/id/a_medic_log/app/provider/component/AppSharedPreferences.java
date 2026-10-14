@@ -14,6 +14,7 @@ import m.co.rh.id.aprovider.ProviderValue;
 public class AppSharedPreferences {
     private static final String SHARED_PREFERENCES_NAME = "AppSharedPreferences";
     private static final boolean DEFAULT_DYNAMIC_COLORS_ENABLED = true;
+    private static final boolean DEFAULT_APP_LOCK_ENABLED = false;
     private ProviderValue<ExecutorService> mExecutorService;
     private ProviderValue<Handler> mHandler;
     private SharedPreferences mSharedPreferences;
@@ -23,6 +24,9 @@ public class AppSharedPreferences {
 
     private boolean mDynamicColorsEnabled;
     private String mDynamicColorsEnabledKey;
+
+    private boolean mAppLockEnabled;
+    private String mAppLockEnabledKey;
 
     public AppSharedPreferences(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
@@ -45,6 +49,11 @@ public class AppSharedPreferences {
                 + ".dynamicColorsEnabled";
         mDynamicColorsEnabled = mSharedPreferences.getBoolean(
                 mDynamicColorsEnabledKey, DEFAULT_DYNAMIC_COLORS_ENABLED);
+
+        mAppLockEnabledKey = SHARED_PREFERENCES_NAME
+                + ".appLockEnabled";
+        mAppLockEnabled = mSharedPreferences.getBoolean(
+                mAppLockEnabledKey, DEFAULT_APP_LOCK_ENABLED);
     }
 
     private void selectedTheme(int setting) {
@@ -77,5 +86,20 @@ public class AppSharedPreferences {
 
     public boolean isDynamicColorsEnabled() {
         return mDynamicColorsEnabled;
+    }
+
+    private void appLockEnabled(boolean enabled) {
+        mAppLockEnabled = enabled;
+        mExecutorService.get().execute(() ->
+                mSharedPreferences.edit().putBoolean(mAppLockEnabledKey, enabled)
+                        .commit());
+    }
+
+    public void setAppLockEnabled(boolean enabled) {
+        appLockEnabled(enabled);
+    }
+
+    public boolean isAppLockEnabled() {
+        return mAppLockEnabled;
     }
 }

@@ -21,6 +21,7 @@ The app works as a production app even though it is a demo app.
 - **Medicine Reminders** - Set up notifications to remind you to take medicine, with a snooze action available directly on reminders
 - **Medicine Intake History** - Log and review past medicine intakes
 - **Adherence Report** - Adherence report with missed-dose tracking (7/30 days)
+- **App Lock** - Optionally require fingerprint, face, or your screen lock (PIN, pattern or password) to open the app
 - **Note Attachments** - Attach files and images to your notes
 - **Export & Import** - Export all or selected profiles to a ZIP archive (JSON + attachment images), import profiles from an export file, export a profile to an Excel spreadsheet (XLSX, Android 8+) or a ZIP of CSV files on older versions
 - **In-app License Viewer** - Open-source licenses page generated at build time from actual app dependencies
@@ -44,6 +45,7 @@ The app works as a production app even though it is a demo app.
 | Database | Room 2.7.2 (SQLite) |
 | Reactive | RxJava 3.1.12 / RxAndroid 3.0.2 |
 | Background Work | WorkManager 2.10.5 |
+| Biometric | androidx.biometric 1.1.0 |
 | UI | Material Components 1.13.0, PhotoView |
 | Desugaring | coreLibraryDesugaring (desugar_jdk_libs 2.1.5) |
 | Spreadsheets | [a-poi-spreadsheet](https://github.com/rh-id/a-poi-spreadsheet) |
@@ -216,7 +218,7 @@ The project uses GitHub Actions for continuous integration and deployment:
 | Workflow | Trigger | Description |
 |---|---|---|
 | **Android CI** | Push/PR to `master` | Builds the project with Gradle |
-| **Android Emulator Test** | Push/PR to `master` | Runs instrumented tests on API 23, 26, 31 & 36 emulators |
+| **Android Emulator Test** | Push/PR to `master` | Runs instrumented tests on API 23, 26, 29, 31 & 36 emulators |
 | **Android Release APKs** | Tag push (`v*`) | Builds signed debug and release APKs and creates a GitHub Release with the changelog from `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt` |
 
 The release body is produced automatically: a Gradle hook copies the fastlane changelog file for the current versionCode to `app/build/changelog.txt`, which the release workflow uses as the GitHub Release body.
