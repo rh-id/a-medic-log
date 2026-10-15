@@ -1,0 +1,8 @@
+Release 2.2.0+30
+
+Neuheiten:
+* App-Sperre: Fordern Sie optional Fingerabdruck, Gesicht oder Ihre Displaysperre (PIN, Muster oder Passwort) zum Öffnen der App an; die Inhalte bleiben während der Sperrung verborgen, auch in der Vorschau der zuletzt verwendeten Apps
+* Neue Designoption „Systemfarben verwenden (Material You)“: Die App folgt nun den Farben Ihres Hintergrunds (ab Android 12)
+
+Fehlerbehebungen:
+* Fehlende App-Sperre-Übersetzungen für alle unterstützten Sprachen ergänzt

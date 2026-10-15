@@ -1,0 +1,8 @@
+Release 2.2.0+30
+
+Novità:
+* Blocco app: richiedi facoltativamente impronta, volto o blocco schermo (PIN, sequenza o password) per aprire l'app; il contenuto resta nascosto mentre è bloccato, anche nell'anteprima delle app recenti
+* Nuova opzione tema «Usa i colori di sistema (Material You)»: l'app segue ora i colori del tuo sfondo (Android 12+)
+
+Correzioni:
+* Aggiunte le traduzioni del blocco app mancanti in tutte le lingue supportate

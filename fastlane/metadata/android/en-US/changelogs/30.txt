@@ -1,0 +1,8 @@
+Release 2.2.0+30
+
+Features:
+* App lock: optionally require your fingerprint, face, or screen lock (PIN, pattern or password) to open the app; content stays hidden while locked, including in the recent apps preview
+* New theme option "Use system colors (Material You)": the app now follows your wallpaper colors on Android 12+
+
+Fixes:
+* Added the missing app lock translations for all supported languages

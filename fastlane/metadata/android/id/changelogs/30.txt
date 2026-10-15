@@ -1,0 +1,8 @@
+Release 2.2.0+30
+
+Fitur Baru:
+* Kunci aplikasi: wajibkan sidik jari, wajah, atau kunci layar (PIN, pola, atau kata sandi) untuk membuka aplikasi; konten tetap tersembunyi saat terkunci, termasuk di pratinjau aplikasi terbaru
+* Opsi tema baru "Gunakan warna sistem (Material You)": aplikasi kini mengikuti warna wallpaper Anda (Android 12+)
+
+Perbaikan:
+* Menambahkan terjemahan kunci aplikasi yang hilang untuk semua bahasa yang didukung

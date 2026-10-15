@@ -1,0 +1,8 @@
+Release 2.2.0+30
+
+Nýjungar:
+* Forritunarlás: krefðist valkvætt fingrafars, andlits eða skjálæsingar (PIN-númer, mynstur eða lykilorð) til að opna forritið; efnið helst falið á meðan læst er, þ.m.t. í forskoðun nýlegra appa
+* Nýr þemamöguleiki „Nota kerfisliti (Material You)“: appið fylgir nú litum veggfóðursins þíns (Android 12+)
+
+Villuleiðréttingar:
+* Bætt við forritunarlásþýðingum sem vantaði á öll studd tungumál

@@ -1,0 +1,8 @@
+Release 2.2.0+30
+
+Nyheter:
+* Applås: krever valgfritt fingeravtrykk, ansikt eller skjermlåsen (PIN-kode, mønster eller passord) for å åpne appen; innholdet forblir skjult mens appen er låst, også i forhåndsvisningen av nylige apper
+* Ny temainnstilling «Bruk systemfargene (Material You)»: appen følger nå fargene i bakgrunnsbildet ditt (Android 12+)
+
+Feilrettinger:
+* Lagt til manglende applås-oversettelser for alle støttede språk

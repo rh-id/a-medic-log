@@ -1,0 +1,8 @@
+Release 2.2.0+30
+
+Nouveautés :
+* Verrouillage de l'application : exigez éventuellement vos empreintes, votre visage ou votre verrouillage de l'écran (code, schéma ou mot de passe) pour ouvrir l'application ; le contenu reste masqué pendant le verrouillage, y compris dans l'aperçu des applications récentes
+* Nouvelle option de thème « Utiliser les couleurs du système (Material You) » : l'application suit désormais les couleurs de votre fond d'écran (Android 12+)
+
+Corrections :
+* Ajout des traductions du verrouillage de l'application manquantes dans toutes les langues prises en charge

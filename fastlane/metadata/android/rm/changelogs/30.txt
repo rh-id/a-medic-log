@@ -1,0 +1,8 @@
+Release 2.2.0+30
+
+Nova funcziuns:
+* Bloccada da l'app: exiga per opziun dalv l'digit, la fatscha u la bloccada da l'ecran (PIN, muster u pled-clav) per avrir l'app; il cuntegn resta zuppentà entant ch'è bloccà, era en la prevista da las apps recentas
+* Nova opziun da tema «Utilisar las colurs dal sistem (Material You)»: l'app suonda ussa las colurs da tes fund (Android 12+)
+
+Correcturas:
+* Agiuntà las translaziuns da la bloccada da l'app che mancavan en tut las linguas sustegnidas

@@ -1,0 +1,8 @@
+Release 2.2.0+30
+
+Uued funktsioonid:
+* Rakenduse lukustus: nõua valikuliselt rakenduse avamiseks sõrmejälge, nägu või ekraanilukku (PIN-kood, muster või parool); lukustatud olekus jäävad andmed peidetuks, kaasa arvatud hiljutiste rakenduste eelvaates
+* Uus kujunduse valik „Kasuta süsteemi värve (Material You)“: rakendus järgib nüüd taustapildi värve (Android 12+)
+
+Parandused:
+* Lisatud puuduvad rakenduse lukustuse tõlked kõigisse toetatud keeltesse
