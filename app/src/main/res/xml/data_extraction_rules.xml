@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="database" path="a-medic-log.db" />
+        <exclude domain="file" path="app/note/attachment" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="database" path="a-medic-log.db" />
+        <exclude domain="file" path="app/note/attachment" />
+    </device-transfer>
+</data-extraction-rules>

@@ -30,6 +30,10 @@ The app works as a production app even though it is a demo app.
 - **Dark/Light Mode** - Support for both dark mode and light mode themes
 - **Multi-language** - Available in English, German, French, Italian, Indonesian, Estonian, Icelandic, Norwegian (Bokmål & Nynorsk), and Romansh
 
+## Data Privacy and Transfer
+
+The Room health database and note attachment files are excluded from Android Auto Backup and device-to-device transfer. This prevents health data from leaving the device through Android's automatic backup mechanisms. To move data between devices, use the app's explicit ZIP export and import flow.
+
 ## Tech Stack
 
 | Component | Detail |
