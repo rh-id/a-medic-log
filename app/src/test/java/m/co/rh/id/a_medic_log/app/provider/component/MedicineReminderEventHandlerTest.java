@@ -5,8 +5,19 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+
+import m.co.rh.id.a_medic_log.app.workmanager.Tags;
+import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
+import m.co.rh.id.a_medic_log.base.entity.Profile;
+import m.co.rh.id.a_medic_log.base.state.MedicineState;
+import m.co.rh.id.a_medic_log.base.state.NoteState;
+import m.co.rh.id.a_medic_log.base.state.ProfileState;
 
 public class MedicineReminderEventHandlerTest {
 
@@ -52,5 +63,111 @@ public class MedicineReminderEventHandlerTest {
         // rolled forward one day from a start already 10 minutes in the past
         assertTrue(delay >= ONE_DAY_MS - TimeUnit.MINUTES.toMillis(11));
         assertTrue(delay <= ONE_DAY_MS - TimeUnit.MINUTES.toMillis(9));
+    }
+
+    @Test
+    public void calculateTag_matchesReminderIdTag() {
+        MedicineReminder medicineReminder = new MedicineReminder();
+        medicineReminder.id = 42L;
+
+        assertEquals(Tags.MEDICINE_REMINDER_TAG + 42L,
+                MedicineReminderEventHandler.calculateTag(medicineReminder));
+    }
+
+    @Test
+    public void cancelPath_oneUniqueTagPerReminder_fromPreDeletePayload() {
+        // mirrors DeleteProfileCmd: the reminders are loaded before the delete
+        // transaction and carried in the profileDeleted ProfileState payload,
+        // whose reminder tags are what the handler cancels afterwards
+        MedicineReminder reminder1 = new MedicineReminder();
+        reminder1.id = 1L;
+        MedicineReminder reminder2 = new MedicineReminder();
+        reminder2.id = 2L;
+        List<MedicineReminder> medicineReminders = Arrays.asList(reminder1, reminder2);
+
+        Set<String> tags = new HashSet<>();
+        for (MedicineReminder medicineReminder : medicineReminders) {
+            tags.add(MedicineReminderEventHandler.calculateTag(medicineReminder));
+        }
+
+        assertEquals(2, tags.size());
+        assertTrue(tags.contains(Tags.MEDICINE_REMINDER_TAG + 1L));
+        assertTrue(tags.contains(Tags.MEDICINE_REMINDER_TAG + 2L));
+    }
+
+    private static ProfileState profileStateWith(NoteState... noteStates) {
+        ProfileState profileState = new ProfileState(new Profile());
+        profileState.updateNoteList(Arrays.asList(noteStates));
+        return profileState;
+    }
+
+    private static NoteState noteStateWith(MedicineState... medicineStates) {
+        NoteState noteState = new NoteState();
+        noteState.updateMedicineStates(Arrays.asList(medicineStates));
+        return noteState;
+    }
+
+    private static MedicineState medicineStateWith(MedicineReminder... medicineReminders) {
+        MedicineState medicineState = new MedicineState();
+        medicineState.updateMedicineReminderList(Arrays.asList(medicineReminders));
+        return medicineState;
+    }
+
+    private static MedicineReminder reminder(long id) {
+        MedicineReminder medicineReminder = new MedicineReminder();
+        medicineReminder.id = id;
+        return medicineReminder;
+    }
+
+    @Test
+    public void extractMedicineReminders_nullInput_returnsEmpty() {
+        assertTrue(MedicineReminderEventHandler.extractMedicineReminders(null).isEmpty());
+    }
+
+    @Test
+    public void extractMedicineReminders_emptyProfileState_returnsEmpty() {
+        ProfileState profileState = new ProfileState(new Profile());
+
+        assertTrue(MedicineReminderEventHandler.extractMedicineReminders(profileState).isEmpty());
+    }
+
+    @Test
+    public void extractMedicineReminders_notesWithoutMedicines_returnsEmpty() {
+        ProfileState profileState = profileStateWith(new NoteState(), new NoteState());
+
+        assertTrue(MedicineReminderEventHandler.extractMedicineReminders(profileState).isEmpty());
+    }
+
+    @Test
+    public void extractMedicineReminders_medicinesWithoutReminders_returnsEmpty() {
+        ProfileState profileState = profileStateWith(noteStateWith(new MedicineState()));
+
+        assertTrue(MedicineReminderEventHandler.extractMedicineReminders(profileState).isEmpty());
+    }
+
+    @Test
+    public void extractMedicineReminders_nestedChain_collectsAllRemindersInOrder() {
+        ProfileState profileState = profileStateWith(
+                noteStateWith(medicineStateWith(reminder(1L)), medicineStateWith(reminder(2L))),
+                noteStateWith(medicineStateWith(reminder(3L))));
+
+        List<MedicineReminder> extracted = MedicineReminderEventHandler.extractMedicineReminders(profileState);
+
+        assertEquals(3, extracted.size());
+        assertEquals(1L, extracted.get(0).id.longValue());
+        assertEquals(2L, extracted.get(1).id.longValue());
+        assertEquals(3L, extracted.get(2).id.longValue());
+    }
+
+    @Test
+    public void extractMedicineReminders_nullMembersInChain_skippedSafely() {
+        ProfileState profileState = new ProfileState(new Profile());
+        profileState.updateNoteList(Arrays.asList(
+                null, noteStateWith(null, medicineStateWith(reminder(7L)))));
+
+        List<MedicineReminder> extracted = MedicineReminderEventHandler.extractMedicineReminders(profileState);
+
+        assertEquals(1, extracted.size());
+        assertEquals(7L, extracted.get(0).id.longValue());
     }
 }

@@ -33,7 +33,7 @@ public class NoteAttachmentRepository {
             if (noteAttachmentFiles != null && !noteAttachmentFiles.isEmpty()) {
                 for (NoteAttachmentFile noteAttachmentFile : noteAttachmentFiles) {
                     noteAttachmentFile.attachmentId = noteAttachmentId;
-                    mNoteAttachmentFileDao.get().insert(noteAttachmentFile);
+                    noteAttachmentFile.id = mNoteAttachmentFileDao.get().insert(noteAttachmentFile);
                 }
             }
         });

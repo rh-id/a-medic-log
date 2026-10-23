@@ -14,12 +14,14 @@ import androidx.appcompat.widget.Toolbar;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.concurrent.ExecutorService;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteCmd;
-import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateNoteCmd;
 import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
@@ -27,6 +29,7 @@ import m.co.rh.id.a_medic_log.app.ui.component.note.detail.MedicineListSection;
 import m.co.rh.id.a_medic_log.app.ui.component.note.detail.NoteAttachmentSection;
 import m.co.rh.id.a_medic_log.app.ui.component.note.detail.NoteTagSection;
 import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
+import m.co.rh.id.a_medic_log.base.repository.NoteRepository;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -44,7 +47,8 @@ public class NoteDetailPage extends BaseDetailPage implements Toolbar.OnMenuItem
     private SerialBehaviorSubject<Boolean> mMedicineListShow;
     private SerialBehaviorSubject<Boolean> mAttachmentShow;
 
-    private transient QueryNoteCmd mQueryNoteCmd;
+    private transient NoteRepository mNoteRepository;
+    private transient ExecutorService mExecutorService;
     private transient NewNoteCmd mNewNoteCmd;
     private transient TextWatcher mEntryDateTimeTextWatcher;
     private transient TextWatcher mContentTextWatcher;
@@ -60,7 +64,8 @@ public class NoteDetailPage extends BaseDetailPage implements Toolbar.OnMenuItem
 
     @Override
     protected void onProvideComponent(Provider provider) {
-        mQueryNoteCmd = mSvProvider.get(QueryNoteCmd.class);
+        mNoteRepository = mSvProvider.get(NoteRepository.class);
+        mExecutorService = mSvProvider.get(ExecutorService.class);
         boolean isUpdate = isUpdate();
         if (isUpdate) {
             mNewNoteCmd = mSvProvider.get(UpdateNoteCmd.class);
@@ -72,12 +77,17 @@ public class NoteDetailPage extends BaseDetailPage implements Toolbar.OnMenuItem
             if (isUpdate) {
                 mNoteState.setNoteId(getNoteId());
                 mRxDisposer.add("NoteDetailPage.provideComponent_queryNoteInfo",
-                        mQueryNoteCmd
-                                .queryNoteInfo(mNoteState)
-                                .subscribe((noteState, throwable) -> {
+                        Single.fromCallable(() -> mNoteRepository.queryNoteInfo(mNoteState.getNoteId()))
+                                .subscribeOn(Schedulers.from(mExecutorService))
+                                .subscribe((loaded, throwable) -> {
                                     if (throwable != null) {
                                         mLogger
                                                 .e(TAG, throwable.getMessage(), throwable);
+                                    } else {
+                                        mNoteState.updateNote(loaded.getNote());
+                                        mNoteState.updateNoteTagSet(loaded.getNoteTagSet());
+                                        mNoteState.updateNoteAttachments(loaded.getNoteAttachmentStates());
+                                        mNoteState.updateMedicineStates(loaded.getMedicineList());
                                     }
                                 })
                 );

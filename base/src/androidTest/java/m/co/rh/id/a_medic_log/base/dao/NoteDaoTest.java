@@ -25,7 +25,9 @@ import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.entity.Note;
+import m.co.rh.id.a_medic_log.base.entity.NoteAttachment;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
+import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.a_medic_log.base.room.DbMigration;
 import m.co.rh.id.a_medic_log.base.room.converter.LinkedHashSetConverter;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
@@ -190,5 +192,149 @@ public class NoteDaoTest {
         assertEquals(0, medicineDao.findMedicinesByNoteId(noteState.getNoteId()).size());
         assertEquals(0, medicineReminderDao.findMedicineRemindersByMedicineId(medicineListFromInsert.get(0).id).size());
         assertNull(medicineIntakeDao.findLastMedicineIntake(medicineListFromInsert.get(0).id));
+    }
+
+    private static MedicineIntake createMedicineIntake(Long medicineId) {
+        MedicineIntake medicineIntake = new MedicineIntake();
+        medicineIntake.medicineId = medicineId;
+        return medicineIntake;
+    }
+
+    @Test
+    public void countMedicineIntakesByNoteId() {
+        NoteDao noteDao = mAppDatabase.noteDao();
+        MedicineDao medicineDao = mAppDatabase.medicineDao();
+        MedicineIntakeDao medicineIntakeDao = mAppDatabase.medicineIntakeDao();
+
+        Note noteA = new Note();
+        noteA.content = "note A";
+        Note noteB = new Note();
+        noteB.content = "note B";
+
+        mAppDatabase.runInTransaction(() -> {
+            noteA.id = noteDao.insert(noteA);
+            noteB.id = noteDao.insert(noteB);
+        });
+
+        // no medicine yet, zero intakes
+        assertEquals(0, medicineIntakeDao.countMedicineIntakesByNoteId(noteA.id));
+
+        Medicine medicineA1 = new Medicine();
+        medicineA1.name = "medicine A1";
+        medicineA1.noteId = noteA.id;
+        Medicine medicineA2 = new Medicine();
+        medicineA2.name = "medicine A2";
+        medicineA2.noteId = noteA.id;
+        Medicine medicineB1 = new Medicine();
+        medicineB1.name = "medicine B1";
+        medicineB1.noteId = noteB.id;
+
+        mAppDatabase.runInTransaction(() -> {
+            medicineA1.id = medicineDao.insert(medicineA1);
+            medicineA2.id = medicineDao.insert(medicineA2);
+            medicineB1.id = medicineDao.insert(medicineB1);
+        });
+
+        // note A: 2 intakes for medicine A1 + 1 intake for medicine A2,
+        // note B: 5 intakes for medicine B1
+        mAppDatabase.runInTransaction(() -> {
+            medicineIntakeDao.insert(createMedicineIntake(medicineA1.id));
+            medicineIntakeDao.insert(createMedicineIntake(medicineA1.id));
+            medicineIntakeDao.insert(createMedicineIntake(medicineA2.id));
+            medicineIntakeDao.insert(createMedicineIntake(medicineB1.id));
+            medicineIntakeDao.insert(createMedicineIntake(medicineB1.id));
+            medicineIntakeDao.insert(createMedicineIntake(medicineB1.id));
+            medicineIntakeDao.insert(createMedicineIntake(medicineB1.id));
+            medicineIntakeDao.insert(createMedicineIntake(medicineB1.id));
+        });
+
+        // aggregates the intakes of both medicines of the note
+        assertEquals(3, medicineIntakeDao.countMedicineIntakesByNoteId(noteA.id));
+        // intakes of another note's medicine are not counted
+        assertEquals(5, medicineIntakeDao.countMedicineIntakesByNoteId(noteB.id));
+    }
+
+    @Test
+    public void countProfileLevel_aggregatesAcrossNotes() {
+        ProfileDao profileDao = mAppDatabase.profileDao();
+        NoteDao noteDao = mAppDatabase.noteDao();
+        NoteAttachmentDao noteAttachmentDao = mAppDatabase.noteAttachmentDao();
+        MedicineDao medicineDao = mAppDatabase.medicineDao();
+        MedicineReminderDao medicineReminderDao = mAppDatabase.medicineReminderDao();
+        MedicineIntakeDao medicineIntakeDao = mAppDatabase.medicineIntakeDao();
+
+        Profile profileA = new Profile();
+        profileA.name = "profile A";
+        Profile profileB = new Profile();
+        profileB.name = "profile B";
+
+        Note noteA1 = new Note();
+        noteA1.content = "note A1";
+        Note noteA2 = new Note();
+        noteA2.content = "note A2";
+        Note noteB1 = new Note();
+        noteB1.content = "note B1";
+
+        Medicine medicineA1 = new Medicine();
+        medicineA1.name = "medicine A1";
+        Medicine medicineA2 = new Medicine();
+        medicineA2.name = "medicine A2";
+        Medicine medicineB1 = new Medicine();
+        medicineB1.name = "medicine B1";
+
+        MedicineReminder reminderA1 = new MedicineReminder();
+        reminderA1.message = "reminder A1";
+        MedicineReminder reminderB1 = new MedicineReminder();
+        reminderB1.message = "reminder B1";
+
+        NoteAttachment attachmentA1 = new NoteAttachment();
+        attachmentA1.name = "attachment A1";
+        NoteAttachment attachmentA2 = new NoteAttachment();
+        attachmentA2.name = "attachment A2";
+
+        mAppDatabase.runInTransaction(() -> {
+            profileA.id = profileDao.insert(profileA);
+            profileB.id = profileDao.insert(profileB);
+            noteA1.profileId = profileA.id;
+            noteA2.profileId = profileA.id;
+            noteB1.profileId = profileB.id;
+            noteA1.id = noteDao.insert(noteA1);
+            noteA2.id = noteDao.insert(noteA2);
+            noteB1.id = noteDao.insert(noteB1);
+            medicineA1.noteId = noteA1.id;
+            medicineA2.noteId = noteA2.id;
+            medicineB1.noteId = noteB1.id;
+            medicineA1.id = medicineDao.insert(medicineA1);
+            medicineA2.id = medicineDao.insert(medicineA2);
+            medicineB1.id = medicineDao.insert(medicineB1);
+            reminderA1.medicineId = medicineA1.id;
+            reminderB1.medicineId = medicineB1.id;
+            medicineReminderDao.insert(reminderA1);
+            medicineReminderDao.insert(reminderB1);
+            attachmentA1.noteId = noteA1.id;
+            attachmentA2.noteId = noteA2.id;
+            noteAttachmentDao.insert(attachmentA1);
+            noteAttachmentDao.insert(attachmentA2);
+            // profile A: 1 intake under note A1's medicine + 2 intakes under note A2's medicine,
+            // profile B: 1 intake under note B1's medicine
+            medicineIntakeDao.insert(createMedicineIntake(medicineA1.id));
+            medicineIntakeDao.insert(createMedicineIntake(medicineA2.id));
+            medicineIntakeDao.insert(createMedicineIntake(medicineA2.id));
+            medicineIntakeDao.insert(createMedicineIntake(medicineB1.id));
+        });
+
+        // profile A aggregates across its 2 notes
+        assertEquals(2, noteDao.countNotesByProfileId(profileA.id));
+        assertEquals(2, medicineDao.countMedicinesByProfileId(profileA.id));
+        assertEquals(1, medicineReminderDao.countMedicineRemindersByProfileId(profileA.id));
+        assertEquals(2, noteAttachmentDao.countNoteAttachmentsByProfileId(profileA.id));
+        assertEquals(3, medicineIntakeDao.countMedicineIntakesByProfileId(profileA.id));
+
+        // profile B owns a single note, its records are not counted for profile A
+        assertEquals(1, noteDao.countNotesByProfileId(profileB.id));
+        assertEquals(1, medicineDao.countMedicinesByProfileId(profileB.id));
+        assertEquals(1, medicineReminderDao.countMedicineRemindersByProfileId(profileB.id));
+        assertEquals(0, noteAttachmentDao.countNoteAttachmentsByProfileId(profileB.id));
+        assertEquals(1, medicineIntakeDao.countMedicineIntakesByProfileId(profileB.id));
     }
 }

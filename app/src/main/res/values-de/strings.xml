@@ -24,12 +24,14 @@
     <string name="success_updating_profile">Profil aktualisiert %s</string>
     <string name="title_confirm">Bestätigen</string>
     <string name="confirm_delete_profile">Profil %s löschen?</string>
+    <string name="confirm_delete_profile_scope">Profil \"%s\" löschen? Dies löscht auch: %s</string>
     <string name="error_deleting_profile">Fehler beim Löschen des Profils</string>
     <string name="success_deleting_profile">%s gelöscht</string>
     <string name="hint_type_to_search">Hier tippen zum Suchen</string>
     <string name="title_profiles">Profile</string>
     <string name="title_update_profile">Profil aktualisieren</string>
     <string name="confirm_delete_note">Notiz löschen?</string>
+    <string name="confirm_delete_note_scope">Notiz löschen? Dies löscht auch: %s</string>
     <string name="error_deleting_note">Fehler beim Löschen der Notiz</string>
     <string name="success_deleting_note">Notiz gelöscht</string>
     <string name="title_notes">Notizen</string>
@@ -73,6 +75,7 @@
     <string name="success_adding_medicine">Medikament hinzugefügt</string>
     <string name="success_deleting_medicine">Medikament gelöscht</string>
     <string name="confirm_delete_medicine">Medikament \"%s\" löschen?</string>
+    <string name="confirm_delete_medicine_scope">Medikament \"%s\" löschen? Dies löscht auch: %s</string>
     <string name="success_updating_medicine_reminder">Medikamentenerinnerung aktualisiert</string>
     <string name="success_adding_medicine_reminder">Medikamentenerinnerung hinzugefügt</string>
     <string name="confirm_delete_medicine_reminder">Erinnerung \"%s\" löschen?</string>
@@ -156,6 +159,10 @@
     <plurals name="profile_count_attachments">
         <item quantity="one">%d Anhang</item>
         <item quantity="other">%d Anhänge</item>
+    </plurals>
+    <plurals name="profile_count_intakes">
+        <item quantity="one">%d Medikamenteneinnahme</item>
+        <item quantity="other">%d Medikamenteneinnahmen</item>
     </plurals>
     <string name="title_adherence">Therapietreue</string>
     <string name="adherence_last_7_days">Letzte 7 Tage</string>

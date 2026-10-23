@@ -20,7 +20,6 @@ public class DeleteNoteCmd {
     protected ProviderValue<NoteDao> mNoteDao;
     protected ProviderValue<NoteRepository> mNoteRepository;
     protected ProviderValue<NoteChangeNotifier> mNoteChangeNotifier;
-    protected ProviderValue<QueryNoteCmd> mNoteQueryCmd;
 
     public DeleteNoteCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
@@ -28,20 +27,16 @@ public class DeleteNoteCmd {
         mNoteDao = provider.lazyGet(NoteDao.class);
         mNoteRepository = provider.lazyGet(NoteRepository.class);
         mNoteChangeNotifier = provider.lazyGet(NoteChangeNotifier.class);
-        mNoteQueryCmd = provider.lazyGet(QueryNoteCmd.class);
     }
 
     public Single<NoteState> execute(Note note) {
         return Single.fromCallable(() -> {
-            NoteState noteState = new NoteState();
-            noteState.updateNote(note.clone());
+            // load the full nested state before the delete transaction,
+            // the cascade removes the related rows once the delete commits
+            NoteState noteState = mNoteRepository.get().queryNoteInfo(note.id);
+            mNoteRepository.get().deleteNote(noteState);
+            mNoteChangeNotifier.get().noteDeleted(noteState);
             return noteState;
-        }).subscribeOn(Schedulers.from(mExecutorService.get()))
-        .flatMap(noteState -> mNoteQueryCmd.get().queryNoteInfo(noteState)
-                .flatMap(fullNoteState -> Single.fromCallable(() -> {
-                    mNoteRepository.get().deleteNote(fullNoteState);
-                    mNoteChangeNotifier.get().noteDeleted(fullNoteState);
-                    return fullNoteState;
-                }).subscribeOn(Schedulers.from(mExecutorService.get()))));
+        }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 }

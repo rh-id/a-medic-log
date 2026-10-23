@@ -45,6 +45,9 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireComp
 
     private transient Provider mSvProvider;
     private transient PagedProfileItemsCmd mPagedProfileItemsCmd;
+    private transient RxDisposer mRxDisposer;
+    private transient ProfileChangeNotifier mProfileChangeNotifier;
+    private transient ExecutorService mExecutorService;
     private transient PublishSubject<String> mSearchStringSubject;
     private transient TextWatcher mSearchTextWatcher;
     private transient ProfileRecyclerViewAdapter mProfileRecyclerViewAdapter;
@@ -64,6 +67,9 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireComp
     public void provideComponent(Provider provider) {
         mSvProvider = provider.get(StatefulViewProvider.class);
         mPagedProfileItemsCmd = mSvProvider.get(PagedProfileItemsCmd.class);
+        mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mProfileChangeNotifier = mSvProvider.get(ProfileChangeNotifier.class);
+        mExecutorService = mSvProvider.get(ExecutorService.class);
         mPagedProfileItemsCmd.refresh();
         if (mSearchStringSubject == null) {
             mSearchStringSubject = PublishSubject.create();
@@ -106,50 +112,52 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireComp
         recyclerView.setAdapter(mProfileRecyclerViewAdapter);
         recyclerView.addItemDecoration(new DividerItemDecoration(activity, DividerItemDecoration.VERTICAL));
         recyclerView.addOnScrollListener(mOnScrollListener);
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemSearched",
                         mSearchStringSubject
                                 .debounce(700, TimeUnit.MILLISECONDS)
-                                .observeOn(Schedulers.from(mSvProvider.get(ExecutorService.class)))
+                                .observeOn(Schedulers.from(mExecutorService))
                                 .subscribe(searchString -> mPagedProfileItemsCmd
                                         .search(searchString))
                 );
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemRefreshed",
                         mPagedProfileItemsCmd.getItemsFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(decks -> mProfileRecyclerViewAdapter.notifyItemRefreshed())
                 );
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onSelectionChanged",
                         mPagedProfileItemsCmd.getSelectedIdsFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(selectedIds -> mProfileRecyclerViewAdapter.notifyItemRefreshed())
                 );
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemAdded",
-                        mSvProvider.get(ProfileChangeNotifier.class).getAddedProfile()
+                        mProfileChangeNotifier.getAddedProfile()
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(profile -> {
-                                    mProfileRecyclerViewAdapter.notifyItemAdded(profile);
+                                .subscribe(profileState -> {
+                                    mProfileRecyclerViewAdapter.notifyItemAdded(profileState.getProfile());
                                     recyclerView.scrollToPosition(0);
                                 }));
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemUpdated",
-                        mSvProvider.get(ProfileChangeNotifier.class).getUpdatedProfile()
+                        mProfileChangeNotifier.getUpdatedProfile()
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(mProfileRecyclerViewAdapter::notifyItemUpdated));
-        mSvProvider.get(RxDisposer.class)
+                                .subscribe(profileState ->
+                                        mProfileRecyclerViewAdapter.notifyItemUpdated(profileState.getProfile())));
+        mRxDisposer
                 .add("createView_onLoadingChanged",
                         mPagedProfileItemsCmd.getLoadingFlow()
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .subscribe(swipeRefreshLayout::setRefreshing)
                 );
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("createView_onItemDeleted",
-                        mSvProvider.get(ProfileChangeNotifier.class)
+                        mProfileChangeNotifier
                                 .getDeletedProfile().observeOn(AndroidSchedulers.mainThread())
-                                .subscribe(mProfileRecyclerViewAdapter::notifyItemDeleted));
+                                .subscribe(profileState ->
+                                        mProfileRecyclerViewAdapter.notifyItemDeleted(profileState.getProfile())));
 
         return rootLayout;
     }
@@ -162,6 +170,9 @@ public class ProfileListSV extends StatefulView<Activity> implements RequireComp
             mSvProvider = null;
         }
         mPagedProfileItemsCmd = null;
+        mRxDisposer = null;
+        mProfileChangeNotifier = null;
+        mExecutorService = null;
         if (mSearchStringSubject != null) {
             mSearchStringSubject.onComplete();
             mSearchStringSubject = null;

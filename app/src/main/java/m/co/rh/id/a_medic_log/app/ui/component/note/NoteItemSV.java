@@ -2,6 +2,7 @@ package m.co.rh.id.a_medic_log.app.ui.component.note;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -14,23 +15,27 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteCmd;
-import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
-import m.co.rh.id.a_medic_log.app.provider.command.QueryProfileCmd;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteTagChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.page.NoteDetailPage;
+import m.co.rh.id.a_medic_log.app.util.DeleteScopeSummaryBuilder;
 import m.co.rh.id.a_medic_log.app.util.UiUtils;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
+import m.co.rh.id.a_medic_log.base.repository.NoteRepository;
+import m.co.rh.id.a_medic_log.base.repository.ProfileRepository;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -46,8 +51,9 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
     private transient ILogger mLogger;
     private transient RxDisposer mRxDisposer;
     private transient NoteTagChangeNotifier mNoteTagChangeNotifier;
-    private transient QueryNoteCmd mQueryNoteCmd;
-    private transient QueryProfileCmd mQueryProfileCmd;
+    private transient NoteRepository mNoteRepository;
+    private transient ExecutorService mExecutorService;
+    private transient ProfileRepository mProfileRepository;
     private SerialBehaviorSubject<Profile> mProfileSubject;
     private SerialBehaviorSubject<Note> mNoteSubject;
     private SerialBehaviorSubject<TreeSet<NoteTag>> mNoteTagSetSubject;
@@ -66,8 +72,9 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
         mLogger = mSvProvider.get(ILogger.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mNoteTagChangeNotifier = mSvProvider.get(NoteTagChangeNotifier.class);
-        mQueryNoteCmd = mSvProvider.get(QueryNoteCmd.class);
-        mQueryProfileCmd = mSvProvider.get(QueryProfileCmd.class);
+        mNoteRepository = mSvProvider.get(NoteRepository.class);
+        mExecutorService = mSvProvider.get(ExecutorService.class);
+        mProfileRepository = mSvProvider.get(ProfileRepository.class);
     }
 
     @Override
@@ -152,7 +159,8 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
     private void refreshProfile(Long profileId) {
         if (profileId != null) {
             mRxDisposer.add("refreshProfile",
-                    mQueryProfileCmd.findProfileById(profileId)
+                    Single.fromCallable(() -> mProfileRepository.findProfileById(profileId))
+                            .subscribeOn(Schedulers.from(mExecutorService))
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe((profile, throwable) -> {
                                 if (throwable == null) {
@@ -167,7 +175,8 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
 
     private void refreshNoteTagSet(long noteId) {
         mRxDisposer.add("refreshNoteTagSet",
-                mQueryNoteCmd.queryNoteTag(noteId)
+                Single.fromCallable(() -> mNoteRepository.findNoteTagsByNoteId(noteId))
+                        .subscribeOn(Schedulers.from(mExecutorService))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe((noteTags, throwable) -> {
                             if (throwable == null) {
@@ -203,12 +212,50 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
             mNavigator.push(Routes.NOTE_DETAIL_PAGE,
                     NoteDetailPage.Args.forUpdate(mNoteSubject.getValue().id));
         } else if (id == R.id.button_delete) {
-            Context context = mSvProvider.getContext();
-            String title = context.getString(R.string.title_confirm);
-            String content = context.getString(R.string.confirm_delete_note);
-            UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
-                    this::deleteNote);
+            mRxDisposer.add("NoteItemSV.onClick_getNoteCounts",
+                    Single.fromCallable(() -> mNoteRepository.queryNoteCounts(mNoteSubject.getValue().id))
+                            .subscribeOn(Schedulers.from(mExecutorService))
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe((noteScope, throwable) -> {
+                                Context context = mSvProvider.getContext();
+                                String title = context.getString(R.string.title_confirm);
+                                String content;
+                                if (throwable == null) {
+                                    content = buildDeleteMessage(context, noteScope);
+                                } else {
+                                    // scope count failed, still show the terse confirm dialog
+                                    mLogger.e(TAG, throwable.getMessage(), throwable);
+                                    content = context.getString(R.string.confirm_delete_note);
+                                }
+                                UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
+                                        this::deleteNote);
+                            }));
         }
+    }
+
+    /**
+     * @return the delete confirmation message enriched with the cascade scope,
+     * or the terse message when the note owns no cascaded records
+     */
+    private String buildDeleteMessage(Context context, NoteRepository.NoteCounts noteCounts) {
+        Resources resources = context.getResources();
+        String medicines = resources.getQuantityString(R.plurals.profile_count_medicines,
+                noteCounts.medicineCount, noteCounts.medicineCount);
+        String reminders = resources.getQuantityString(R.plurals.profile_count_reminders,
+                noteCounts.reminderCount, noteCounts.reminderCount);
+        String attachments = resources.getQuantityString(R.plurals.profile_count_attachments,
+                noteCounts.attachmentCount, noteCounts.attachmentCount);
+        String intakes = resources.getQuantityString(R.plurals.profile_count_intakes,
+                noteCounts.intakeCount, noteCounts.intakeCount);
+        String scope = DeleteScopeSummaryBuilder.buildScopeSummary(
+                new DeleteScopeSummaryBuilder.Category(noteCounts.medicineCount, medicines),
+                new DeleteScopeSummaryBuilder.Category(noteCounts.reminderCount, reminders),
+                new DeleteScopeSummaryBuilder.Category(noteCounts.attachmentCount, attachments),
+                new DeleteScopeSummaryBuilder.Category(noteCounts.intakeCount, intakes));
+        if (scope == null) {
+            return context.getString(R.string.confirm_delete_note);
+        }
+        return context.getString(R.string.confirm_delete_note_scope, scope);
     }
 
     private void deleteNote() {

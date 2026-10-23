@@ -36,6 +36,18 @@ public abstract class MedicineIntakeDao {
             "ORDER BY taken_date_time DESC")
     public abstract List<MedicineIntake> findMedicineIntakesByTakenDateTimeBetween(long from, long to);
 
+    @Query("SELECT COUNT(*) FROM medicine_intake INNER JOIN medicine " +
+            "ON medicine_intake.medicine_id = medicine.id WHERE medicine.note_id = :noteId")
+    public abstract int countMedicineIntakesByNoteId(long noteId);
+
+    @Query("SELECT COUNT(*) FROM medicine_intake WHERE medicine_id = :medicineId")
+    public abstract int countMedicineIntakesByMedicineId(long medicineId);
+
+    @Query("SELECT COUNT(*) FROM medicine_intake INNER JOIN medicine " +
+            "ON medicine_intake.medicine_id = medicine.id INNER JOIN note " +
+            "ON medicine.note_id = note.id WHERE note.profile_id = :profileId")
+    public abstract int countMedicineIntakesByProfileId(long profileId);
+
     @Insert
     public abstract long insert(MedicineIntake medicineIntake);
 

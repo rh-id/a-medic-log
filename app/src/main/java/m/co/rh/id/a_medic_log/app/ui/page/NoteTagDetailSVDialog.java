@@ -12,20 +12,22 @@ import android.widget.Button;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.concurrent.ExecutorService;
 import java.util.function.Function;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteTagCmd;
-import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
 import m.co.rh.id.a_medic_log.app.util.SimpleTextWatcher;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
+import m.co.rh.id.a_medic_log.base.repository.NoteRepository;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulViewDialog;
@@ -42,7 +44,8 @@ public class NoteTagDetailSVDialog extends StatefulViewDialog<Activity> implemen
     private transient Provider mSvProvider;
     private transient ILogger mLogger;
     private transient RxDisposer mRxDisposer;
-    private transient QueryNoteCmd mQueryNoteCmd;
+    private transient NoteRepository mNoteRepository;
+    private transient ExecutorService mExecutorService;
     private transient NewNoteTagCmd mNewNoteTagCmd;
     private transient TextWatcher mTagTextWatcher;
     private transient Function<String, Single<LinkedHashSet<String>>> mSuggestionQuery;
@@ -57,7 +60,8 @@ public class NoteTagDetailSVDialog extends StatefulViewDialog<Activity> implemen
         mSvProvider = provider.get(StatefulViewProvider.class);
         mLogger = mSvProvider.get(ILogger.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
-        mQueryNoteCmd = mSvProvider.get(QueryNoteCmd.class);
+        mNoteRepository = mSvProvider.get(NoteRepository.class);
+        mExecutorService = mSvProvider.get(ExecutorService.class);
         mNewNoteTagCmd = mSvProvider.get(NewNoteTagCmd.class);
         if (mNoteTag == null) {
             NoteTag noteTag = new NoteTag();
@@ -79,9 +83,11 @@ public class NoteTagDetailSVDialog extends StatefulViewDialog<Activity> implemen
         {
             Long noteId = getNoteId();
             if (noteId != null) {
-                return mQueryNoteCmd.searchNoteTag(s)
+                return Single.fromCallable(() -> mNoteRepository.searchNoteTag(s))
+                        .subscribeOn(Schedulers.from(mExecutorService))
                         .flatMap(linkedHashSet ->
-                                mQueryNoteCmd.queryNoteInfo(noteId)
+                                Single.fromCallable(() -> mNoteRepository.queryNoteInfo(noteId))
+                                        .subscribeOn(Schedulers.from(mExecutorService))
                                         .map(noteState -> {
                                             Collection<NoteTag> noteTagSet = noteState.getNoteTagSet();
                                             if (!noteTagSet.isEmpty()) {
@@ -93,7 +99,8 @@ public class NoteTagDetailSVDialog extends StatefulViewDialog<Activity> implemen
                                         })
                         );
             }
-            return mQueryNoteCmd.searchNoteTag(s);
+            return Single.fromCallable(() -> mNoteRepository.searchNoteTag(s))
+                    .subscribeOn(Schedulers.from(mExecutorService));
         };
     }
 

@@ -13,7 +13,7 @@ public class UpdateMedicineCmd extends NewMedicineCmd {
 
     public Single<MedicineState> execute(MedicineState medicineState) {
         return Single.fromCallable(() -> {
-            MedicineState beforeUpdate = mMedicineRepository.get().findMedicineStateByMedicineId(medicineState.getMedicineId());
+            MedicineState beforeUpdate = mMedicineRepository.get().queryMedicineInfo(medicineState.getMedicineId());
             mMedicineRepository.get().updateMedicine(medicineState.getMedicine(), medicineState.getMedicineReminderList());
             mMedicineChangeNotifier.get().medicineUpdated(beforeUpdate, medicineState.clone());
             return medicineState;

@@ -2,6 +2,7 @@ package m.co.rh.id.a_medic_log.app.ui.component.profile;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -11,8 +12,11 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 
 import java.io.Serializable;
+import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
@@ -22,8 +26,10 @@ import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.page.NotesPage;
 import m.co.rh.id.a_medic_log.app.ui.page.ProfileDetailPage;
+import m.co.rh.id.a_medic_log.app.util.DeleteScopeSummaryBuilder;
 import m.co.rh.id.a_medic_log.app.util.UiUtils;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
+import m.co.rh.id.a_medic_log.base.repository.ProfileRepository;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -36,6 +42,9 @@ public class ProfileItemSV extends StatefulView<Activity> implements RequireComp
     @NavInject
     private transient INavigator mNavigator;
     private transient Provider mSvProvider;
+    private transient RxDisposer mRxDisposer;
+    private transient ProfileRepository mProfileRepository;
+    private transient ExecutorService mExecutorService;
     private Profile mProfile;
     private transient BehaviorSubject<Profile> mProfileSubject;
 
@@ -57,6 +66,9 @@ public class ProfileItemSV extends StatefulView<Activity> implements RequireComp
             mSvProvider.dispose();
         }
         mSvProvider = provider.get(StatefulViewProvider.class);
+        mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mProfileRepository = mSvProvider.get(ProfileRepository.class);
+        mExecutorService = mSvProvider.get(ExecutorService.class);
         initProfileSubject();
     }
 
@@ -89,7 +101,7 @@ public class ProfileItemSV extends StatefulView<Activity> implements RequireComp
         }
         TextView textName = rootLayout.findViewById(R.id.text_name);
         TextView textAbout = rootLayout.findViewById(R.id.text_about);
-        mSvProvider.get(RxDisposer.class).add("createView_onChangeProfile",
+        mRxDisposer.add("createView_onChangeProfile",
                 mProfileSubject.observeOn(AndroidSchedulers.mainThread())
                         .subscribe(profile -> {
                             textName.setText(profile.name);
@@ -189,16 +201,59 @@ public class ProfileItemSV extends StatefulView<Activity> implements RequireComp
         } else if (id == R.id.button_delete) {
             Context context = mSvProvider.getContext();
             String title = context.getString(R.string.title_confirm);
-            String content = context.getString(R.string.confirm_delete_profile, mProfile.name);
-            UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
-                    this::deleteProfile);
+            mRxDisposer
+                    .add("ProfileItemSV.onClick_getProfileCounts",
+                            Single.fromCallable(() -> mProfileRepository.queryProfileCounts(mProfile.id))
+                                    .subscribeOn(Schedulers.from(mExecutorService))
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe((profileScope, throwable) -> {
+                                        String content;
+                                        if (throwable == null) {
+                                            content = buildDeleteMessage(context, profileScope);
+                                        } else {
+                                            // scope count failed, still show the terse confirm dialog
+                                            RxUtils.logError(mSvProvider.get(ILogger.class), TAG,
+                                                    context.getString(R.string.error_deleting_profile), throwable);
+                                            content = context.getString(R.string.confirm_delete_profile, mProfile.name);
+                                        }
+                                        UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
+                                                this::deleteProfile);
+                                    }));
         }
+    }
+
+    /**
+     * @return the delete confirmation message enriched with the cascade scope,
+     * or the terse message when the profile owns no cascaded records
+     */
+    private String buildDeleteMessage(Context context, ProfileRepository.ProfileCounts profileCounts) {
+        Resources resources = context.getResources();
+        String notes = resources.getQuantityString(R.plurals.profile_count_notes,
+                profileCounts.noteCount, profileCounts.noteCount);
+        String medicines = resources.getQuantityString(R.plurals.profile_count_medicines,
+                profileCounts.medicineCount, profileCounts.medicineCount);
+        String reminders = resources.getQuantityString(R.plurals.profile_count_reminders,
+                profileCounts.reminderCount, profileCounts.reminderCount);
+        String attachments = resources.getQuantityString(R.plurals.profile_count_attachments,
+                profileCounts.attachmentCount, profileCounts.attachmentCount);
+        String intakes = resources.getQuantityString(R.plurals.profile_count_intakes,
+                profileCounts.intakeCount, profileCounts.intakeCount);
+        String scope = DeleteScopeSummaryBuilder.buildScopeSummary(
+                new DeleteScopeSummaryBuilder.Category(profileCounts.noteCount, notes),
+                new DeleteScopeSummaryBuilder.Category(profileCounts.medicineCount, medicines),
+                new DeleteScopeSummaryBuilder.Category(profileCounts.reminderCount, reminders),
+                new DeleteScopeSummaryBuilder.Category(profileCounts.attachmentCount, attachments),
+                new DeleteScopeSummaryBuilder.Category(profileCounts.intakeCount, intakes));
+        if (scope == null) {
+            return context.getString(R.string.confirm_delete_profile, mProfile.name);
+        }
+        return context.getString(R.string.confirm_delete_profile_scope, mProfile.name, scope);
     }
 
     private void deleteProfile() {
         Context context = mSvProvider.getContext();
         String errorMessage = context.getString(R.string.error_deleting_profile);
-        mSvProvider.get(RxDisposer.class)
+        mRxDisposer
                 .add("ProfileItemSV.deleteProfile_deleteProfileCmd",
                         mSvProvider.get(DeleteProfileCmd.class)
                                 .execute(mProfile)

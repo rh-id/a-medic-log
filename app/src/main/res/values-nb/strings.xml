@@ -24,12 +24,14 @@
     <string name="success_updating_profile">Profil oppdatert %s</string>
     <string name="title_confirm">Bekreft</string>
     <string name="confirm_delete_profile">Slett profil %s ?</string>
+    <string name="confirm_delete_profile_scope">Slett profil \"%s\"? Dette sletter også: %s</string>
     <string name="error_deleting_profile">Feil ved sletting av profil</string>
     <string name="success_deleting_profile">Slettet %s</string>
     <string name="hint_type_to_search">Skriv her for å søke</string>
     <string name="title_profiles">Profiler</string>
     <string name="title_update_profile">Oppdater profil</string>
     <string name="confirm_delete_note">Slett notat?</string>
+    <string name="confirm_delete_note_scope">Slett notat? Dette sletter også: %s</string>
     <string name="error_deleting_note">Feil ved sletting av notat</string>
     <string name="success_deleting_note">Notat slettet</string>
     <string name="title_notes">Notater</string>
@@ -73,6 +75,7 @@
     <string name="success_adding_medicine">Medisin lagt til</string>
     <string name="success_deleting_medicine">Medisin slettet</string>
     <string name="confirm_delete_medicine">Slett medisin \"%s\" ?</string>
+    <string name="confirm_delete_medicine_scope">Slett medisin \"%s\" ? Dette sletter også: %s</string>
     <string name="success_updating_medicine_reminder">Medisinpåminnelse oppdatert</string>
     <string name="success_adding_medicine_reminder">Medisinpåminnelse lagt til</string>
     <string name="confirm_delete_medicine_reminder">Slett påminnelse \"%s\" ?</string>
@@ -156,6 +159,10 @@
     <plurals name="profile_count_attachments">
         <item quantity="one">%d vedlegg</item>
         <item quantity="other">%d vedlegg</item>
+    </plurals>
+    <plurals name="profile_count_intakes">
+        <item quantity="one">%d medisininntak</item>
+        <item quantity="other">%d medisininntak</item>
     </plurals>
     <string name="title_adherence">Etterlevelse</string>
     <string name="adherence_last_7_days">Siste 7 dager</string>

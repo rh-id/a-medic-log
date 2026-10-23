@@ -40,6 +40,7 @@ import java.util.Set;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
 import m.co.rh.id.a_medic_log.app.provider.command.ExportArchiveCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.ImportArchiveCmd;
+import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderEventHandler;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.ProfileChangeNotifier;
 import m.co.rh.id.a_medic_log.base.AppDatabase;
@@ -88,6 +89,10 @@ public class ExportImportRoundTripTest {
     public void init() {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mProvider = Provider.createProvider(context, new ExportImportTestProviderModule());
+        // blocks until the async handler load finishes; its constructor
+        // subscribes Rx flows onto this provider's executor, so it must
+        // complete before dispose or the observeOn schedule gets rejected
+        mProvider.get(MedicineReminderEventHandler.class);
         mAppDatabase = mProvider.get(AppDatabase.class);
         mFileHelper = mProvider.get(FileHelper.class);
         mProfileDao = mProvider.get(ProfileDao.class);

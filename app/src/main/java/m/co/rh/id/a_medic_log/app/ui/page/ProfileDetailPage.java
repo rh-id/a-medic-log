@@ -131,7 +131,7 @@ public class ProfileDetailPage extends BaseDetailPage implements Toolbar.OnMenuI
                 mRxDisposer.add("ProfileDetailPage.onMenuItemClick_newProfileCmd.execute",
                         mNewProfileCmd.execute(editedProfile)
                                 .observeOn(AndroidSchedulers.mainThread())
-                                .subscribe((profile, throwable) -> {
+                                .subscribe((profileState, throwable) -> {
                                             String errorMessage;
                                             String successMessage;
                                             if (isUpdate) {
@@ -145,7 +145,7 @@ public class ProfileDetailPage extends BaseDetailPage implements Toolbar.OnMenuI
                                                 mLogger.e(TAG, errorMessage, throwable);
                                             } else {
                                                 mLogger.i(TAG, successMessage);
-                                                mNavigator.pop(Result.withProfile(profile));
+                                                mNavigator.pop(Result.withProfile(profileState.getProfile()));
                                             }
                                         }));
             } else {

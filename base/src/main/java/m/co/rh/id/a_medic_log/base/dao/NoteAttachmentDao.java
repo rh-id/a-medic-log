@@ -24,4 +24,8 @@ public abstract class NoteAttachmentDao {
 
     @Query("SELECT * FROM note_attachment WHERE note_id = :noteId")
     public abstract List<NoteAttachment> findNoteAttachmentsByNoteId(long noteId);
+
+    @Query("SELECT COUNT(*) FROM note_attachment INNER JOIN note " +
+            "ON note_attachment.note_id = note.id WHERE note.profile_id = :profileId")
+    public abstract int countNoteAttachmentsByProfileId(long profileId);
 }

@@ -24,12 +24,14 @@
     <string name="success_updating_profile">Profiil uuendatud %s</string>
     <string name="title_confirm">Kinnita</string>
     <string name="confirm_delete_profile">Kustuta profiil %s ?</string>
+    <string name="confirm_delete_profile_scope">Kustuta profiil \"%s\"? See kustutab ka: %s</string>
     <string name="error_deleting_profile">Viga profiili kustutamisel</string>
     <string name="success_deleting_profile">Kustutatud %s</string>
     <string name="hint_type_to_search">Kirjuta siia otsimiseks</string>
     <string name="title_profiles">Profiilid</string>
     <string name="title_update_profile">Uuenda profiili</string>
     <string name="confirm_delete_note">Kustuta märkus?</string>
+    <string name="confirm_delete_note_scope">Kustuta märkus? See kustutab ka: %s</string>
     <string name="error_deleting_note">Viga märkuse kustutamisel</string>
     <string name="success_deleting_note">Märkus kustutatud</string>
     <string name="title_notes">Märkmed</string>
@@ -73,6 +75,7 @@
     <string name="success_adding_medicine">Ravim lisatud</string>
     <string name="success_deleting_medicine">Ravim kustutatud</string>
     <string name="confirm_delete_medicine">Kustuta ravim \"%s\" ?</string>
+    <string name="confirm_delete_medicine_scope">Kustuta ravim \"%s\" ? See kustutab ka: %s</string>
     <string name="success_updating_medicine_reminder">Ravimi meeldetuletus uuendatud</string>
     <string name="success_adding_medicine_reminder">Ravimi meeldetuletus lisatud</string>
     <string name="confirm_delete_medicine_reminder">Kustuta meeldetuletus \"%s\" ?</string>
@@ -156,6 +159,10 @@
     <plurals name="profile_count_attachments">
         <item quantity="one">%d manus</item>
         <item quantity="other">%d manust</item>
+    </plurals>
+    <plurals name="profile_count_intakes">
+        <item quantity="one">%d ravimi võtmine</item>
+        <item quantity="other">%d ravimi võtmist</item>
     </plurals>
     <string name="title_adherence">Järgimine</string>
     <string name="adherence_last_7_days">Viimased 7 päeva</string>

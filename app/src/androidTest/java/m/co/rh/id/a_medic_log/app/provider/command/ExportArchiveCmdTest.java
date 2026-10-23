@@ -40,6 +40,7 @@ import java.util.List;
 
 import m.co.rh.id.a_medic_log.ExportImportTestProviderModule;
 import m.co.rh.id.a_medic_log.app.provider.command.ExportArchiveCmd;
+import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderEventHandler;
 import m.co.rh.id.a_medic_log.app.provider.component.ProfileExportData;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
@@ -70,6 +71,10 @@ public class ExportArchiveCmdTest {
     public void init() {
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
         mProvider = Provider.createProvider(context, new ExportImportTestProviderModule());
+        // blocks until the async handler load finishes; its constructor
+        // subscribes Rx flows onto this provider's executor, so it must
+        // complete before dispose or the observeOn schedule gets rejected
+        mProvider.get(MedicineReminderEventHandler.class);
         mProfileDao = mProvider.get(ProfileDao.class);
         mNoteDao = mProvider.get(NoteDao.class);
         mNoteAttachmentDao = mProvider.get(NoteAttachmentDao.class);

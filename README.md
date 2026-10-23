@@ -188,6 +188,8 @@ erDiagram
     NOTE ||--o{ NOTE_TAG : "tagged-with"
 ```
 
+Deleting a **Profile** or a **Note** permanently deletes all records owned by it — every foreign key uses `ON DELETE CASCADE` (a profile takes its notes, medicines, reminders, intake records, attachments and tags with it; a note takes its medicines, reminders, intake records, attachments and tags). Deleting a **Medicine** likewise destroys its reminders and entire intake history. Because these deletions are destructive and irreversible, the delete confirmation dialog communicates the affected record counts before deletion (e.g. "Delete note? This will also delete: 2 medicines · 3 reminders · 8 attachments · 84 intake records").
+
 ## How Reminders Work
 
 Reminders are scheduled with WorkManager. For each enabled reminder, a one-time work request is enqueued with an initial delay until the next occurrence. The worker posts the notification on the configured days of week and re-enqueues itself for the next day. Notification actions let the user log a medicine intake or disable the reminder directly from the notification.

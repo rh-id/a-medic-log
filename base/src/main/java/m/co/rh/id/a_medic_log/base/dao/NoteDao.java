@@ -33,6 +33,9 @@ public abstract class NoteDao {
     @Query("SELECT * FROM note ORDER BY entry_date_time DESC")
     public abstract List<Note> findAllNotes();
 
+    @Query("SELECT COUNT(*) FROM note WHERE profile_id = :profileId")
+    public abstract int countNotesByProfileId(long profileId);
+
     @Query("SELECT * FROM note WHERE id = :noteId")
     public abstract Note findNoteById(Long noteId);
 

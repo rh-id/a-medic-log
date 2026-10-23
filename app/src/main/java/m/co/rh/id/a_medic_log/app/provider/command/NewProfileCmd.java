@@ -14,6 +14,7 @@ import m.co.rh.id.a_medic_log.app.provider.notifier.ProfileChangeNotifier;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
 import m.co.rh.id.a_medic_log.base.repository.ProfileRepository;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
+import m.co.rh.id.a_medic_log.base.state.ProfileState;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
@@ -34,11 +35,11 @@ public class NewProfileCmd {
         mNameValidSubject = BehaviorSubject.create();
     }
 
-    public Single<Profile> execute(Profile profile) {
+    public Single<ProfileState> execute(Profile profile) {
         return Single.fromCallable(() -> {
-            mProfileRepository.get().insertProfile(profile);
-            mProfileChangeNotifier.get().profileAdded(profile);
-            return profile;
+            ProfileState profileState = mProfileRepository.get().insertProfile(profile);
+            mProfileChangeNotifier.get().profileAdded(profileState);
+            return profileState;
         }).subscribeOn(Schedulers.from(mExecutorService.get()));
     }
 

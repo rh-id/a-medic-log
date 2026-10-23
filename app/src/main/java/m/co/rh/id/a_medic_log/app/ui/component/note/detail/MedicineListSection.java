@@ -2,6 +2,7 @@ package m.co.rh.id.a_medic_log.app.ui.component.note.detail;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
@@ -19,7 +21,6 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteMedicineCmd;
-import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineReminderChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.rx.RxUtils;
@@ -28,7 +29,12 @@ import m.co.rh.id.a_medic_log.app.ui.component.medicine.MedicineRecyclerViewAdap
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineDetailPage;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineIntakeDetailPage;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineIntakeListPage;
+import m.co.rh.id.a_medic_log.app.util.DeleteScopeSummaryBuilder;
 import m.co.rh.id.a_medic_log.app.util.UiUtils;
+import m.co.rh.id.a_medic_log.base.entity.Profile;
+import m.co.rh.id.a_medic_log.base.repository.MedicineRepository;
+import m.co.rh.id.a_medic_log.base.repository.NoteRepository;
+import m.co.rh.id.a_medic_log.base.repository.ProfileRepository;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.alogger.ILogger;
@@ -50,8 +56,10 @@ public class MedicineListSection implements View.OnClickListener,
     private final ILogger mLogger;
     private final RxDisposer mRxDisposer;
     private final ExecutorService mExecutorService;
-    private final QueryNoteCmd mQueryNoteCmd;
+    private final NoteRepository mNoteRepository;
+    private final ProfileRepository mProfileRepository;
     private final DeleteMedicineCmd mDeleteMedicineCmd;
+    private final MedicineRepository mMedicineRepository;
     private final MedicineReminderChangeNotifier mMedicineReminderChangeNotifier;
     private final StatefulView mParentStatefulView;
 
@@ -72,8 +80,10 @@ public class MedicineListSection implements View.OnClickListener,
         mLogger = svProvider.get(ILogger.class);
         mRxDisposer = svProvider.get(RxDisposer.class);
         mExecutorService = svProvider.get(ExecutorService.class);
-        mQueryNoteCmd = svProvider.get(QueryNoteCmd.class);
+        mNoteRepository = svProvider.get(NoteRepository.class);
+        mProfileRepository = svProvider.get(ProfileRepository.class);
         mDeleteMedicineCmd = svProvider.get(DeleteMedicineCmd.class);
+        mMedicineRepository = svProvider.get(MedicineRepository.class);
         mMedicineReminderChangeNotifier = svProvider.get(MedicineReminderChangeNotifier.class);
         mMedicineRecyclerViewAdapter = new MedicineRecyclerViewAdapter(mNoteState,
                 this, this, this, this, mNavigator, mParentStatefulView);
@@ -122,7 +132,12 @@ public class MedicineListSection implements View.OnClickListener,
                         .observeOn(Schedulers.from(mExecutorService))
                         .flatMapSingle(medicineReminder -> {
                             if (isUpdate()) {
-                                return mQueryNoteCmd.queryMedicineInfo(mNoteState);
+                                return Single.fromCallable(() -> {
+                                    List<MedicineState> fresh =
+                                            mNoteRepository.queryMedicineStatesByNoteId(mRouteNoteId);
+                                    mNoteState.updateMedicineStates(fresh);
+                                    return fresh;
+                                }).subscribeOn(Schedulers.from(mExecutorService));
                             }
                             return Single.just(mNoteState.getMedicineList());
                         })
@@ -154,14 +169,60 @@ public class MedicineListSection implements View.OnClickListener,
     @Override
     public void medicineItem_onDeleteClick(MedicineState medicineState) {
         if (isUpdate()) {
-            Context context = mSvProvider.getContext();
-            String title = context.getString(R.string.title_confirm);
-            String content = context.getString(R.string.confirm_delete_medicine, medicineState.getMedicineName());
-            UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
-                    () -> confirmDeleteMedicine(medicineState));
+            Long medicineId = medicineState.getMedicineId();
+            if (medicineId == null) {
+                // unsaved medicine, nothing cascades
+                showDeleteMedicineDialog(medicineState, null);
+                return;
+            }
+            mRxDisposer.add("MedicineListSection.medicineItem_onDeleteClick_getMedicineCounts",
+                    Single.fromCallable(() -> mMedicineRepository.queryMedicineCounts(medicineState))
+                            .subscribeOn(Schedulers.from(mExecutorService))
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe((medicineCounts, throwable) -> {
+                                if (throwable != null) {
+                                    // scope count failed, still show the terse confirm dialog
+                                    mLogger.e(TAG, throwable.getMessage(), throwable);
+                                }
+                                showDeleteMedicineDialog(medicineState,
+                                        throwable == null ? medicineCounts : null);
+                            }));
         } else {
             mMedicineRecyclerViewAdapter.notifyItemDeleted(medicineState);
         }
+    }
+
+    private void showDeleteMedicineDialog(MedicineState medicineState,
+                                          MedicineRepository.MedicineCounts medicineCounts) {
+        Context context = mSvProvider.getContext();
+        String title = context.getString(R.string.title_confirm);
+        String content = buildDeleteMessage(context, medicineState, medicineCounts);
+        UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
+                () -> confirmDeleteMedicine(medicineState));
+    }
+
+    /**
+     * @return the delete confirmation message enriched with the cascade scope,
+     * or the terse message when the medicine owns no cascaded records
+     */
+    private String buildDeleteMessage(Context context, MedicineState medicineState,
+                                      MedicineRepository.MedicineCounts medicineCounts) {
+        if (medicineCounts == null) {
+            return context.getString(R.string.confirm_delete_medicine, medicineState.getMedicineName());
+        }
+        Resources resources = context.getResources();
+        String reminders = resources.getQuantityString(R.plurals.profile_count_reminders,
+                medicineCounts.reminderCount, medicineCounts.reminderCount);
+        String intakes = resources.getQuantityString(R.plurals.profile_count_intakes,
+                medicineCounts.intakeCount, medicineCounts.intakeCount);
+        String scope = DeleteScopeSummaryBuilder.buildScopeSummary(
+                new DeleteScopeSummaryBuilder.Category(medicineCounts.reminderCount, reminders),
+                new DeleteScopeSummaryBuilder.Category(medicineCounts.intakeCount, intakes));
+        if (scope == null) {
+            return context.getString(R.string.confirm_delete_medicine, medicineState.getMedicineName());
+        }
+        return context.getString(R.string.confirm_delete_medicine_scope,
+                medicineState.getMedicineName(), scope);
     }
 
     private void confirmDeleteMedicine(MedicineState medicineState) {
@@ -170,6 +231,36 @@ public class MedicineListSection implements View.OnClickListener,
         RxUtils.executeAndLog(mRxDisposer, "MedicineListSection.confirmDeleteMedicine_deleteMedicineCmd",
                 mDeleteMedicineCmd.execute(medicineState), mLogger, TAG, successMessage,
                 medicineState1 -> mMedicineRecyclerViewAdapter.notifyItemDeleted(medicineState));
+    }
+
+    private Single<String> createShareMedicineText(NoteState noteState) {
+        return Single.fromCallable(() -> {
+            Long profileId = noteState.getProfileId();
+            Profile profile;
+            if (profileId != null) {
+                profile = mProfileRepository.findProfileById(profileId);
+            } else {
+                profile = null;
+            }
+            StringBuilder stringBuilder = new StringBuilder();
+            if (profile != null) {
+                stringBuilder.append(profile.name);
+                stringBuilder.append(" ");
+            }
+            stringBuilder.append(noteState.getNoteEntryDateTimeDisplay());
+            List<MedicineState> medicineStates = noteState.getMedicineList();
+            if (!medicineStates.isEmpty()) {
+                stringBuilder.append("\n\n");
+                int size = medicineStates.size();
+                for (int i = 0; i < size; i++, stringBuilder.append("\n")) {
+                    stringBuilder.append(i + 1);
+                    stringBuilder.append(". ");
+                    MedicineState medicineState = medicineStates.get(i);
+                    stringBuilder.append(medicineState.getMedicineName());
+                }
+            }
+            return stringBuilder.toString();
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     @Override
@@ -195,7 +286,7 @@ public class MedicineListSection implements View.OnClickListener,
         int id = view.getId();
         if (id == R.id.button_share_medicine) {
             mRxDisposer.add("MedicineListSection.onClick_shareMedicine",
-                    mQueryNoteCmd.createShareMedicineText(mNoteState)
+                    createShareMedicineText(mNoteState)
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe((s, throwable) -> {
                                 if (throwable != null) {

@@ -54,6 +54,7 @@ import m.co.rh.id.a_medic_log.base.provider.FileHelper;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.a_medic_log.base.state.NoteAttachmentState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
+import m.co.rh.id.a_medic_log.base.state.ProfileState;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
@@ -204,7 +205,7 @@ public class ImportArchiveCmd {
             // noteAdded carries the full nested state so that reminder works are scheduled from it,
             // no separate medicine/reminder/intake events are emitted to avoid duplicated reminder works
             for (ProfileRecord profileRecord : selectedProfileRecords) {
-                mProfileChangeNotifier.profileAdded(profileRecord.profile);
+                mProfileChangeNotifier.profileAdded(new ProfileState(profileRecord.profile));
             }
             for (NoteState noteState : noteStates) {
                 mNoteChangeNotifier.noteAdded(noteState);

@@ -132,7 +132,7 @@ public class TodayCardSV extends StatefulView<Activity> implements RequireNaviga
                         mProfileChangeNotifier.getAnyChanged()
                                 .debounce(700, TimeUnit.MILLISECONDS)
                                 .observeOn(Schedulers.from(mExecutorService))
-                                .subscribe(profile -> load()));
+                                .subscribe(profileState -> load()));
         return rootLayout;
     }
 

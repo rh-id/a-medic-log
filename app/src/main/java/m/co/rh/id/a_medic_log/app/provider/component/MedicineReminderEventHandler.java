@@ -20,6 +20,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineReminderChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
+import m.co.rh.id.a_medic_log.app.provider.notifier.ProfileChangeNotifier;
 import m.co.rh.id.a_medic_log.app.workmanager.Keys;
 import m.co.rh.id.a_medic_log.app.workmanager.MedicineReminderNotificationWorker;
 import m.co.rh.id.a_medic_log.app.workmanager.Tags;
@@ -27,6 +28,7 @@ import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
+import m.co.rh.id.a_medic_log.base.state.ProfileState;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderDisposable;
 
@@ -40,6 +42,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
     private final NoteChangeNotifier mNoteChangeNotifier;
     private final MedicineChangeNotifier mMedicineChangeNotifier;
     private final MedicineReminderChangeNotifier mMedicineReminderChangeNotifier;
+    private final ProfileChangeNotifier mProfileChangeNotifier;
     private final CompositeDisposable mCompositeDisposable;
     private final ReentrantLock mLock;
 
@@ -50,6 +53,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
         mNoteChangeNotifier = provider.get(NoteChangeNotifier.class);
         mMedicineChangeNotifier = provider.get(MedicineChangeNotifier.class);
         mMedicineReminderChangeNotifier = provider.get(MedicineReminderChangeNotifier.class);
+        mProfileChangeNotifier = provider.get(ProfileChangeNotifier.class);
         mCompositeDisposable = new CompositeDisposable();
         mLock = new ReentrantLock(); // lock to prevent inconsistency when scheduling worker
         init();
@@ -59,6 +63,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
         handleNoteEvents();
         handleMedicineEvents();
         handleMedicineReminderEvents();
+        handleProfileEvents();
     }
 
     private void handleNoteEvents() {
@@ -204,6 +209,59 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
         );
     }
 
+    private void handleProfileEvents() {
+        mCompositeDisposable.add(
+                mProfileChangeNotifier.getDeletedProfile()
+                        .observeOn(Schedulers.from(mExecutorService))
+                        .subscribe(profileState ->
+                                {
+                                    mLock.lock();
+                                    try {
+                                        List<MedicineReminder> medicineReminders = extractMedicineReminders(profileState);
+                                        if (!medicineReminders.isEmpty()) {
+                                            // cancel from the event payload, the cascade has
+                                            // already removed the rows when this event fires
+                                            cancelMedicineReminderNotificationWork(medicineReminders);
+                                        }
+                                    } finally {
+                                        mLock.unlock();
+                                    }
+                                }
+                        )
+        );
+    }
+
+    /**
+     * Walks the profile state's nested children (note ⊃ medicine ⊃ reminder)
+     * and collects every reminder whose work needs cancellation
+     */
+    static List<MedicineReminder> extractMedicineReminders(ProfileState profileState) {
+        List<MedicineReminder> result = new ArrayList<>();
+        if (profileState != null) {
+            ArrayList<NoteState> noteStates = profileState.getNoteList();
+            if (noteStates != null && !noteStates.isEmpty()) {
+                for (NoteState noteState : noteStates) {
+                    if (noteState == null) {
+                        continue;
+                    }
+                    ArrayList<MedicineState> medicineStates = noteState.getMedicineList();
+                    if (medicineStates != null && !medicineStates.isEmpty()) {
+                        for (MedicineState medicineState : medicineStates) {
+                            if (medicineState == null) {
+                                continue;
+                            }
+                            List<MedicineReminder> medicineReminders = medicineState.getMedicineReminderList();
+                            if (medicineReminders != null && !medicineReminders.isEmpty()) {
+                                result.addAll(medicineReminders);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
     public void startMedicineReminderNotificationWork(List<MedicineReminder> medicineReminders) {
         startMedicineReminderNotificationWork(medicineReminders, true);
     }
@@ -213,7 +271,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
             for (MedicineReminder medicineReminder : medicineReminders) {
                 if (medicineReminder.reminderEnabled) {
                     long initialDelay = calculateInitialDelayMs(medicineReminder.startDateTime, catchUpIfJustPassed);
-                    String tag = calculateTag(medicineReminder);
+                    String tag = MedicineReminderEventHandler.calculateTag(medicineReminder);
                     OneTimeWorkRequest notificationWorkRequest =
                             new OneTimeWorkRequest.Builder(MedicineReminderNotificationWorker.class)
                                     .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
@@ -229,7 +287,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
     public void cancelMedicineReminderNotificationWork(List<MedicineReminder> medicineReminders) {
         if (!medicineReminders.isEmpty()) {
             for (MedicineReminder medicineReminder : medicineReminders) {
-                mWorkManager.cancelAllWorkByTag(calculateTag(medicineReminder));
+                mWorkManager.cancelAllWorkByTag(MedicineReminderEventHandler.calculateTag(medicineReminder));
             }
         }
     }
@@ -255,7 +313,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
                 .build();
     }
 
-    private String calculateTag(MedicineReminder medicineReminder) {
+    static String calculateTag(MedicineReminder medicineReminder) {
         return Tags.MEDICINE_REMINDER_TAG + medicineReminder.id;
     }
 

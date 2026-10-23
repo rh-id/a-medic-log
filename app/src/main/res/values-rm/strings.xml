@@ -24,12 +24,14 @@
     <string name="success_updating_profile">Profil actualisà %s</string>
     <string name="title_confirm">Confermar</string>
     <string name="confirm_delete_profile">Stizzar profil %s ?</string>
+    <string name="confirm_delete_profile_scope">Stizzar profil \"%s\"? Quai stizza er: %s</string>
     <string name="error_deleting_profile">Errur cun stizzar profil</string>
     <string name="success_deleting_profile">%s stizzà</string>
     <string name="hint_type_to_search">Scriva qua per tschertgar</string>
     <string name="title_profiles">Profiles</string>
     <string name="title_update_profile">Actualisar Profil</string>
     <string name="confirm_delete_note">Stizzar nota?</string>
+    <string name="confirm_delete_note_scope">Stizzar nota? Quai stizza er: %s</string>
     <string name="error_deleting_note">Errur cun stizzar nota</string>
     <string name="success_deleting_note">Nota stizzada</string>
     <string name="title_notes">Notas</string>
@@ -73,6 +75,7 @@
     <string name="success_adding_medicine">Medikament agiuntà</string>
     <string name="success_deleting_medicine">Medikament stizzà</string>
     <string name="confirm_delete_medicine">Stizzar medikament \"%s\" ?</string>
+    <string name="confirm_delete_medicine_scope">Stizzar medikament \"%s\" ? Quai stizza er: %s</string>
     <string name="success_updating_medicine_reminder">Erinner da medikaments actualisà</string>
     <string name="success_adding_medicine_reminder">Erinner da medikaments agiuntà</string>
     <string name="confirm_delete_medicine_reminder">Stizzar erinner \"%s\" ?</string>
@@ -156,6 +159,10 @@
     <plurals name="profile_count_attachments">
         <item quantity="one">%d agiunta</item>
         <item quantity="other">%d agiuntas</item>
+    </plurals>
+    <plurals name="profile_count_intakes">
+        <item quantity="one">%d prenda da medikament</item>
+        <item quantity="other">%d prenda da medikaments</item>
     </plurals>
     <string name="title_adherence">Observanza</string>
     <string name="adherence_last_7_days">Ultims 7 dis</string>

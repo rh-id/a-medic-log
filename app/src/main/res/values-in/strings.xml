@@ -24,12 +24,14 @@
     <string name="success_updating_profile">Profil diperbarui %s</string>
     <string name="title_confirm">Konfirmasi</string>
     <string name="confirm_delete_profile">Hapus profil %s ?</string>
+    <string name="confirm_delete_profile_scope">Hapus profil \"%s\"? Ini juga akan menghapus: %s</string>
     <string name="error_deleting_profile">Error menghapus profil</string>
     <string name="success_deleting_profile">Hapus %s</string>
     <string name="hint_type_to_search">Ketik di siini untuk mencari</string>
     <string name="title_profiles">Profil</string>
     <string name="title_update_profile">Perbarui Profil</string>
     <string name="confirm_delete_note">Hapus catatan?</string>
+    <string name="confirm_delete_note_scope">Hapus catatan? Ini juga akan menghapus: %s</string>
     <string name="error_deleting_note">Error menghapus catatan</string>
     <string name="success_deleting_note">Catatan dihapus</string>
     <string name="title_notes">Catatan</string>
@@ -73,6 +75,7 @@
     <string name="success_adding_medicine">Obat ditambah</string>
     <string name="success_deleting_medicine">Obat dihapus</string>
     <string name="confirm_delete_medicine">Hapus obat "%s" ?</string>
+    <string name="confirm_delete_medicine_scope">Hapus obat "%s" ? Ini juga akan menghapus: %s</string>
     <string name="success_updating_medicine_reminder">Pengingat obat diperbarui</string>
     <string name="success_adding_medicine_reminder">Pengingat obat ditambah</string>
     <string name="confirm_delete_medicine_reminder">Hapus pengingat \"%s\" ?</string>
@@ -152,6 +155,9 @@
     </plurals>
     <plurals name="profile_count_attachments">
         <item quantity="other">%d lampiran</item>
+    </plurals>
+    <plurals name="profile_count_intakes">
+        <item quantity="other">%d catatan konsumsi obat</item>
     </plurals>
     <string name="title_adherence">Kepatuhan</string>
     <string name="adherence_last_7_days">7 hari terakhir</string>

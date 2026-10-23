@@ -150,7 +150,7 @@ public class AdherenceReportSV extends StatefulView<Activity> implements Require
                         mProfileChangeNotifier.getAnyChanged()
                                 .debounce(700, TimeUnit.MILLISECONDS)
                                 .observeOn(Schedulers.from(mExecutorService))
-                                .subscribe(profile -> loadProfiles()));
+                                .subscribe(profileState -> loadProfiles()));
         return rootLayout;
     }
 

@@ -24,12 +24,14 @@
     <string name="success_updating_profile">Snið uppfært %s</string>
     <string name="title_confirm">Staðfesta</string>
     <string name="confirm_delete_profile">Eyða sniði %s ?</string>
+    <string name="confirm_delete_profile_scope">Eyða sniði \"%s\"? Þetta eyðir einnig: %s</string>
     <string name="error_deleting_profile">Villa við að eyða sniði</string>
     <string name="success_deleting_profile">Eyða %s</string>
     <string name="hint_type_to_search">Skrifaðu hér til að leita</string>
     <string name="title_profiles">Snið</string>
     <string name="title_update_profile">Uppfæra Snið</string>
     <string name="confirm_delete_note">Eyða minnispunkt?</string>
+    <string name="confirm_delete_note_scope">Eyða minnispunkt? Þetta eyðir einnig: %s</string>
     <string name="error_deleting_note">Villa við að eyða minnispunkti</string>
     <string name="success_deleting_note">Minnispunktur eytt</string>
     <string name="title_notes">Minnispunktar</string>
@@ -73,6 +75,7 @@
     <string name="success_adding_medicine">Lyf bætt við</string>
     <string name="success_deleting_medicine">Lyf eytt</string>
     <string name="confirm_delete_medicine">Eyða lyfi \"%s\" ?</string>
+    <string name="confirm_delete_medicine_scope">Eyða lyfi \"%s\" ? Þetta eyðir einnig: %s</string>
     <string name="success_updating_medicine_reminder">Lyfminning uppfærð</string>
     <string name="success_adding_medicine_reminder">Lyfminning bætt við</string>
     <string name="confirm_delete_medicine_reminder">Eyða minningu \"%s\" ?</string>
@@ -156,6 +159,10 @@
     <plurals name="profile_count_attachments">
         <item quantity="one">%d viðhengi</item>
         <item quantity="other">%d viðhengi</item>
+    </plurals>
+    <plurals name="profile_count_intakes">
+        <item quantity="one">%d lyfjataka</item>
+        <item quantity="other">%d lyfjatökur</item>
     </plurals>
     <string name="title_adherence">Eftirfylgni</string>
     <string name="adherence_last_7_days">Síðustu 7 dagar</string>

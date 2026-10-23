@@ -24,12 +24,14 @@
     <string name="success_updating_profile">Profilo aggiornato %s</string>
     <string name="title_confirm">Conferma</string>
     <string name="confirm_delete_profile">Eliminare il profilo %s ?</string>
+    <string name="confirm_delete_profile_scope">Eliminare il profilo \"%s\"? Verranno eliminati anche: %s</string>
     <string name="error_deleting_profile">Errore durante l\'eliminazione del profilo</string>
     <string name="success_deleting_profile">Eliminato %s</string>
     <string name="hint_type_to_search">Digita qui per cercare</string>
     <string name="title_profiles">Profili</string>
     <string name="title_update_profile">Aggiorna profilo</string>
     <string name="confirm_delete_note">Eliminare la nota?</string>
+    <string name="confirm_delete_note_scope">Eliminare la nota? Verranno eliminati anche: %s</string>
     <string name="error_deleting_note">Errore durante l\'eliminazione della nota</string>
     <string name="success_deleting_note">Nota eliminata</string>
     <string name="title_notes">Note</string>
@@ -73,6 +75,7 @@
     <string name="success_adding_medicine">Medicinale aggiunto</string>
     <string name="success_deleting_medicine">Medicinale eliminato</string>
     <string name="confirm_delete_medicine">Eliminare il medicinale \"%s\" ?</string>
+    <string name="confirm_delete_medicine_scope">Eliminare il medicinale \"%s\" ? Verranno eliminati anche: %s</string>
     <string name="success_updating_medicine_reminder">Promemoria medicinale aggiornato</string>
     <string name="success_adding_medicine_reminder">Promemoria medicinale aggiunto</string>
     <string name="confirm_delete_medicine_reminder">Eliminare il promemoria \"%s\" ?</string>
@@ -156,6 +159,10 @@
     <plurals name="profile_count_attachments">
         <item quantity="one">%d allegato</item>
         <item quantity="other">%d allegati</item>
+    </plurals>
+    <plurals name="profile_count_intakes">
+        <item quantity="one">%d assunzione medicinale</item>
+        <item quantity="other">%d assunzioni medicinali</item>
     </plurals>
     <string name="title_adherence">Aderenza</string>
     <string name="adherence_last_7_days">Ultimi 7 giorni</string>

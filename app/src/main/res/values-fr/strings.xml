@@ -24,12 +24,14 @@
     <string name="success_updating_profile">Profil mis à jour %s</string>
     <string name="title_confirm">Confirmer</string>
     <string name="confirm_delete_profile">Supprimer le profil %s ?</string>
+    <string name="confirm_delete_profile_scope">Supprimer le profil \"%s\" ? Cela supprimera également : %s</string>
     <string name="error_deleting_profile">Erreur lors de la suppression du profil</string>
     <string name="success_deleting_profile">%s supprimé</string>
     <string name="hint_type_to_search">Tapez ici pour rechercher</string>
     <string name="title_profiles">Profils</string>
     <string name="title_update_profile">Mettre à jour le profil</string>
     <string name="confirm_delete_note">Supprimer la note ?</string>
+    <string name="confirm_delete_note_scope">Supprimer la note ? Cela supprimera également : %s</string>
     <string name="error_deleting_note">Erreur lors de la suppression de la note</string>
     <string name="success_deleting_note">Note supprimée</string>
     <string name="title_notes">Notes</string>
@@ -73,6 +75,7 @@
     <string name="success_adding_medicine">Médicament ajouté</string>
     <string name="success_deleting_medicine">Médicament supprimé</string>
     <string name="confirm_delete_medicine">Supprimer le médicament \"%s\" ?</string>
+    <string name="confirm_delete_medicine_scope">Supprimer le médicament \"%s\" ? Cela supprimera également : %s</string>
     <string name="success_updating_medicine_reminder">Rappel de médicament mis à jour</string>
     <string name="success_adding_medicine_reminder">Rappel de médicament ajouté</string>
     <string name="confirm_delete_medicine_reminder">Supprimer le rappel \"%s\" ?</string>
@@ -156,6 +159,10 @@
     <plurals name="profile_count_attachments">
         <item quantity="one">%d pièce jointe</item>
         <item quantity="other">%d pièces jointes</item>
+    </plurals>
+    <plurals name="profile_count_intakes">
+        <item quantity="one">%d prise de médicament</item>
+        <item quantity="other">%d prises de médicament</item>
     </plurals>
     <string name="title_adherence">Observance</string>
     <string name="adherence_last_7_days">7 derniers jours</string>

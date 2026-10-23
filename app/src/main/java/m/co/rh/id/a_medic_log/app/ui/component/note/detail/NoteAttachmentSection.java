@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
@@ -19,13 +20,13 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteAttachmentCmd;
-import m.co.rh.id.a_medic_log.app.provider.command.QueryNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteAttachmentFileChangeNotifier;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.note.attachment.NoteAttachmentItemSV;
 import m.co.rh.id.a_medic_log.app.ui.component.note.attachment.NoteAttachmentRecyclerViewAdapter;
 import m.co.rh.id.a_medic_log.app.ui.page.NoteAttachmentDetailPage;
 import m.co.rh.id.a_medic_log.app.util.UiUtils;
+import m.co.rh.id.a_medic_log.base.repository.NoteRepository;
 import m.co.rh.id.a_medic_log.base.state.NoteAttachmentState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.alogger.ILogger;
@@ -46,7 +47,7 @@ public class NoteAttachmentSection implements View.OnClickListener,
     private final ILogger mLogger;
     private final RxDisposer mRxDisposer;
     private final ExecutorService mExecutorService;
-    private final QueryNoteCmd mQueryNoteCmd;
+    private final NoteRepository mNoteRepository;
     private final DeleteNoteAttachmentCmd mDeleteNoteAttachmentCmd;
     private final NoteAttachmentFileChangeNotifier mNoteAttachmentFileChangeNotifier;
     private final StatefulView mParentStatefulView;
@@ -67,7 +68,7 @@ public class NoteAttachmentSection implements View.OnClickListener,
         mLogger = svProvider.get(ILogger.class);
         mRxDisposer = svProvider.get(RxDisposer.class);
         mExecutorService = svProvider.get(ExecutorService.class);
-        mQueryNoteCmd = svProvider.get(QueryNoteCmd.class);
+        mNoteRepository = svProvider.get(NoteRepository.class);
         mDeleteNoteAttachmentCmd = svProvider.get(DeleteNoteAttachmentCmd.class);
         mNoteAttachmentFileChangeNotifier = svProvider.get(NoteAttachmentFileChangeNotifier.class);
         mNoteAttachmentRecyclerViewAdapter = new NoteAttachmentRecyclerViewAdapter(mNoteState, this, this, mNavigator, mParentStatefulView);
@@ -104,12 +105,7 @@ public class NoteAttachmentSection implements View.OnClickListener,
         mRxDisposer.add("NoteAttachmentSection.bindViews_onNoteAttachmentFileAdded",
                 mNoteAttachmentFileChangeNotifier.getAddedNoteAttachmentFile()
                         .observeOn(Schedulers.from(mExecutorService))
-                        .flatMapSingle(noteAttachmentFile -> {
-                            if (isUpdate()) {
-                                return mQueryNoteCmd.queryNoteAttachmentInfo(mNoteState);
-                            }
-                            return Single.just(mNoteState.getNoteAttachmentStates());
-                        })
+                        .flatMapSingle(noteAttachmentFile -> refreshAndGetNoteAttachmentStates())
                         .subscribe(
                                 noteAttachmentStates -> {},
                                 throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)
@@ -117,16 +113,28 @@ public class NoteAttachmentSection implements View.OnClickListener,
         mRxDisposer.add("NoteAttachmentSection.bindViews_onNoteAttachmentFileDeleted",
                 mNoteAttachmentFileChangeNotifier.getDeletedNoteAttachmentFile()
                         .observeOn(Schedulers.from(mExecutorService))
-                        .flatMapSingle(noteAttachmentFile -> {
-                            if (isUpdate()) {
-                                return mQueryNoteCmd.queryNoteAttachmentInfo(mNoteState);
-                            }
-                            return Single.just(mNoteState.getNoteAttachmentStates());
-                        })
+                        .flatMapSingle(noteAttachmentFile -> refreshAndGetNoteAttachmentStates())
                         .subscribe(
                                 noteAttachmentStates -> {},
                                 throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)
                         ));
+    }
+
+    /**
+     * Reads the note's fresh attachment states into the state when the
+     * screen is in update mode (rows already persisted), otherwise returns
+     * the state's in-memory list (note is being composed)
+     */
+    private Single<List<NoteAttachmentState>> refreshAndGetNoteAttachmentStates() {
+        if (isUpdate()) {
+            return Single.fromCallable(() -> {
+                List<NoteAttachmentState> fresh =
+                        mNoteRepository.queryNoteAttachmentStatesByNoteId(mRouteNoteId);
+                mNoteState.updateNoteAttachments(fresh);
+                return fresh;
+            }).subscribeOn(Schedulers.from(mExecutorService));
+        }
+        return Single.just(mNoteState.getNoteAttachmentStates());
     }
 
     @Override
