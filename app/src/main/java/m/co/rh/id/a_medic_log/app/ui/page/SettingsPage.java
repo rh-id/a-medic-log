@@ -12,6 +12,7 @@ import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.settings.LicensesMenuSV;
 import m.co.rh.id.a_medic_log.app.ui.component.settings.LogMenuSV;
+import m.co.rh.id.a_medic_log.app.ui.component.settings.NotificationMenuSV;
 import m.co.rh.id.a_medic_log.app.ui.component.settings.SecurityMenuSV;
 import m.co.rh.id.a_medic_log.app.ui.component.settings.ThemeMenuSV;
 import m.co.rh.id.a_medic_log.app.ui.component.settings.VersionMenuSV;
@@ -19,9 +20,11 @@ import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.NavOnActivityResult;
+import m.co.rh.id.anavigator.component.NavOnRequestPermissionResult;
 
 @SuppressWarnings({"rawtypes", "unchecked"})
-public class SettingsPage extends StatefulView<Activity> implements NavOnActivityResult<Activity> {
+public class SettingsPage extends StatefulView<Activity> implements
+        NavOnActivityResult<Activity>, NavOnRequestPermissionResult<Activity> {
 
     @NavInject
     private AppBarSV mAppBarSV;
@@ -35,6 +38,8 @@ public class SettingsPage extends StatefulView<Activity> implements NavOnActivit
         mStatefulViews.add(themeMenuSV);
         SecurityMenuSV securityMenuSV = new SecurityMenuSV();
         mStatefulViews.add(securityMenuSV);
+        NotificationMenuSV notificationMenuSV = new NotificationMenuSV();
+        mStatefulViews.add(notificationMenuSV);
         LogMenuSV logMenuSV = new LogMenuSV();
         mStatefulViews.add(logMenuSV);
         LicensesMenuSV licensesMenuSV = new LicensesMenuSV();
@@ -74,6 +79,27 @@ public class SettingsPage extends StatefulView<Activity> implements NavOnActivit
                     ((NavOnActivityResult) statefulView)
                             .onActivityResult(currentView, activity, navigator,
                                     requestCode, resultCode, data);
+                }
+            }
+        }
+    }
+
+    /**
+     * The navigator routes permission results to the StatefulView on top of
+     * the route stack (this page), forward them to the child menu
+     * StatefulViews that launched a runtime permission request (e.g.
+     * NotificationMenuSV asking for POST_NOTIFICATIONS in place)
+     */
+    @Override
+    public void onRequestPermissionsResult(View currentView, Activity activity,
+                                           INavigator navigator, int requestCode,
+                                           String[] permissions, int[] grantResults) {
+        if (mStatefulViews != null) {
+            for (StatefulView statefulView : mStatefulViews) {
+                if (statefulView instanceof NavOnRequestPermissionResult) {
+                    ((NavOnRequestPermissionResult) statefulView)
+                            .onRequestPermissionsResult(currentView, activity, navigator,
+                                    requestCode, permissions, grantResults);
                 }
             }
         }

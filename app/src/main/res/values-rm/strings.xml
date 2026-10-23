@@ -182,4 +182,9 @@
     <string name="app_lock_locked_subtitle">Avra la bloccada per cuntinuar</string>
     <string name="app_lock_lockout_hint">Memia bleras emprovas. Utilisescha la bloccada da l\'ecran u emprova pli tard anc ina giada.</string>
     <string name="app_lock_error_prefix">Errur d\'autentificaziun: %s</string>
+    <string name="settings_notifications">Avis</string>
+    <string name="settings_notifications_summary_granted">Erinner da medikaments pon mussar avis</string>
+    <string name="settings_notifications_summary_denied">Permissiun necessaria per mussar avis dad Erinner da medikaments, tocca per permetter</string>
+    <string name="settings_notifications_summary_not_required">Avis èn permessos sin questa versiun dad Android</string>
+    <string name="notification_permission_rationale">Erinner da medikaments cumparan sco avis. L\'app dovra la permissiun per avis per retschaiver las erinneras.</string>
 </resources>

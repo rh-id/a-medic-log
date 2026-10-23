@@ -182,4 +182,9 @@
     <string name="app_lock_locked_subtitle">Opnaðu til að halda áfram</string>
     <string name="app_lock_lockout_hint">Of margar tilraunir. Notaðu skjálæsingu eða reyndu aftur síðar.</string>
     <string name="app_lock_error_prefix">Villa við auðkenningu: %s</string>
+    <string name="settings_notifications">Tilkynningar</string>
+    <string name="settings_notifications_summary_granted">Lyfminningar geta sýnt tilkynningar</string>
+    <string name="settings_notifications_summary_denied">Heimild vantar til að sýna tilkynningar um lyfminningar, ýttu til að leyfa</string>
+    <string name="settings_notifications_summary_not_required">Tilkynningar eru leyfðar á þessari Android-útgáfu</string>
+    <string name="notification_permission_rationale">Lyfminningar birtast sem tilkynningar. Forritið vill biðja um heimild fyrir tilkynningum svo minningar berist til þín.</string>
 </resources>

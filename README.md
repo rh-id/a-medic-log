@@ -18,7 +18,7 @@ The app works as a production app even though it is a demo app.
 - **Medical Notes** - Easily add and manage your medical notes with date tracking
 - **Multiple Profiles** - Keep track of elderly and family members' medical history
 - **Medicine Tracking** - Add medicine information with detailed descriptions
-- **Medicine Reminders** - Set up notifications to remind you to take medicine, with a snooze action available directly on reminders
+- **Medicine Reminders** - Set up notifications to remind you to take medicine, with a snooze action available directly on reminders; on Android 13+ the notification permission is requested in-app (rationale dialog first) and can be reviewed or recovered any time from Settings
 - **Medicine Intake History** - Log and review past medicine intakes
 - **Adherence Report** - Adherence report with missed-dose tracking (7/30 days)
 - **App Lock** - Optionally require fingerprint, face, or your screen lock (PIN, pattern or password) to open the app
@@ -88,6 +88,10 @@ The app utilizes a hierarchical provider structure to manage dependency scopes e
 
 #### 4. Reminder Notifications
 *   **AndroidNotification:** Room table that tracks posted reminder notifications so they can be cancelled/updated.
+
+#### 5. Notification Permission (Android 13+)
+*   **NotificationPermissionGate:** Pure, unit-tested decision logic for when to ask, plus asked-flag persistence (persist-on-fire) and the contextual-ask helpers used by reminder pages.
+*   **NotificationPermissionController:** Per-activity launch-flow orchestration — defers the ask until the navigator settles on the home route (app-lock safe), shows the rationale dialog, and fires the system request on confirm.
 
 ### Architecture Diagram
 
@@ -187,6 +191,10 @@ erDiagram
 ## How Reminders Work
 
 Reminders are scheduled with WorkManager. For each enabled reminder, a one-time work request is enqueued with an initial delay until the next occurrence. The worker posts the notification on the configured days of week and re-enqueues itself for the next day. Notification actions let the user log a medicine intake or disable the reminder directly from the notification.
+
+### Notification permission (Android 13+)
+
+From Android 13, posting reminders requires the `POST_NOTIFICATIONS` runtime permission. The app handles it without ever blocking a save: an in-app rationale dialog explains the request before the system dialog appears (offered once per app start until confirmed; the system dialog itself fires at most once per install). Saving a new reminder or re-enabling one asks contextually while Android still allows it. A **Settings → Notifications** row shows the current grant status and offers recovery (in-place re-request or a shortcut to the system notification settings). Internally, `NotificationPermissionGate` holds the pure, unit-tested decision logic and persists the asked-flag when the system dialog fires, while `NotificationPermissionController` owns the launch-time flow from `MainActivity`'s unlocked resume, deferring the dialog until navigation has settled on the home route.
 
 ## Building
 

@@ -182,4 +182,9 @@
     <string name="app_lock_locked_subtitle">Lås opp for å fortsette</string>
     <string name="app_lock_lockout_hint">For mange forsøk. Bruk skjermlåsen eller prøv igjen senere.</string>
     <string name="app_lock_error_prefix">Autentiseringsfeil: %s</string>
+    <string name="settings_notifications">Varsler</string>
+    <string name="settings_notifications_summary_granted">Medisinpåminnelser kan vise varsler</string>
+    <string name="settings_notifications_summary_denied">Trenger tillatelse for å vise varsler for medisinpåminnelser, trykk for å tillate</string>
+    <string name="settings_notifications_summary_not_required">Varsler er tillatt på denne Android-versjonen</string>
+    <string name="notification_permission_rationale">Medisinpåminnelser vises som varsler. Appen vil gjerne spørre om tillatelse til varsler slik at påminnelsene når deg.</string>
 </resources>

@@ -30,6 +30,7 @@ import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineReminderCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineReminderCmd;
+import m.co.rh.id.a_medic_log.app.provider.component.NotificationPermissionGate;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
@@ -44,6 +45,7 @@ public class MedicineReminderDetailPage extends BaseDetailPage implements Toolba
     private static final String TAG = MedicineReminderDetailPage.class.getName();
     private transient NewMedicineReminderCmd mNewMedicineReminderCmd;
     private transient QueryMedicineCmd mQueryMedicineCmd;
+    private transient NotificationPermissionGate mNotificationPermissionGate;
 
     @NavInject
     private AppBarSV mAppBarSv;
@@ -65,6 +67,7 @@ public class MedicineReminderDetailPage extends BaseDetailPage implements Toolba
             mNewMedicineReminderCmd = mSvProvider.get(NewMedicineReminderCmd.class);
         }
         mQueryMedicineCmd = mSvProvider.get(QueryMedicineCmd.class);
+        mNotificationPermissionGate = mSvProvider.get(NotificationPermissionGate.class);
         if (mAppBarSv == null) {
             mAppBarSv = new AppBarSV(R.menu.page_medicine_reminder_detail);
         }
@@ -203,6 +206,13 @@ public class MedicineReminderDetailPage extends BaseDetailPage implements Toolba
                 boolean isUpdate = isUpdate();
                 Context context = mSvProvider.getContext();
                 if (mNewMedicineReminderCmd.valid(medicineReminder)) {
+                    // fire-and-forget contextual permission ask, NEW reminders
+                    // only (re-asking on every save of an already-enabled
+                    // reminder is noisy): the save proceeds whatever the user
+                    // answers in the system dialog
+                    if (!isUpdate) {
+                        mNotificationPermissionGate.maybeRequestOnReminderEnabled(mNavigator.getActivity(), medicineReminder);
+                    }
                     String successMessage;
                     if (isUpdate) {
                         successMessage = context.getString(R.string.success_updating_medicine_reminder);

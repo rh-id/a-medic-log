@@ -12,7 +12,7 @@ Personal medical-notes Android app (Java, GPL-3.0). Demo/production app for auth
 - `provider/`: `AppProviderModule` (app scope incl. navigator+route map), `CommandProviderModule` (31 commands), `RxProviderModule` (`RxDisposer`), `StatefulViewProvider(+Module)` (view scope)
 - `provider/command/`: `*Cmd` business logic + validation
 - `provider/notifier/`: 7 `*ChangeNotifier` event buses
-- `provider/component/`: notification handling, reminder event handler, exporters, prefs, file cleanup
+- `provider/component/`: notification handling, notification-permission gate + launch controller, reminder event handler, exporters, prefs, file cleanup
 - `ui/page/`: full-screen pages (17); `ui/component/`: reusable StatefulView widgets (~29, incl. `settings/LicensesPage`, `LogPage`)
 - `workmanager/` (`MedicineReminderNotificationWorker`), `receiver/` (notification-action receivers), `rx/` (`RxDisposer`, `RxUtils`), `util/`
 

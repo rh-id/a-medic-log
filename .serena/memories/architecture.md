@@ -27,6 +27,7 @@
 ## Reminders / notifications
 - `MedicineReminderNotificationWorker`: one-time work (input `Keys.LONG_MEDICINE_REMINDER_ID`), checks `reminderDays.contains(today)`, posts notification, re-enqueues next day; unique work tag `MEDICINE_REMINDER_TAG_<id>`; also cancels legacy periodic work.
 - Receivers (not exported): TakeMedicine (logs intake), DisableMedicineReminder, Delete — tracked via `AndroidNotification` entity/repository (persisted request_id/group_key). Channel created lazily in `MedicineReminderNotificationBuilder`.
+- POST_NOTIFICATIONS (Android 13+): `NotificationPermissionGate` = pure decisions `decide`/`shouldAskOnLaunch`/`shouldShowDialogNow` + persist-on-fire (`notificationPermissionAsked` written when the system dialog FIRES, not on result) + `contextualRequestIfNeeded`/`maybeRequestOnReminderEnabled` for pages. `NotificationPermissionController` (plain-new in MainActivity — per-activity state, NOT provider-registered) owns the launch ask from the unlocked resume: defers via main-handler post until `INavigator.getCurrentRoute()` == HOME_PAGE (a-navigator restores its stack asynchronously; `SplashPage`'s 1000 ms `replace(HOME_PAGE)` wipes a dialog pushed early); re-asks each process launch until confirmed; system-dialog code 4202 consumed by MainActivity, Settings row `NotificationMenuSV` round-trip 4203.
 
 ## Export / import
 - `ExportArchiveCmd`: full backup ZIP — `export.json` manifest + `profiles/<id>.json` + raw attachment files; `exportTo(uri)` via SAF.

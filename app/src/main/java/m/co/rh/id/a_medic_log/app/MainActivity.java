@@ -27,6 +27,8 @@ import m.co.rh.id.a_medic_log.app.provider.component.AppLockAuthHandler;
 import m.co.rh.id.a_medic_log.app.provider.component.AppLockManager;
 import m.co.rh.id.a_medic_log.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_medic_log.app.provider.component.AppSharedPreferences;
+import m.co.rh.id.a_medic_log.app.provider.component.NotificationPermissionController;
+import m.co.rh.id.a_medic_log.app.provider.component.NotificationPermissionGate;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.ui.component.LockDialog;
 import m.co.rh.id.a_medic_log.base.BaseApplication;
@@ -39,6 +41,16 @@ public class MainActivity extends AppCompatActivity {
     private AppNotificationHandler mAppNotificationHandler;
     private AppLockManager mAppLockManager;
     private AppLockAuthHandler mAuthHandler;
+    private NotificationPermissionGate mNotificationPermissionGate;
+    /**
+     * Controller of the Android 13+ notification permission launch flow (the
+     * in-app rationale dialog). Plain-new'd per activity: it holds
+     * per-activity state (activity reference, resumed flag, session flag,
+     * pending listener), so its lifetime is this activity's — everything it
+     * resolves from the provider is application-scoped, and onHostDestroy
+     * releases everything activity-bound before this activity dies.
+     */
+    private NotificationPermissionController mNotificationPermissionController;
     private LockDialog mLockDialog;
     private OnBackPressedCallback mLockBackCallback;
 
@@ -50,6 +62,12 @@ public class MainActivity extends AppCompatActivity {
         mAppNotificationHandler = mActivityProvider.get(AppNotificationHandler.class);
         mAppLockManager = mActivityProvider.get(AppLockManager.class);
         mAuthHandler = mActivityProvider.get(AppLockAuthHandler.class);
+        mNotificationPermissionGate = mActivityProvider.get(NotificationPermissionGate.class);
+        // plain new on purpose (see field Javadoc): per-activity state must
+        // not live in a provider registry. The controller resolves every
+        // long-term dependency lazily from this activity-scoped provider
+        // itself (mirroring the gate's own constructor pattern).
+        mNotificationPermissionController = new NotificationPermissionController(mActivityProvider);
         // apply Material You dynamic colors before super.onCreate installs
         // the theme; gated on both the user setting and device support
         if (mActivityProvider.get(AppSharedPreferences.class).isDynamicColorsEnabled()
@@ -139,6 +157,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         // blank the app-switcher/recents snapshot so health data is not visible
+        mNotificationPermissionController.onHostPause();
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
         super.onPause();
     }
@@ -146,6 +165,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        // locked resume still means lifecycle-resumed: the controller's
+        // resumed flag is marked factually on EVERY resume; only the ask is
+        // gated to the unlocked branch below per the lock-safety design —
+        // exactly the pre-extraction flag semantics
+        mNotificationPermissionController.markResumed();
         boolean appLockEnabled = mActivityProvider.get(AppSharedPreferences.class).isAppLockEnabled();
         if (!appLockEnabled) {
             // the feature is disabled, treat the manager as unlocked so stale
@@ -165,6 +189,13 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+            // the Android 13+ notification permission ask (the in-app
+            // rationale dialog) is only ever started when the lock is
+            // settled: that dialog and the system permission dialog behind
+            // it are their own windows and must never stack with (or race
+            // behind) the LockDialog. The controller re-checks the lock at
+            // deferred-run time as well.
+            mNotificationPermissionController.onHostResume(this);
         }
     }
 
@@ -226,6 +257,23 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        // POST_NOTIFICATIONS result, consumed before the navigator forward;
+        // persist-on-fire in the gate already set the "asked" flag when the
+        // dialog fired, this persist is an idempotent backup, and the
+        // navigator ignores unknown request codes, so the forward below
+        // stays intact
+        if (requestCode == NotificationPermissionGate.REQUEST_POST_NOTIFICATIONS) {
+            mNotificationPermissionGate.onRequestPermissionsResult();
+        }
+        // this is required to let navigator handle onRequestPermissionsResult
+        BaseApplication.of(this).getNavigator(this)
+                .onRequestPermissionsResult(requestCode, permissions, grantResults);
+    }
+
+    @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
         // using AppCompatDelegate.setDefaultNightMode trigger this method
@@ -241,6 +289,10 @@ public class MainActivity extends AppCompatActivity {
             mLockDialog.dismiss();
             mLockDialog = null;
         }
+        // the navigator outlives the activity, a pending ask listener must
+        // not keep this activity reachable; the controller also drops the
+        // activity reference so a late deferred runnable finds nothing
+        mNotificationPermissionController.onHostDestroy();
         super.onDestroy();
         mActivityProvider.dispose();
         mActivityProvider = null;

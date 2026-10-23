@@ -29,6 +29,7 @@ import m.co.rh.id.a_medic_log.app.provider.command.NewMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.UpdateMedicineReminderCmd;
+import m.co.rh.id.a_medic_log.app.provider.component.NotificationPermissionGate;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineReminderChangeNotifier;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.adapter.SuggestionAdapter;
@@ -51,6 +52,7 @@ public class MedicineDetailPage extends BaseDetailPage implements Toolbar.OnMenu
     private transient QueryMedicineCmd mQueryMedicineCmd;
     private transient UpdateMedicineReminderCmd mUpdateMedicineReminderCmd;
     private transient DeleteMedicineReminderCmd mDeleteMedicineReminderCmd;
+    private transient NotificationPermissionGate mNotificationPermissionGate;
     private transient MedicineReminderRecyclerViewAdapter mMedicineReminderRecyclerViewAdapter;
     private transient Function<String, Single<LinkedHashSet<String>>> mSuggestionQuery;
 
@@ -75,6 +77,7 @@ public class MedicineDetailPage extends BaseDetailPage implements Toolbar.OnMenu
         mQueryMedicineCmd = mSvProvider.get(QueryMedicineCmd.class);
         mUpdateMedicineReminderCmd = mSvProvider.get(UpdateMedicineReminderCmd.class);
         mDeleteMedicineReminderCmd = mSvProvider.get(DeleteMedicineReminderCmd.class);
+        mNotificationPermissionGate = mSvProvider.get(NotificationPermissionGate.class);
         if (mAppBarSv == null) {
             mAppBarSv = new AppBarSV(R.menu.page_medicine_detail);
         }
@@ -235,6 +238,12 @@ public class MedicineDetailPage extends BaseDetailPage implements Toolbar.OnMenu
 
     @Override
     public void onEnableSwitchClick(MedicineReminder medicineReminder) {
+        // fire-and-forget contextual permission ask: this is the flow that
+        // actually enables reminders (this page is the only place with an
+        // enable switch), the switch has already flipped in the item, so
+        // enabled here means it WAS off (newly enabled). The update command
+        // below proceeds whatever the user answers in the system dialog.
+        mNotificationPermissionGate.maybeRequestOnReminderEnabled(mNavigator.getActivity(), medicineReminder);
         // save only if this is update medicine AND save flag enabled
         if (isUpdate() && shouldSave()) {
             Context context = mSvProvider.getContext();

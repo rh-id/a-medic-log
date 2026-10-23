@@ -182,4 +182,9 @@
     <string name="app_lock_locked_subtitle">Jätkamiseks ava lukk</string>
     <string name="app_lock_lockout_hint">Liiga palju katseid. Kasuta ekraanilukku või proovi hiljem uuesti.</string>
     <string name="app_lock_error_prefix">Autentimise viga: %s</string>
+    <string name="settings_notifications">Märguanded</string>
+    <string name="settings_notifications_summary_granted">Ravimi meeldetuletused saavad kuvada märguandeid</string>
+    <string name="settings_notifications_summary_denied">Ravimi meeldetuletuste märguannete kuvamiseks on vaja luba, lubamiseks puuduta</string>
+    <string name="settings_notifications_summary_not_required">Märguanded on lubatud selles Androidi versioonis</string>
+    <string name="notification_permission_rationale">Ravimi meeldetuletused kuvatakse märguannetena. Rakendus soovib küsida märguannete luba, et meeldetuletused jõuaksid teieni.</string>
 </resources>

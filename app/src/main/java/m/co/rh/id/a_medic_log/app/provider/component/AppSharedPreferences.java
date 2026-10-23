@@ -15,6 +15,7 @@ public class AppSharedPreferences {
     private static final String SHARED_PREFERENCES_NAME = "AppSharedPreferences";
     private static final boolean DEFAULT_DYNAMIC_COLORS_ENABLED = true;
     private static final boolean DEFAULT_APP_LOCK_ENABLED = false;
+    private static final boolean DEFAULT_NOTIFICATION_PERMISSION_ASKED = false;
     private ProviderValue<ExecutorService> mExecutorService;
     private ProviderValue<Handler> mHandler;
     private SharedPreferences mSharedPreferences;
@@ -27,6 +28,9 @@ public class AppSharedPreferences {
 
     private boolean mAppLockEnabled;
     private String mAppLockEnabledKey;
+
+    private boolean mNotificationPermissionAsked;
+    private String mNotificationPermissionAskedKey;
 
     public AppSharedPreferences(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
@@ -54,6 +58,11 @@ public class AppSharedPreferences {
                 + ".appLockEnabled";
         mAppLockEnabled = mSharedPreferences.getBoolean(
                 mAppLockEnabledKey, DEFAULT_APP_LOCK_ENABLED);
+
+        mNotificationPermissionAskedKey = SHARED_PREFERENCES_NAME
+                + ".notificationPermissionAsked";
+        mNotificationPermissionAsked = mSharedPreferences.getBoolean(
+                mNotificationPermissionAskedKey, DEFAULT_NOTIFICATION_PERMISSION_ASKED);
     }
 
     private void selectedTheme(int setting) {
@@ -101,5 +110,20 @@ public class AppSharedPreferences {
 
     public boolean isAppLockEnabled() {
         return mAppLockEnabled;
+    }
+
+    private void notificationPermissionAsked(boolean asked) {
+        mNotificationPermissionAsked = asked;
+        mExecutorService.get().execute(() ->
+                mSharedPreferences.edit().putBoolean(mNotificationPermissionAskedKey, asked)
+                        .commit());
+    }
+
+    public void setNotificationPermissionAsked(boolean asked) {
+        notificationPermissionAsked(asked);
+    }
+
+    public boolean isNotificationPermissionAsked() {
+        return mNotificationPermissionAsked;
     }
 }

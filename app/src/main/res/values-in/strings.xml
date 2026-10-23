@@ -178,4 +178,9 @@
     <string name="app_lock_locked_subtitle">Buka kunci untuk melanjutkan</string>
     <string name="app_lock_lockout_hint">Terlalu banyak percobaan. Gunakan kunci layar atau coba lagi nanti.</string>
     <string name="app_lock_error_prefix">Error autentikasi: %s</string>
+    <string name="settings_notifications">Notifikasi</string>
+    <string name="settings_notifications_summary_granted">Pengingat obat bisa menampilkan notifikasi</string>
+    <string name="settings_notifications_summary_denied">Perlu izin untuk menampilkan notifikasi pengingat obat, ketuk untuk mengizinkan</string>
+    <string name="settings_notifications_summary_not_required">Notifikasi diizinkan pada versi Android ini</string>
+    <string name="notification_permission_rationale">Pengingat obat muncul sebagai notifikasi. Aplikasi ingin meminta izin notifikasi agar pengingat bisa sampai ke kamu.</string>
 </resources>

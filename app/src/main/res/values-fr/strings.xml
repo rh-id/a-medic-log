@@ -182,4 +182,9 @@
     <string name="app_lock_locked_subtitle">Déverrouillez pour continuer</string>
     <string name="app_lock_lockout_hint">Trop de tentatives. Utilisez votre verrouillage de l\'écran ou réessayez plus tard.</string>
     <string name="app_lock_error_prefix">Erreur d\'authentification : %s</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_notifications_summary_granted">Les rappels de médicament peuvent afficher des notifications</string>
+    <string name="settings_notifications_summary_denied">Permission requise pour afficher les rappels de médicament, touchez pour autoriser</string>
+    <string name="settings_notifications_summary_not_required">Les notifications sont autorisées sur cette version d\'Android</string>
+    <string name="notification_permission_rationale">Les rappels de médicament s\'affichent sous forme de notifications. L\'application souhaite demander la permission de notification pour que les rappels vous parviennent.</string>
 </resources>

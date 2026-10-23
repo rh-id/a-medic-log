@@ -182,4 +182,9 @@
     <string name="app_lock_locked_subtitle">Entsperren, um fortzufahren</string>
     <string name="app_lock_lockout_hint">Zu viele Versuche. Verwenden Sie Ihre Displaysperre oder versuchen Sie es später erneut.</string>
     <string name="app_lock_error_prefix">Authentifizierungsfehler: %s</string>
+    <string name="settings_notifications">Benachrichtigungen</string>
+    <string name="settings_notifications_summary_granted">Medikamentenerinnerungen können Benachrichtigungen anzeigen</string>
+    <string name="settings_notifications_summary_denied">Berechtigung benötigt, um Medikamentenerinnerungen als Benachrichtigungen anzuzeigen, zum Erlauben tippen</string>
+    <string name="settings_notifications_summary_not_required">Benachrichtigungen sind auf dieser Android-Version erlaubt</string>
+    <string name="notification_permission_rationale">Medikamentenerinnerungen werden als Benachrichtigungen angezeigt. Die App möchte nach der Benachrichtigungsberechtigung fragen, damit Erinnerungen Sie erreichen.</string>
 </resources>

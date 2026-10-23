@@ -182,4 +182,9 @@
     <string name="app_lock_locked_subtitle">Sblocca per continuare</string>
     <string name="app_lock_lockout_hint">Troppi tentativi. Usa il blocco schermo o riprova più tardi.</string>
     <string name="app_lock_error_prefix">Errore di autenticazione: %s</string>
+    <string name="settings_notifications">Notifiche</string>
+    <string name="settings_notifications_summary_granted">I promemoria dei medicinali possono mostrare notifiche</string>
+    <string name="settings_notifications_summary_denied">Permesso necessario per mostrare le notifiche dei promemoria dei medicinali, tocca per consentire</string>
+    <string name="settings_notifications_summary_not_required">Le notifiche sono consentite su questa versione di Android</string>
+    <string name="notification_permission_rationale">I promemoria dei medicinali appaiono come notifiche. L\'app vorrebbe chiedere il permesso di notifica affinché i promemoria ti raggiungano.</string>
 </resources>

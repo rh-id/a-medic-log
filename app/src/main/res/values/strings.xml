@@ -60,6 +60,7 @@
     <string name="notification_title_medicine_reminder">%s, %s</string>
     <string name="notification_channel_name_medicine_reminder">Medicine Reminder</string>
     <string name="notification_channel_description_medicine_reminder">Remind you of your medicine</string>
+    <string name="notification_permission_rationale">Medicine reminders show up as notifications. The app would like to ask for the notification permission so reminders can reach you.</string>
     <string name="take_medicine">Take</string>
     <string name="disable_reminder">Disable</string>
     <string name="snooze">Later</string>
@@ -183,4 +184,8 @@
     <string name="app_lock_locked_subtitle">Unlock to continue</string>
     <string name="app_lock_lockout_hint">Too many attempts. Use your screen lock or try again later.</string>
     <string name="app_lock_error_prefix">Authentication error: %s</string>
+    <string name="settings_notifications">Notifications</string>
+    <string name="settings_notifications_summary_granted">Medicine reminders can show notifications</string>
+    <string name="settings_notifications_summary_denied">Permission needed to show medicine reminder notifications, tap to allow</string>
+    <string name="settings_notifications_summary_not_required">Notifications are allowed on this Android version</string>
 </resources>
