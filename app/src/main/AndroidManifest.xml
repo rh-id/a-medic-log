@@ -6,6 +6,15 @@
         tools:overrideLibrary="m.co.rh.id.apoi_spreadsheet" />
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <!-- exact alarm scheduling for medicine reminders:
+         USE_EXACT_ALARM covers API 33+ (granted at install),
+         SCHEDULE_EXACT_ALARM covers API 31-32 (user-revocable),
+         below API 31 exact alarms need no permission -->
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM"
+        android:maxSdkVersion="32" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission
         android:name="android.permission.ACCESS_NETWORK_STATE"
         tools:node="remove" />
@@ -46,6 +55,17 @@
         <receiver android:name=".app.receiver.NotificationTakeMedicineReceiver" android:exported="false" />
         <receiver android:name=".app.receiver.NotificationDisableMedicineReminderReceiver" android:exported="false" />
         <receiver android:name=".app.receiver.NotificationSnoozeMedicineReminderReceiver" android:exported="false" />
+        <!-- fires the scheduled medicine reminder alarm, only reached through
+             the scheduler's explicit PendingIntent -->
+        <receiver android:name=".app.receiver.MedicineReminderAlarmReceiver" android:exported="false" />
+        <!-- re-schedules every reminder alarm after a reboot and after the
+             exact-alarm permission state changed (API 31+) -->
+        <receiver android:name=".app.receiver.MedicineReminderBootReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
 
         <provider
             android:name="androidx.startup.InitializationProvider"

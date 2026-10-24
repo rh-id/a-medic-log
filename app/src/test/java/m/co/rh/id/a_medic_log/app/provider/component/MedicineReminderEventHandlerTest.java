@@ -170,4 +170,53 @@ public class MedicineReminderEventHandlerTest {
         assertEquals(1, extracted.size());
         assertEquals(7L, extracted.get(0).id.longValue());
     }
+
+    @Test
+    public void calculateTag_isAlsoTheLegacyUniqueWorkName() {
+        // the one-time WorkManager-to-alarm migration cancels both the tag and
+        // the unique work with this same name for every reminder row
+        MedicineReminder medicineReminder = new MedicineReminder();
+        medicineReminder.id = 7L;
+
+        assertEquals(Tags.MEDICINE_REMINDER_TAG + 7L,
+                MedicineReminderEventHandler.calculateTag(medicineReminder));
+    }
+
+    @Test
+    public void resolveAlarmMethod_api21And22_usesSetExact() {
+        assertEquals(MedicineReminderAlarmScheduler.ExactAlarmMethod.SET_EXACT,
+                MedicineReminderAlarmScheduler.resolveAlarmMethod(21, true));
+        assertEquals(MedicineReminderAlarmScheduler.ExactAlarmMethod.SET_EXACT,
+                MedicineReminderAlarmScheduler.resolveAlarmMethod(22, false));
+    }
+
+    @Test
+    public void resolveAlarmMethod_api23To30_usesAlarmClockWithoutPermissionCheck() {
+        assertEquals(MedicineReminderAlarmScheduler.ExactAlarmMethod.ALARM_CLOCK,
+                MedicineReminderAlarmScheduler.resolveAlarmMethod(23, false));
+        assertEquals(MedicineReminderAlarmScheduler.ExactAlarmMethod.ALARM_CLOCK,
+                MedicineReminderAlarmScheduler.resolveAlarmMethod(29, false));
+        assertEquals(MedicineReminderAlarmScheduler.ExactAlarmMethod.ALARM_CLOCK,
+                MedicineReminderAlarmScheduler.resolveAlarmMethod(30, true));
+    }
+
+    @Test
+    public void resolveAlarmMethod_api31And32_guardedByExactAlarmPermission() {
+        assertEquals(MedicineReminderAlarmScheduler.ExactAlarmMethod.ALARM_CLOCK,
+                MedicineReminderAlarmScheduler.resolveAlarmMethod(31, true));
+        assertEquals(MedicineReminderAlarmScheduler.ExactAlarmMethod.ALARM_CLOCK,
+                MedicineReminderAlarmScheduler.resolveAlarmMethod(32, true));
+        assertEquals(MedicineReminderAlarmScheduler.ExactAlarmMethod.EXACT_AND_ALLOW_WHILE_IDLE,
+                MedicineReminderAlarmScheduler.resolveAlarmMethod(31, false));
+        assertEquals(MedicineReminderAlarmScheduler.ExactAlarmMethod.EXACT_AND_ALLOW_WHILE_IDLE,
+                MedicineReminderAlarmScheduler.resolveAlarmMethod(32, false));
+    }
+
+    @Test
+    public void resolveAlarmMethod_api33AndAbove_alarmClockPermittedByUseExactAlarm() {
+        assertEquals(MedicineReminderAlarmScheduler.ExactAlarmMethod.ALARM_CLOCK,
+                MedicineReminderAlarmScheduler.resolveAlarmMethod(33, false));
+        assertEquals(MedicineReminderAlarmScheduler.ExactAlarmMethod.ALARM_CLOCK,
+                MedicineReminderAlarmScheduler.resolveAlarmMethod(34, false));
+    }
 }

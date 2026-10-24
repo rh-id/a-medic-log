@@ -2,8 +2,6 @@ package m.co.rh.id.a_medic_log.app.provider.component;
 
 import android.content.Context;
 
-import androidx.work.Data;
-import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 
 import java.util.ArrayList;
@@ -21,24 +19,30 @@ import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineReminderChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.ProfileChangeNotifier;
-import m.co.rh.id.a_medic_log.app.workmanager.Keys;
-import m.co.rh.id.a_medic_log.app.workmanager.MedicineReminderNotificationWorker;
 import m.co.rh.id.a_medic_log.app.workmanager.Tags;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.a_medic_log.base.state.ProfileState;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderDisposable;
+import m.co.rh.id.aprovider.ProviderValue;
 
 public class MedicineReminderEventHandler implements ProviderDisposable {
+    private static final String TAG = MedicineReminderEventHandler.class.getName();
     // grace covers the lag between the form's pre-filled "now" start time and the actual save;
-    // the worker's re-enqueue path passes false so the daily recurrence stays exact
+    // the recurrence path passes false so the daily recurrence stays exact
     private static final long CATCH_UP_GRACE_PERIOD_MS = TimeUnit.MINUTES.toMillis(5);
     private final ExecutorService mExecutorService;
     private final WorkManager mWorkManager;
     private final MedicineDao mMedicineDao;
+    private final MedicineReminderDao mMedicineReminderDao;
+    private final ProviderValue<AppSharedPreferences> mAppSharedPreferences;
+    private final ProviderValue<MedicineReminderAlarmScheduler> mMedicineReminderAlarmScheduler;
+    private final ProviderValue<ILogger> mLogger;
     private final NoteChangeNotifier mNoteChangeNotifier;
     private final MedicineChangeNotifier mMedicineChangeNotifier;
     private final MedicineReminderChangeNotifier mMedicineReminderChangeNotifier;
@@ -50,13 +54,18 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
         mExecutorService = provider.get(ExecutorService.class);
         mWorkManager = provider.get(WorkManager.class);
         mMedicineDao = provider.get(MedicineDao.class);
+        mMedicineReminderDao = provider.get(MedicineReminderDao.class);
+        mAppSharedPreferences = provider.lazyGet(AppSharedPreferences.class);
+        mMedicineReminderAlarmScheduler = provider.lazyGet(MedicineReminderAlarmScheduler.class);
+        mLogger = provider.lazyGet(ILogger.class);
         mNoteChangeNotifier = provider.get(NoteChangeNotifier.class);
         mMedicineChangeNotifier = provider.get(MedicineChangeNotifier.class);
         mMedicineReminderChangeNotifier = provider.get(MedicineReminderChangeNotifier.class);
         mProfileChangeNotifier = provider.get(ProfileChangeNotifier.class);
         mCompositeDisposable = new CompositeDisposable();
-        mLock = new ReentrantLock(); // lock to prevent inconsistency when scheduling worker
+        mLock = new ReentrantLock(); // lock to prevent inconsistency when scheduling alarm
         init();
+        migrateWorkManagerRemindersIfNeeded();
     }
 
     private void init() {
@@ -74,7 +83,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
                         {
                             mLock.lock();
                             try {
-                                startMedicineReminderNotificationWork(getMedicineReminders(noteState));
+                                scheduleMedicineReminderAlarms(getMedicineReminders(noteState));
                             } finally {
                                 mLock.unlock();
                             }
@@ -92,7 +101,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
                                     cancelMedicineReminderNotificationWork(medicineRemindersBefore);
                                 }
                                 if (!medicineRemindersAfter.isEmpty()) {
-                                    startMedicineReminderNotificationWork(medicineRemindersAfter);
+                                    scheduleMedicineReminderAlarms(medicineRemindersAfter);
                                 }
                             } finally {
                                 mLock.unlock();
@@ -123,7 +132,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
                         {
                             mLock.lock();
                             try {
-                                startMedicineReminderNotificationWork(medicineState.getMedicineReminderList());
+                                scheduleMedicineReminderAlarms(medicineState.getMedicineReminderList());
                             } finally {
                                 mLock.unlock();
                             }
@@ -141,7 +150,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
                                     cancelMedicineReminderNotificationWork(medicineRemindersBefore);
                                 }
                                 if (!medicineRemindersAfter.isEmpty()) {
-                                    startMedicineReminderNotificationWork(medicineRemindersAfter);
+                                    scheduleMedicineReminderAlarms(medicineRemindersAfter);
                                 }
                             } finally {
                                 mLock.unlock();
@@ -172,7 +181,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
                         {
                             mLock.lock();
                             try {
-                                startMedicineReminderNotificationWork(Collections.singletonList(medicineReminder));
+                                scheduleMedicineReminderAlarms(Collections.singletonList(medicineReminder));
                             } finally {
                                 mLock.unlock();
                             }
@@ -187,7 +196,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
                                 List<MedicineReminder> medicineRemindersBefore = Collections.singletonList(medicineReminderUpdatedEvent.getBefore());
                                 List<MedicineReminder> medicineRemindersAfter = Collections.singletonList(medicineReminderUpdatedEvent.getAfter());
                                 cancelMedicineReminderNotificationWork(medicineRemindersBefore);
-                                startMedicineReminderNotificationWork(medicineRemindersAfter);
+                                scheduleMedicineReminderAlarms(medicineRemindersAfter);
                             } finally {
                                 mLock.unlock();
                             }
@@ -232,8 +241,48 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
     }
 
     /**
+     * One-time migration from the previous inexact WorkManager scheduling to
+     * the exact AlarmManager scheduling: every reminder row may still carry a
+     * legacy work from the previous app version, so the legacy tag/unique work
+     * is cancelled for ALL rows (not just enabled ones) before the alarms are
+     * scheduled, then the flag is set. Idempotent, the snooze work is untouched.
+     */
+    public void migrateWorkManagerRemindersIfNeeded() {
+        mExecutorService.execute(() -> {
+            AppSharedPreferences appSharedPreferences = mAppSharedPreferences.get();
+            if (appSharedPreferences.isMedicineReminderAlarmMigrated()) {
+                return;
+            }
+            mLock.lock();
+            try {
+                // re-check under lock, the migration may have completed while
+                // waiting for it
+                if (appSharedPreferences.isMedicineReminderAlarmMigrated()) {
+                    return;
+                }
+                List<MedicineReminder> allReminders = mMedicineReminderDao.findMedicineRemindersAll();
+                for (MedicineReminder medicineReminder : allReminders) {
+                    // the legacy unique work name is the same string as the tag
+                    // (see the deleted MedicineReminderNotificationWorker cleanup),
+                    // cancelling both covers the tagged one-shots and any
+                    // leftover periodic unique work
+                    String legacyWorkName = calculateTag(medicineReminder);
+                    mWorkManager.cancelAllWorkByTag(legacyWorkName);
+                    mWorkManager.cancelUniqueWork(legacyWorkName);
+                }
+                mMedicineReminderAlarmScheduler.get().scheduleAll();
+                appSharedPreferences.setMedicineReminderAlarmMigrated(true);
+            } catch (Exception e) {
+                mLogger.get().e(TAG, "Failed to migrate medicine reminders to AlarmManager", e);
+            } finally {
+                mLock.unlock();
+            }
+        });
+    }
+
+    /**
      * Walks the profile state's nested children (note ⊃ medicine ⊃ reminder)
-     * and collects every reminder whose work needs cancellation
+     * and collects every reminder whose alarm needs cancellation
      */
     static List<MedicineReminder> extractMedicineReminders(ProfileState profileState) {
         List<MedicineReminder> result = new ArrayList<>();
@@ -262,23 +311,15 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
         return result;
     }
 
-    public void startMedicineReminderNotificationWork(List<MedicineReminder> medicineReminders) {
-        startMedicineReminderNotificationWork(medicineReminders, true);
+    public void scheduleMedicineReminderAlarms(List<MedicineReminder> medicineReminders) {
+        scheduleMedicineReminderAlarms(medicineReminders, true);
     }
 
-    public void startMedicineReminderNotificationWork(List<MedicineReminder> medicineReminders, boolean catchUpIfJustPassed) {
+    public void scheduleMedicineReminderAlarms(List<MedicineReminder> medicineReminders, boolean catchUpIfJustPassed) {
         if (!medicineReminders.isEmpty()) {
             for (MedicineReminder medicineReminder : medicineReminders) {
                 if (medicineReminder.reminderEnabled) {
-                    long initialDelay = calculateInitialDelayMs(medicineReminder.startDateTime, catchUpIfJustPassed);
-                    String tag = MedicineReminderEventHandler.calculateTag(medicineReminder);
-                    OneTimeWorkRequest notificationWorkRequest =
-                            new OneTimeWorkRequest.Builder(MedicineReminderNotificationWorker.class)
-                                    .setInitialDelay(initialDelay, TimeUnit.MILLISECONDS)
-                                    .addTag(tag)
-                                    .setInputData(calculateInputData(medicineReminder))
-                                    .build();
-                    mWorkManager.enqueue(notificationWorkRequest);
+                    mMedicineReminderAlarmScheduler.get().schedule(medicineReminder, catchUpIfJustPassed);
                 }
             }
         }
@@ -287,7 +328,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
     public void cancelMedicineReminderNotificationWork(List<MedicineReminder> medicineReminders) {
         if (!medicineReminders.isEmpty()) {
             for (MedicineReminder medicineReminder : medicineReminders) {
-                mWorkManager.cancelAllWorkByTag(MedicineReminderEventHandler.calculateTag(medicineReminder));
+                mMedicineReminderAlarmScheduler.get().cancel(medicineReminder);
             }
         }
     }
@@ -306,11 +347,6 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
             }
         }
         return result;
-    }
-
-    private Data calculateInputData(MedicineReminder medicineReminder) {
-        return new Data.Builder().putLong(Keys.LONG_MEDICINE_REMINDER_ID, medicineReminder.id)
-                .build();
     }
 
     static String calculateTag(MedicineReminder medicineReminder) {

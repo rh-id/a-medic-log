@@ -16,6 +16,7 @@ public class AppSharedPreferences {
     private static final boolean DEFAULT_DYNAMIC_COLORS_ENABLED = true;
     private static final boolean DEFAULT_APP_LOCK_ENABLED = false;
     private static final boolean DEFAULT_NOTIFICATION_PERMISSION_ASKED = false;
+    private static final boolean DEFAULT_MEDICINE_REMINDER_ALARM_MIGRATED = false;
     private ProviderValue<ExecutorService> mExecutorService;
     private ProviderValue<Handler> mHandler;
     private SharedPreferences mSharedPreferences;
@@ -31,6 +32,9 @@ public class AppSharedPreferences {
 
     private boolean mNotificationPermissionAsked;
     private String mNotificationPermissionAskedKey;
+
+    private boolean mMedicineReminderAlarmMigrated;
+    private String mMedicineReminderAlarmMigratedKey;
 
     public AppSharedPreferences(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
@@ -63,6 +67,11 @@ public class AppSharedPreferences {
                 + ".notificationPermissionAsked";
         mNotificationPermissionAsked = mSharedPreferences.getBoolean(
                 mNotificationPermissionAskedKey, DEFAULT_NOTIFICATION_PERMISSION_ASKED);
+
+        mMedicineReminderAlarmMigratedKey = SHARED_PREFERENCES_NAME
+                + ".medicineReminderAlarmMigrated";
+        mMedicineReminderAlarmMigrated = mSharedPreferences.getBoolean(
+                mMedicineReminderAlarmMigratedKey, DEFAULT_MEDICINE_REMINDER_ALARM_MIGRATED);
     }
 
     private void selectedTheme(int setting) {
@@ -125,5 +134,20 @@ public class AppSharedPreferences {
 
     public boolean isNotificationPermissionAsked() {
         return mNotificationPermissionAsked;
+    }
+
+    private void medicineReminderAlarmMigrated(boolean migrated) {
+        mMedicineReminderAlarmMigrated = migrated;
+        mExecutorService.get().execute(() ->
+                mSharedPreferences.edit().putBoolean(mMedicineReminderAlarmMigratedKey, migrated)
+                        .commit());
+    }
+
+    public void setMedicineReminderAlarmMigrated(boolean migrated) {
+        medicineReminderAlarmMigrated(migrated);
+    }
+
+    public boolean isMedicineReminderAlarmMigrated() {
+        return mMedicineReminderAlarmMigrated;
     }
 }

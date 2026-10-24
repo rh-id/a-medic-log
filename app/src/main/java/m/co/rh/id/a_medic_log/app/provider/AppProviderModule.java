@@ -18,6 +18,7 @@ import m.co.rh.id.a_medic_log.app.provider.component.AppLockManager;
 import m.co.rh.id.a_medic_log.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_medic_log.app.provider.component.AppSharedPreferences;
 import m.co.rh.id.a_medic_log.app.provider.component.FileCleanUpTask;
+import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderAlarmScheduler;
 import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderEventHandler;
 import m.co.rh.id.a_medic_log.app.provider.component.NotificationPermissionGate;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineChangeNotifier;
@@ -89,6 +90,8 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerAsync(FileCleanUpTask.class, () -> new FileCleanUpTask(provider));
         providerRegistry.registerLazy(AppNotificationHandler.class, () -> new AppNotificationHandler(provider));
         providerRegistry.registerLazy(NotificationPermissionGate.class, () -> new NotificationPermissionGate(provider));
+        // registered before MedicineReminderEventHandler, the handler resolves it lazily
+        providerRegistry.registerAsync(MedicineReminderAlarmScheduler.class, () -> new MedicineReminderAlarmScheduler(provider));
         providerRegistry.registerPool(StatefulViewProvider.class, () -> new StatefulViewProvider(provider));
 
         providerRegistry.registerAsync(MedicineReminderEventHandler.class, () -> new MedicineReminderEventHandler(provider));

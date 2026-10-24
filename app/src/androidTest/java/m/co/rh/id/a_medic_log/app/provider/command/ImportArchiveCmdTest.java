@@ -26,8 +26,6 @@ import android.net.Uri;
 import androidx.room.InvalidationTracker;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.work.WorkInfo;
-import androidx.work.WorkManager;
 import androidx.work.testing.WorkManagerTestInitHelper;
 
 import org.json.JSONArray;
@@ -61,9 +59,9 @@ import m.co.rh.id.a_medic_log.ExportImportTestProviderModule;
 import m.co.rh.id.a_medic_log.ExportImportTestUtils;
 import m.co.rh.id.a_medic_log.app.provider.command.ExportArchiveCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.ImportArchiveCmd;
+import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderAlarmScheduler;
 import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderEventHandler;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
-import m.co.rh.id.a_medic_log.app.workmanager.Tags;
 import m.co.rh.id.a_medic_log.base.AppDatabase;
 import m.co.rh.id.a_medic_log.base.dao.AndroidNotificationDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
@@ -388,9 +386,9 @@ public class ImportArchiveCmdTest {
     @Test
     public void importProfiles_schedulesReminderWorkOnlyForEnabledReminders() throws Exception {
         // arrange: a note carrying one medicine with an enabled and one with a disabled reminder,
-        // reminderDays is kept for realism only, it is irrelevant at enqueue time:
-        // the WorkManager scheduling depends solely on reminderEnabled + startDateTime
-        // (see MedicineReminderEventHandler.startMedicineReminderNotificationWork)
+        // reminderDays is kept for realism only, it is irrelevant at scheduling time:
+        // the alarm scheduling depends solely on reminderEnabled + startDateTime
+        // (see MedicineReminderEventHandler.scheduleMedicineReminderAlarms)
         Profile originalProfile = createProfile(mProfileDao, "Reminder Profile", "about");
         Note note = createNote(mNoteDao, originalProfile.id, "reminder note");
         Medicine enabledMedicine = createMedicine(mMedicineDao, note.id, "Enabled Med", "500mg");
@@ -435,30 +433,33 @@ public class ImportArchiveCmdTest {
         assertNotEquals(originalEnabledReminder.id, importedEnabledReminder.id);
         assertNotEquals(originalDisabledReminder.id, importedDisabledReminder.id);
 
-        // assert: only the imported enabled reminder has a scheduled work,
+        // assert: only the imported enabled reminder has a scheduled alarm,
         // the scheduling runs asynchronously on the shared executor after the noteAdded event;
-        // exactly one work must be enqueued per enabled reminder,
-        // a double-enqueue regression (e.g. a second scheduling event listener) fails here.
-        // Every read below runs against a settled pipeline: the counts are polled until
-        // stable across two consecutive reads, so a late duplicate enqueue cannot be missed
-        WorkManager workManager = WorkManager.getInstance(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
-        List<WorkInfo> enabledWorkInfos = awaitWorkInfosByTag(workManager,
-                Tags.MEDICINE_REMINDER_TAG + importedEnabledReminder.id);
-        assertEquals("exactly one work must be enqueued for the imported enabled reminder",
-                1, enabledWorkInfos.size());
-        for (WorkInfo workInfo : enabledWorkInfos) {
-            assertEquals(WorkInfo.State.ENQUEUED, workInfo.getState());
-        }
-        assertTrue("imported disabled reminder must not have a scheduled work",
-                awaitSettledWorkInfosByTag(workManager, Tags.MEDICINE_REMINDER_TAG
-                        + importedDisabledReminder.id).isEmpty());
-        assertTrue("original enabled reminder id must not have a scheduled work",
-                awaitSettledWorkInfosByTag(workManager, Tags.MEDICINE_REMINDER_TAG
-                        + originalEnabledReminder.id).isEmpty());
-        assertTrue("original disabled reminder id must not have a scheduled work",
-                awaitSettledWorkInfosByTag(workManager, Tags.MEDICINE_REMINDER_TAG
-                        + originalDisabledReminder.id).isEmpty());
+        // exactly one alarm must be scheduled per enabled reminder,
+        // a double-schedule regression (e.g. a second scheduling event listener) fails here.
+        // Every read below runs against a settled pipeline: the recorded trigger times are
+        // polled until stable across two consecutive reads, so a late duplicate
+        // schedule cannot be missed. The test module registers the recording
+        // scheduler, no real device alarm is set here.
+        ExportImportTestProviderModule.RecordingMedicineReminderAlarmScheduler scheduler =
+                (ExportImportTestProviderModule.RecordingMedicineReminderAlarmScheduler)
+                        mProvider.get(MedicineReminderAlarmScheduler.class);
+        Map<Long, List<Long>> scheduledTriggerTimes =
+                awaitScheduledTriggerTimes(scheduler, importedEnabledReminder.id);
+        List<Long> enabledTriggerTimes = scheduledTriggerTimes.get(importedEnabledReminder.id);
+        assertEquals("exactly one alarm must be scheduled for the imported enabled reminder",
+                1, enabledTriggerTimes.size());
+        assertTrue("the scheduled alarm must be in the future",
+                enabledTriggerTimes.get(0) > System.currentTimeMillis());
+        assertFalse("imported disabled reminder must not have a scheduled alarm",
+                awaitSettledScheduledTriggerTimes(scheduler)
+                        .containsKey(importedDisabledReminder.id));
+        assertFalse("original enabled reminder id must not have a scheduled alarm",
+                awaitSettledScheduledTriggerTimes(scheduler)
+                        .containsKey(originalEnabledReminder.id));
+        assertFalse("original disabled reminder id must not have a scheduled alarm",
+                awaitSettledScheduledTriggerTimes(scheduler)
+                        .containsKey(originalDisabledReminder.id));
     }
 
     @Test
@@ -888,45 +889,52 @@ public class ImportArchiveCmdTest {
     }
 
     /**
-     * Polls the work infos of a reminder tag until the work shows up and its
-     * count is stable across two consecutive polls a short interval apart,
-     * or the timeout is reached (the scheduling runs asynchronously, a count
-     * that only appears on one poll could still be followed by a late
-     * duplicate enqueue).
-     * The caller must assert on the returned list (e.g. the exact work count).
+     * Polls the recorded trigger times of the recording scheduler until the
+     * given reminder id shows up and the map is stable across two consecutive
+     * polls a short interval apart, or the timeout is reached (the scheduling
+     * runs asynchronously, a count that only appears on one poll could still
+     * be followed by a late duplicate schedule).
+     * The caller must assert on the returned map (e.g. the exact schedule count).
      */
-    private static List<WorkInfo> awaitWorkInfosByTag(WorkManager workManager, String tag)
-            throws Exception {
+    private static Map<Long, List<Long>> awaitScheduledTriggerTimes(
+            ExportImportTestProviderModule.RecordingMedicineReminderAlarmScheduler scheduler,
+            long reminderId) throws Exception {
         long deadline = System.currentTimeMillis() + SCHEDULING_TIMEOUT_MILLIS;
         int previousCount = -1;
-        int count = workManager.getWorkInfosByTag(tag).get().size();
+        Map<Long, List<Long>> scheduledTriggerTimes = scheduler.getScheduledTriggerTimes();
+        int count = scheduledTriggerTimes.containsKey(reminderId)
+                ? scheduledTriggerTimes.get(reminderId).size() : 0;
         while (System.currentTimeMillis() < deadline
                 && (count == 0 || count != previousCount)) {
             Thread.sleep(WORK_COUNT_POLL_INTERVAL_MILLIS);
             previousCount = count;
-            count = workManager.getWorkInfosByTag(tag).get().size();
+            scheduledTriggerTimes = scheduler.getScheduledTriggerTimes();
+            count = scheduledTriggerTimes.containsKey(reminderId)
+                    ? scheduledTriggerTimes.get(reminderId).size() : 0;
         }
-        return workManager.getWorkInfosByTag(tag).get();
+        return scheduler.getScheduledTriggerTimes();
     }
 
     /**
-     * Polls the work infos of a reminder tag until its count is stable across
-     * two consecutive polls a short interval apart, or the timeout is reached.
-     * Unlike {@link #awaitWorkInfosByTag} it also settles on an empty pipeline,
-     * so a "no work" assertion still runs against a fully settled scheduling
-     * state instead of a possibly not-yet-enqueued one.
+     * Polls the recorded trigger times of the recording scheduler until the
+     * map is stable across two consecutive polls a short interval apart,
+     * or the timeout is reached. Unlike {@link #awaitScheduledTriggerTimes}
+     * it also settles on an empty map, so a "no schedule" assertion still
+     * runs against a fully settled scheduling state instead of a possibly
+     * not-yet-executed one.
      */
-    private static List<WorkInfo> awaitSettledWorkInfosByTag(WorkManager workManager, String tag)
+    private static Map<Long, List<Long>> awaitSettledScheduledTriggerTimes(
+            ExportImportTestProviderModule.RecordingMedicineReminderAlarmScheduler scheduler)
             throws Exception {
         long deadline = System.currentTimeMillis() + SCHEDULING_TIMEOUT_MILLIS;
         int previousCount = -1;
-        int count = workManager.getWorkInfosByTag(tag).get().size();
+        int count = scheduler.getScheduledTriggerTimes().size();
         while (System.currentTimeMillis() < deadline && count != previousCount) {
             Thread.sleep(WORK_COUNT_POLL_INTERVAL_MILLIS);
             previousCount = count;
-            count = workManager.getWorkInfosByTag(tag).get().size();
+            count = scheduler.getScheduledTriggerTimes().size();
         }
-        return workManager.getWorkInfosByTag(tag).get();
+        return scheduler.getScheduledTriggerTimes();
     }
 
     /**

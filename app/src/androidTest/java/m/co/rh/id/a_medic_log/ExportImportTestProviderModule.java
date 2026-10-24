@@ -3,7 +3,15 @@ package m.co.rh.id.a_medic_log;
 import androidx.room.Room;
 import androidx.work.WorkManager;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import m.co.rh.id.a_medic_log.app.provider.CommandProviderModule;
+import m.co.rh.id.a_medic_log.app.provider.component.AppSharedPreferences;
+import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderAlarmScheduler;
 import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderEventHandler;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineReminderChangeNotifier;
@@ -18,6 +26,7 @@ import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentFileDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteTagDao;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
+import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.provider.BaseProviderModule;
 import m.co.rh.id.a_medic_log.base.room.converter.LinkedHashSetConverter;
 import m.co.rh.id.alogger.ILogger;
@@ -30,10 +39,15 @@ import m.co.rh.id.aprovider.ProviderRegistry;
  * provides an in-memory database surrounded by the real app components
  * (executor, logger, FileHelper and change notifiers).
  * <p>
- * Anything resolving WorkManager.getInstance (e.g. MedicineReminderEventHandler)
- * requires WorkManagerTestInitHelper.initializeTestWorkManager to have run first:
- * the production WorkManager is never initialized in tests because the
+ * The medicine reminder scheduler is replaced by
+ * {@link RecordingMedicineReminderAlarmScheduler} which records the scheduled
+ * trigger times per reminder id instead of touching the device AlarmManager.
+ * <p>
+ * The production WorkManager is never initialized in tests because the
  * androidx.startup InitializationProvider is removed from the test app manifest.
+ * WorkManager.getInstance (resolved by MedicineReminderEventHandler for the
+ * legacy reminder-work migration) therefore requires
+ * WorkManagerTestInitHelper.initializeTestWorkManager to have run first.
  */
 public class ExportImportTestProviderModule implements ProviderModule {
 
@@ -84,11 +98,52 @@ public class ExportImportTestProviderModule implements ProviderModule {
         providerRegistry.registerAsync(MedicineChangeNotifier.class, MedicineChangeNotifier::new);
         providerRegistry.registerAsync(MedicineReminderChangeNotifier.class, MedicineReminderChangeNotifier::new);
         providerRegistry.registerAsync(WorkManager.class, () -> WorkManager.getInstance(provider.getContext()));
-        // subscribes to the change notifiers so reminder works are scheduled on imported note added events,
+        providerRegistry.registerAsync(AppSharedPreferences.class, () -> new AppSharedPreferences(provider));
+        // registered before MedicineReminderEventHandler, the handler resolves it lazily;
+        // records alarm scheduling so tests can assert which reminders got an alarm
+        providerRegistry.registerAsync(MedicineReminderAlarmScheduler.class,
+                () -> new RecordingMedicineReminderAlarmScheduler(provider));
+        // subscribes to the change notifiers so reminder alarms are scheduled on imported note added events,
         // mirrors the production wiring of AppProviderModule
         providerRegistry.registerAsync(MedicineReminderEventHandler.class,
                 () -> new MedicineReminderEventHandler(provider));
         // commands registered last, mirror the real app command wiring
         providerRegistry.registerModule(new CommandProviderModule());
+    }
+
+    /**
+     * Test double of MedicineReminderAlarmScheduler that records every
+     * scheduled trigger time per reminder id (including duplicates, so a
+     * double-schedule regression is observable) and never touches the
+     * device AlarmManager.
+     */
+    public static class RecordingMedicineReminderAlarmScheduler extends MedicineReminderAlarmScheduler {
+
+        private final Map<Long, List<Long>> mScheduledTriggerTimes = new ConcurrentHashMap<>();
+
+        public RecordingMedicineReminderAlarmScheduler(Provider provider) {
+            super(provider);
+        }
+
+        @Override
+        protected void scheduleInternal(MedicineReminder reminder, long triggerAt) {
+            List<Long> triggerTimes = mScheduledTriggerTimes.get(reminder.id);
+            if (triggerTimes == null) {
+                triggerTimes = Collections.synchronizedList(new ArrayList<>());
+                mScheduledTriggerTimes.put(reminder.id, triggerTimes);
+            }
+            triggerTimes.add(triggerAt);
+        }
+
+        @Override
+        public void cancel(MedicineReminder reminder) {
+            if (reminder != null && reminder.id != null) {
+                mScheduledTriggerTimes.remove(reminder.id);
+            }
+        }
+
+        public Map<Long, List<Long>> getScheduledTriggerTimes() {
+            return mScheduledTriggerTimes;
+        }
     }
 }
