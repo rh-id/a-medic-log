@@ -237,8 +237,15 @@ public class TodayCardSV extends StatefulView<Activity> implements RequireNaviga
             textDetail.setText(context.getString(R.string.today_missed_format,
                     status.missedMedicineName, mTimeFormat.format(status.missedDoseTime)));
         } else if (status.status == TodayStatus.STATUS_IN_PROGRESS) {
-            textDetail.setText(context.getString(R.string.today_next_dose_format,
-                    mTimeFormat.format(status.nextDoseTime)));
+            // nextDoseTime is null while a due dose's take-window is still
+            // open (not yet missed, nothing upcoming), the counts line above
+            // already covers that case
+            if (status.nextDoseTime != null) {
+                textDetail.setText(context.getString(R.string.today_next_dose_format,
+                        mTimeFormat.format(status.nextDoseTime)));
+            } else {
+                textDetail.setText(null);
+            }
         } else {
             textDetail.setText(R.string.today_all_done);
         }

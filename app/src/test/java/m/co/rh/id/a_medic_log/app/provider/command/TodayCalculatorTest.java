@@ -11,13 +11,12 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
+import m.co.rh.id.a_medic_log.base.entity.MedicineDoseOccurrence;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
-import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 
@@ -35,14 +34,12 @@ public class TodayCalculatorTest {
         return calendar.getTime();
     }
 
-    private static MedicineReminder reminder(long medicineId, Date startDateTime,
-                                             Date createdDateTime, Integer... days) {
-        MedicineReminder medicineReminder = new MedicineReminder();
-        medicineReminder.medicineId = medicineId;
-        medicineReminder.startDateTime = startDateTime;
-        medicineReminder.createdDateTime = createdDateTime;
-        medicineReminder.reminderDays = new LinkedHashSet<>(Arrays.asList(days));
-        return medicineReminder;
+    private static MedicineDoseOccurrence occurrence(long medicineId, Date scheduledDateTime) {
+        MedicineDoseOccurrence doseOccurrence = new MedicineDoseOccurrence();
+        doseOccurrence.reminderId = 1L;
+        doseOccurrence.medicineId = medicineId;
+        doseOccurrence.scheduledDateTime = scheduledDateTime;
+        return doseOccurrence;
     }
 
     private static MedicineIntake intake(long medicineId, Date takenDateTime) {
@@ -52,35 +49,45 @@ public class TodayCalculatorTest {
         return medicineIntake;
     }
 
-    private static List<TodayStatus> compute(Date now, List<MedicineIntake> intakes,
-                                             List<MedicineReminder> reminders) {
+    private static Medicine medicine(long medicineId, long noteId, String name) {
         Medicine medicine = new Medicine();
-        medicine.id = 1L;
-        medicine.noteId = 1L;
-        medicine.name = "test medicine";
+        medicine.id = medicineId;
+        medicine.noteId = noteId;
+        medicine.name = name;
+        return medicine;
+    }
+
+    private static Note note(long noteId, long profileId) {
         Note note = new Note();
-        note.id = 1L;
-        note.profileId = 1L;
+        note.id = noteId;
+        note.profileId = profileId;
+        return note;
+    }
+
+    /**
+     * Single-medicine fixture: medicine 1 belongs to profile 1
+     */
+    private static List<TodayStatus> compute(Date now, List<MedicineDoseOccurrence> occurrences,
+                                             List<MedicineIntake> intakes) {
         Profile profile = new Profile();
         profile.id = 1L;
         profile.name = "test profile";
         Map<Long, Medicine> medicineMap = new HashMap<>();
-        medicineMap.put(1L, medicine);
+        medicineMap.put(1L, medicine(1L, 1L, "test medicine"));
         Map<Long, Note> noteMap = new HashMap<>();
-        noteMap.put(1L, note);
-        return TodayCalculator.compute(now, intakes, reminders,
+        noteMap.put(1L, note(1L, 1L));
+        return TodayCalculator.compute(now, occurrences, intakes,
                 medicineMap, noteMap, Collections.singletonList(profile));
     }
 
     @Test
-    public void weekdayNotScheduled_profileOmitted() {
-        // today is Monday Sep 7, but the reminder only fires on Thursdays
+    public void noOccurrencesToday_profileOmitted() {
+        // the command only feeds occurrences from the snapshot table, a profile
+        // whose medicine has no occurrence today (e.g. PRN-only) is omitted
         Date now = date(7, 9, 0);
-        MedicineReminder reminder = reminder(1L,
-                date(1, 8, 0), date(1, 8, 0), Calendar.THURSDAY);
 
         List<TodayStatus> statuses = compute(now,
-                Collections.emptyList(), Collections.singletonList(reminder));
+                Collections.emptyList(), Collections.emptyList());
 
         assertTrue(statuses.isEmpty());
     }
@@ -88,16 +95,14 @@ public class TodayCalculatorTest {
     @Test
     public void allDosesTaken_statusDone() {
         Date now = date(7, 21, 0);
-        MedicineReminder morningReminder = reminder(1L,
-                date(1, 8, 0), date(1, 8, 0), Calendar.MONDAY);
-        MedicineReminder eveningReminder = reminder(1L,
-                date(1, 20, 0), date(1, 20, 0), Calendar.MONDAY);
+        List<MedicineDoseOccurrence> occurrences = Arrays.asList(
+                occurrence(1L, date(7, 8, 0)),
+                occurrence(1L, date(7, 20, 0)));
 
-        List<TodayStatus> statuses = compute(now,
+        List<TodayStatus> statuses = compute(now, occurrences,
                 Arrays.asList(
                         intake(1L, date(7, 8, 5)),
-                        intake(1L, date(7, 20, 5))),
-                Arrays.asList(morningReminder, eveningReminder));
+                        intake(1L, date(7, 20, 5))));
 
         assertEquals(1, statuses.size());
         TodayStatus status = statuses.get(0);
@@ -112,12 +117,13 @@ public class TodayCalculatorTest {
 
     @Test
     public void pastDoseUntaken_statusMissedWithDetail() {
-        Date now = date(7, 9, 0);
-        MedicineReminder reminder = reminder(1L,
-                date(1, 8, 0), date(1, 8, 0), Calendar.MONDAY);
+        // 08:00 dose, ±3h take-window closes at 11:00; at 11:00 the window is
+        // fully elapsed (inclusive boundary) so the dose counts as missed
+        Date now = date(7, 11, 0);
+        List<MedicineDoseOccurrence> occurrences = Collections.singletonList(
+                occurrence(1L, date(7, 8, 0)));
 
-        List<TodayStatus> statuses = compute(now,
-                Collections.emptyList(), Collections.singletonList(reminder));
+        List<TodayStatus> statuses = compute(now, occurrences, Collections.emptyList());
 
         assertEquals(1, statuses.size());
         TodayStatus status = statuses.get(0);
@@ -133,14 +139,12 @@ public class TodayCalculatorTest {
     @Test
     public void futureDoseUntaken_statusInProgressWithNextTime() {
         Date now = date(7, 12, 0);
-        MedicineReminder morningReminder = reminder(1L,
-                date(1, 8, 0), date(1, 8, 0), Calendar.MONDAY);
-        MedicineReminder eveningReminder = reminder(1L,
-                date(1, 20, 0), date(1, 20, 0), Calendar.MONDAY);
+        List<MedicineDoseOccurrence> occurrences = Arrays.asList(
+                occurrence(1L, date(7, 8, 0)),
+                occurrence(1L, date(7, 20, 0)));
 
-        List<TodayStatus> statuses = compute(now,
-                Collections.singletonList(intake(1L, date(7, 8, 5))),
-                Arrays.asList(morningReminder, eveningReminder));
+        List<TodayStatus> statuses = compute(now, occurrences,
+                Collections.singletonList(intake(1L, date(7, 8, 5))));
 
         assertEquals(1, statuses.size());
         TodayStatus status = statuses.get(0);
@@ -154,37 +158,154 @@ public class TodayCalculatorTest {
     }
 
     @Test
-    public void occurrenceBeforeCreatedDateTime_notExpected() {
-        // reminder created today at noon, its 08:00 occurrence is before creation
-        Date now = date(7, 13, 0);
-        MedicineReminder reminder = reminder(1L,
-                date(7, 8, 0), date(7, 12, 0), Calendar.MONDAY);
+    public void intakeOutsideWindow_doesNotMarkDoseTaken() {
+        // 08:00 dose, intake logged at 11:01 (window is 3 hours): the dose is
+        // missed and the intake never matches
+        Date now = date(7, 12, 0);
+        List<MedicineDoseOccurrence> occurrences = Collections.singletonList(
+                occurrence(1L, date(7, 8, 0)));
 
-        List<TodayStatus> statuses = compute(now,
-                Collections.emptyList(), Collections.singletonList(reminder));
+        List<TodayStatus> statuses = compute(now, occurrences,
+                Collections.singletonList(intake(1L, date(7, 11, 1))));
 
-        assertTrue(statuses.isEmpty());
+        assertEquals(1, statuses.size());
+        TodayStatus status = statuses.get(0);
+        assertEquals(TodayStatus.STATUS_MISSED, status.status);
+        assertEquals(0, status.takenDoses);
+        assertEquals(1, status.missedCount);
+
+        // exactly 3 hours is still inside the window
+        List<TodayStatus> boundaryStatuses = compute(now, occurrences,
+                Collections.singletonList(intake(1L, date(7, 11, 0))));
+        assertEquals(TodayStatus.STATUS_DONE, boundaryStatuses.get(0).status);
+        assertEquals(1, boundaryStatuses.get(0).takenDoses);
     }
 
     @Test
-    public void occurrenceBeforeStartDateTime_notExpected() {
-        // starts Tuesday Sep 8 at 08:00, so the Monday Sep 7 occurrence is before start
+    public void crossMidnight_intakeShortlyAfterMidnight_marksPreviousEveningDoseTaken() {
+        // the command feeds occurrences/intakes around today's boundaries, so
+        // an intake at 00:30 can still mark yesterday's 23:50 dose taken even
+        // though the occurrence's day has passed
+        Date now = date(7, 1, 0);
+        List<MedicineDoseOccurrence> occurrences = Collections.singletonList(
+                occurrence(1L, date(6, 23, 50)));
+        List<MedicineIntake> intakes = Collections.singletonList(
+                intake(1L, date(7, 0, 30)));
+
+        List<TodayStatus> statuses = compute(now, occurrences, intakes);
+
+        assertEquals(1, statuses.size());
+        TodayStatus status = statuses.get(0);
+        assertEquals(TodayStatus.STATUS_DONE, status.status);
+        assertEquals(1, status.takenDoses);
+        assertEquals(0, status.missedCount);
+    }
+
+    @Test
+    public void openTakeWindow_dueDoseNotMissedYet_inProgressThenMissedAfterWindow() {
+        // yesterday 23:50 dose: at 00:00 its time has passed but the ±3h
+        // take-window is still open, so the dose is due yet still takeable
+        // (not missed, card shows in-progress); the same dose turns missed
+        // once the window has fully elapsed (02:50, inclusive boundary)
+        Date now = date(7, 0, 0);
+        List<MedicineDoseOccurrence> occurrences = Collections.singletonList(
+                occurrence(1L, date(6, 23, 50)));
+
+        List<TodayStatus> openWindowStatuses = compute(now, occurrences, Collections.emptyList());
+
+        assertEquals(1, openWindowStatuses.size());
+        TodayStatus openWindowStatus = openWindowStatuses.get(0);
+        assertEquals(TodayStatus.STATUS_IN_PROGRESS, openWindowStatus.status);
+        assertEquals(1, openWindowStatus.totalDoses);
+        assertEquals(0, openWindowStatus.takenDoses);
+        assertEquals(0, openWindowStatus.missedCount);
+        assertNull(openWindowStatus.missedMedicineName);
+        assertNull(openWindowStatus.missedDoseTime);
+        assertNull(openWindowStatus.nextDoseTime);
+
+        List<TodayStatus> closedWindowStatuses = compute(date(7, 2, 50), occurrences,
+                Collections.emptyList());
+
+        assertEquals(1, closedWindowStatuses.size());
+        TodayStatus closedWindowStatus = closedWindowStatuses.get(0);
+        assertEquals(TodayStatus.STATUS_MISSED, closedWindowStatus.status);
+        assertEquals(1, closedWindowStatus.missedCount);
+        assertEquals(date(6, 23, 50), closedWindowStatus.missedDoseTime);
+    }
+
+    @Test
+    public void multiMedicine_missedHighlightIsGenuinelyEarliestAcrossMedicines() {
+        // the per-medicine groups come from a HashMap, so the merged unmatched
+        // list must be re-sorted before the missed scan: medicine one's group
+        // (HashMap bucket of 1 < 2) is always iterated first and its 14:00 dose
+        // is the LATER missed one, medicine two's 06:00 dose is the earliest
+        Date now = date(7, 20, 0);
+        Profile profile = new Profile();
+        profile.id = 1L;
+        profile.name = "test profile";
+        Map<Long, Medicine> medicineMap = new HashMap<>();
+        medicineMap.put(1L, medicine(1L, 1L, "medicine one"));
+        medicineMap.put(2L, medicine(2L, 1L, "medicine two"));
+        Map<Long, Note> noteMap = new HashMap<>();
+        noteMap.put(1L, note(1L, 1L));
+        List<MedicineDoseOccurrence> occurrences = Arrays.asList(
+                occurrence(1L, date(7, 14, 0)),
+                occurrence(2L, date(7, 6, 0)));
+
+        List<TodayStatus> statuses = TodayCalculator.compute(now, occurrences,
+                Collections.emptyList(), medicineMap, noteMap,
+                Collections.singletonList(profile));
+
+        assertEquals(1, statuses.size());
+        TodayStatus status = statuses.get(0);
+        assertEquals(TodayStatus.STATUS_MISSED, status.status);
+        assertEquals(2, status.totalDoses);
+        assertEquals(2, status.missedCount);
+        // the missed highlight is medicine two's 06:00 one, NOT the first
+        // iterated group's 14:00 dose
+        assertEquals("medicine two", status.missedMedicineName);
+        assertEquals(date(7, 6, 0), status.missedDoseTime);
+    }
+
+    @Test
+    public void crossMedicineIsolation_intakeOfMedicineB_neverMarksMedicineA() {
+        // profile has medicine A (08:00, no intake) and medicine B (08:10,
+        // intake at 08:20); pooling the profile's intakes would let B's intake
+        // mark A's 08:00 dose taken (20 minutes, inside the window) and report
+        // medicine B as the missed one
         Date now = date(7, 12, 0);
-        MedicineReminder reminder = reminder(1L,
-                date(8, 8, 0), date(1, 8, 0),
-                Calendar.MONDAY, Calendar.TUESDAY);
+        Profile profile = new Profile();
+        profile.id = 1L;
+        profile.name = "test profile";
+        Map<Long, Medicine> medicineMap = new HashMap<>();
+        medicineMap.put(1L, medicine(1L, 1L, "medicine A"));
+        medicineMap.put(2L, medicine(2L, 1L, "medicine B"));
+        Map<Long, Note> noteMap = new HashMap<>();
+        noteMap.put(1L, note(1L, 1L));
+        List<MedicineDoseOccurrence> occurrences = Arrays.asList(
+                occurrence(1L, date(7, 8, 0)),
+                occurrence(2L, date(7, 8, 10)));
+        List<MedicineIntake> intakes = Collections.singletonList(
+                intake(2L, date(7, 8, 20)));
 
-        List<TodayStatus> statuses = compute(now,
-                Collections.emptyList(), Collections.singletonList(reminder));
+        List<TodayStatus> statuses = TodayCalculator.compute(now, occurrences, intakes,
+                medicineMap, noteMap, Collections.singletonList(profile));
 
-        assertTrue(statuses.isEmpty());
+        assertEquals(1, statuses.size());
+        TodayStatus status = statuses.get(0);
+        assertEquals(2, status.totalDoses);
+        assertEquals(1, status.takenDoses);
+        assertEquals(1, status.missedCount);
+        // the missed dose is medicine A's 08:00 one, NOT medicine B's
+        assertEquals("medicine A", status.missedMedicineName);
+        assertEquals(date(7, 8, 0), status.missedDoseTime);
     }
 
     @Test
     public void multipleProfiles_isolatedAndSorted() {
         // profile A (missed), B (in-progress) and C (done) share the same name so
-        // the order must come purely from the status, profile D is not scheduled
-        // today (Thursday) and is omitted
+        // the order must come purely from the status, profile D has no
+        // occurrence today and is omitted
         Date now = date(7, 12, 0);
         Profile profileA = new Profile();
         profileA.id = 1L;
@@ -198,57 +319,28 @@ public class TodayCalculatorTest {
         Profile profileD = new Profile();
         profileD.id = 4L;
         profileD.name = "same name";
-        Medicine medicineA = new Medicine();
-        medicineA.id = 1L;
-        medicineA.noteId = 1L;
-        medicineA.name = "medicine A";
-        Medicine medicineB = new Medicine();
-        medicineB.id = 2L;
-        medicineB.noteId = 2L;
-        medicineB.name = "medicine B";
-        Medicine medicineC = new Medicine();
-        medicineC.id = 3L;
-        medicineC.noteId = 3L;
-        medicineC.name = "medicine C";
-        Medicine medicineD = new Medicine();
-        medicineD.id = 4L;
-        medicineD.noteId = 4L;
-        medicineD.name = "medicine D";
-        Note noteA = new Note();
-        noteA.id = 1L;
-        noteA.profileId = 1L;
-        Note noteB = new Note();
-        noteB.id = 2L;
-        noteB.profileId = 2L;
-        Note noteC = new Note();
-        noteC.id = 3L;
-        noteC.profileId = 3L;
-        Note noteD = new Note();
-        noteD.id = 4L;
-        noteD.profileId = 4L;
         Map<Long, Medicine> medicineMap = new HashMap<>();
-        medicineMap.put(1L, medicineA);
-        medicineMap.put(2L, medicineB);
-        medicineMap.put(3L, medicineC);
-        medicineMap.put(4L, medicineD);
+        medicineMap.put(1L, medicine(1L, 1L, "medicine A"));
+        medicineMap.put(2L, medicine(2L, 2L, "medicine B"));
+        medicineMap.put(3L, medicine(3L, 3L, "medicine C"));
+        medicineMap.put(4L, medicine(4L, 4L, "medicine D"));
         Map<Long, Note> noteMap = new HashMap<>();
-        noteMap.put(1L, noteA);
-        noteMap.put(2L, noteB);
-        noteMap.put(3L, noteC);
-        noteMap.put(4L, noteD);
+        noteMap.put(1L, note(1L, 1L));
+        noteMap.put(2L, note(2L, 2L));
+        noteMap.put(3L, note(3L, 3L));
+        noteMap.put(4L, note(4L, 4L));
         // A: 08:00 dose untaken -> missed, B: 08:00 taken + 20:00 upcoming,
-        // C: 08:00 taken -> done, D: Thursday only -> omitted
+        // C: 08:00 taken -> done, D: no occurrence today -> omitted
+        List<MedicineDoseOccurrence> occurrences = Arrays.asList(
+                occurrence(1L, date(7, 8, 0)),
+                occurrence(2L, date(7, 8, 0)),
+                occurrence(2L, date(7, 20, 0)),
+                occurrence(3L, date(7, 8, 0)));
         List<MedicineIntake> intakes = Arrays.asList(
                 intake(2L, date(7, 8, 5)),
                 intake(3L, date(7, 8, 5)));
-        List<MedicineReminder> reminders = Arrays.asList(
-                reminder(1L, date(1, 8, 0), date(1, 8, 0), Calendar.MONDAY),
-                reminder(2L, date(1, 8, 0), date(1, 8, 0), Calendar.MONDAY),
-                reminder(2L, date(1, 20, 0), date(1, 20, 0), Calendar.MONDAY),
-                reminder(3L, date(1, 8, 0), date(1, 8, 0), Calendar.MONDAY),
-                reminder(4L, date(1, 8, 0), date(1, 8, 0), Calendar.THURSDAY));
 
-        List<TodayStatus> statuses = TodayCalculator.compute(now, intakes, reminders,
+        List<TodayStatus> statuses = TodayCalculator.compute(now, occurrences, intakes,
                 medicineMap, noteMap, Arrays.asList(profileA, profileB, profileC, profileD));
 
         assertEquals(3, statuses.size());

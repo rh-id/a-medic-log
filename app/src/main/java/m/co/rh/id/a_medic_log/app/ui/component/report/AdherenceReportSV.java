@@ -244,9 +244,16 @@ public class AdherenceReportSV extends StatefulView<Activity> implements Require
         Context context = mSvProvider.getContext();
         mTextAdherencePercent.setText(context.getString(R.string.adherence_percent,
                 adherenceReport.adherencePercent));
-        mTextAdherenceTakenMissed.setText(context.getString(R.string.adherence_taken_missed_format,
-                context.getString(R.string.adherence_taken), adherenceReport.totalTaken,
-                context.getString(R.string.adherence_missed), adherenceReport.totalMissed));
+        if (adherenceReport.totalExtra > 0) {
+            mTextAdherenceTakenMissed.setText(context.getString(R.string.adherence_taken_missed_extra_format,
+                    context.getString(R.string.adherence_taken), adherenceReport.totalTaken,
+                    context.getString(R.string.adherence_missed), adherenceReport.totalMissed,
+                    context.getString(R.string.adherence_extra), adherenceReport.totalExtra));
+        } else {
+            mTextAdherenceTakenMissed.setText(context.getString(R.string.adherence_taken_missed_format,
+                    context.getString(R.string.adherence_taken), adherenceReport.totalTaken,
+                    context.getString(R.string.adherence_missed), adherenceReport.totalMissed));
+        }
         mAdherenceBarChartView.setData(adherenceReport.daily);
         mAdherenceReportAdapter.setItems(adherenceReport.perMedicine);
         mTextAdherenceNoData.setVisibility(

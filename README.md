@@ -20,7 +20,7 @@ The app works as a production app even though it is a demo app.
 - **Medicine Tracking** - Add medicine information with detailed descriptions
 - **Medicine Reminders** - Set up notifications to remind you to take medicine, with a snooze action available directly on reminders; on Android 13+ the notification permission is requested in-app (rationale dialog first) and can be reviewed or recovered any time from Settings
 - **Medicine Intake History** - Log and review past medicine intakes
-- **Adherence Report** - Adherence report with missed-dose tracking (7/30 days)
+- **Adherence Report** - 7/30-day adherence report with missed-dose tracking: a dose counts as taken when an intake is logged within ±3 hours of its scheduled time (matching works across midnight), and as-needed intakes are reported separately as extra doses
 - **App Lock** - Optionally require fingerprint, face, or your screen lock (PIN, pattern or password) to open the app
 - **Note Attachments** - Attach files and images to your notes
 - **Export & Import** - Export all or selected profiles to a ZIP archive (JSON + attachment images), import profiles from an export file, export a profile to an Excel spreadsheet (XLSX, Android 8+) or a ZIP of CSV files on older versions
@@ -174,6 +174,7 @@ The domain follows a strict hierarchy rooted in the **Profile**.
 *   **Note:** Medical entry. **Belongs to** a Profile.
 *   **Medicine:** Medication details. **Belongs to** a Note.
 *   **MedicineReminder:** Schedule config. **Belongs to** a Medicine.
+*   **MedicineDoseOccurrence:** Expected-dose snapshot. Generated from a MedicineReminder; occurrences in the past are immutable.
 *   **MedicineIntake:** History log. **Belongs to** a Medicine.
 
 #### Entity Relationship Diagram
@@ -185,14 +186,24 @@ erDiagram
     NOTE ||--o{ NOTE_ATTACHMENT : has
     MEDICINE ||--o{ MEDICINE_REMINDER : schedules
     MEDICINE ||--o{ MEDICINE_INTAKE : history
+    MEDICINE ||--o{ MEDICINE_DOSE_OCCURRENCE : expects
+    MEDICINE_REMINDER ||--o{ MEDICINE_DOSE_OCCURRENCE : generates
     NOTE ||--o{ NOTE_TAG : "tagged-with"
 ```
 
-Deleting a **Profile** or a **Note** permanently deletes all records owned by it — every foreign key uses `ON DELETE CASCADE` (a profile takes its notes, medicines, reminders, intake records, attachments and tags with it; a note takes its medicines, reminders, intake records, attachments and tags). Deleting a **Medicine** likewise destroys its reminders and entire intake history. Because these deletions are destructive and irreversible, the delete confirmation dialog communicates the affected record counts before deletion (e.g. "Delete note? This will also delete: 2 medicines · 3 reminders · 8 attachments · 84 intake records").
+Deleting a **Profile** or a **Note** permanently deletes all records owned by it — every foreign key uses `ON DELETE CASCADE` (a profile takes its notes, medicines, reminders, intake records, attachments and tags with it; a note takes its medicines, reminders, intake records, attachments and tags). Deleting a **Medicine** likewise destroys its reminders, its dose-occurrence history and its entire intake history. Because these deletions are destructive and irreversible, the delete confirmation dialog communicates the affected record counts before deletion (e.g. "Delete note? This will also delete: 2 medicines · 3 reminders · 8 attachments · 84 intake records").
 
 ## How Reminders Work
 
-Reminders are scheduled with WorkManager. For each enabled reminder, a one-time work request is enqueued with an initial delay until the next occurrence. The worker posts the notification on the configured days of week and re-enqueues itself for the next day. Notification actions let the user log a medicine intake or disable the reminder directly from the notification.
+For each enabled reminder, the app schedules one exact Android alarm via `MedicineReminderAlarmScheduler` (an `AlarmManager.setAlarmClock` ladder per API level — no fallback to inexact APIs). `MedicineReminderEventHandler` re-schedules alarms whenever a reminder changes, after a reboot, and after permission changes; legacy WorkManager-based reminders are migrated to exact alarms once, automatically. From the notification the user can log a medicine intake or disable the reminder directly.
+
+### Dose occurrence tracking (adherence history)
+
+Expected doses are snapshotted: `MedicineRepository` records every scheduled dose in the `medicine_dose_occurrence` table as reminders are created or changed — incrementally, idempotently, up to end of today. Disabling, editing, or deleting a reminder only truncates *future* occurrences — past ones are immutable, so the adherence report never rewrites history, and a reminder's disabled period produces no expected doses.
+
+### How adherence is calculated
+
+The report pairs each expected dose with the intakes logged for the same medicine: an intake within ±3 hours of the scheduled time counts the dose as **taken** (matching runs over the whole range, so a 23:00 dose taken at 01:00 still counts), otherwise the dose is **missed**. Intakes that match no expected dose — as-needed/PRN use — are shown as **extra** and never change the percentage. The ±3-hour window is a fixed, documented constant.
 
 ### Notification permission (Android 13+)
 

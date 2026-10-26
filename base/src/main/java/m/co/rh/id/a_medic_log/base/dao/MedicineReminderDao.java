@@ -25,6 +25,13 @@ public abstract class MedicineReminderDao {
     @Query("SELECT * FROM medicine_reminder WHERE reminder_enabled = 1 ORDER BY created_date_time DESC")
     public abstract List<MedicineReminder> findMedicineRemindersEnabled();
 
+    @Query("SELECT medicine_reminder.* FROM medicine_reminder INNER JOIN medicine " +
+            "ON medicine_reminder.medicine_id = medicine.id INNER JOIN note " +
+            "ON medicine.note_id = note.id WHERE note.profile_id = :profileId " +
+            "AND medicine_reminder.reminder_enabled = 1 " +
+            "ORDER BY medicine_reminder.created_date_time DESC")
+    public abstract List<MedicineReminder> findMedicineRemindersEnabledByProfileId(long profileId);
+
     @Query("SELECT * FROM medicine_reminder ORDER BY created_date_time DESC")
     public abstract List<MedicineReminder> findMedicineRemindersAll();
 

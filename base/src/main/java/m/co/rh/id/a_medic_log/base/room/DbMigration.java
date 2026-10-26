@@ -5,7 +5,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
 
 public class DbMigration {
     public static Migration[] getAll() {
-        return new Migration[]{MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5};
+        return new Migration[]{MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6};
     }
 
     public static final Migration MIGRATION_1_2 = new Migration(1, 2) {
@@ -143,6 +143,32 @@ public class DbMigration {
             database.execSQL("DROP TABLE `medicine_intake`");
             database.execSQL("ALTER TABLE `medicine_intake_new` RENAME TO `medicine_intake`");
             database.execSQL("CREATE INDEX IF NOT EXISTS `index_medicine_intake_medicine_id` ON `medicine_intake`(`medicine_id`)");
+        }
+    };
+
+    public static final Migration MIGRATION_5_6 = new Migration(5, 6) {
+        @Override
+        public void migrate(SupportSQLiteDatabase database) {
+            database.execSQL("CREATE TABLE IF NOT EXISTS `medicine_dose_occurrence` (" +
+                    "`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`reminder_id` INTEGER NOT NULL, " +
+                    "`medicine_id` INTEGER NOT NULL, " +
+                    "`scheduled_date_time` INTEGER NOT NULL, " +
+                    "`created_date_time` INTEGER NOT NULL, " +
+                    "FOREIGN KEY(`medicine_id`) REFERENCES `medicine`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_medicine_dose_occurrence_reminder_id` " +
+                    "ON `medicine_dose_occurrence`(`reminder_id`)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_medicine_dose_occurrence_medicine_id` " +
+                    "ON `medicine_dose_occurrence`(`medicine_id`)");
+            database.execSQL("CREATE INDEX IF NOT EXISTS `index_medicine_dose_occurrence_scheduled_date_time` " +
+                    "ON `medicine_dose_occurrence`(`scheduled_date_time`)");
+            database.execSQL("CREATE UNIQUE INDEX IF NOT EXISTS `index_medicine_dose_occurrence_reminder_id_scheduled_date_time` " +
+                    "ON `medicine_dose_occurrence`(`reminder_id`, `scheduled_date_time`)");
+            database.execSQL("ALTER TABLE `medicine_reminder` ADD COLUMN `last_enabled_date_time` INTEGER");
+            database.execSQL("ALTER TABLE `medicine_reminder` ADD COLUMN `last_disabled_date_time` INTEGER");
+            // reminders that already exist are treated as if they were enabled at creation
+            database.execSQL("UPDATE `medicine_reminder` SET `last_enabled_date_time` = `created_date_time` " +
+                    "WHERE `last_enabled_date_time` IS NULL");
         }
     };
 }

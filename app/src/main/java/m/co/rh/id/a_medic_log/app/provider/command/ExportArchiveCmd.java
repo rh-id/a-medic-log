@@ -98,6 +98,8 @@ public class ExportArchiveCmd {
     private static final String KEY_REMINDER_ENABLED = "reminder_enabled";
     private static final String KEY_MESSAGE = "message";
     private static final String KEY_REMINDER_DAYS = "reminder_days";
+    private static final String KEY_LAST_ENABLED_DATE_TIME = "last_enabled_date_time";
+    private static final String KEY_LAST_DISABLED_DATE_TIME = "last_disabled_date_time";
     private static final String KEY_INTAKES = "intakes";
     private static final String KEY_TAKEN_DATE_TIME = "taken_date_time";
 
@@ -413,6 +415,9 @@ public class ExportArchiveCmd {
         json.put(KEY_REMINDER_DAYS, reminderDays);
         json.put(KEY_CREATED_DATE_TIME, toEpoch(medicineReminder.createdDateTime));
         json.put(KEY_UPDATED_DATE_TIME, toEpoch(medicineReminder.updatedDateTime));
+        // nullable stamps, a never-set stamp is written as JSON null (never a 0 epoch)
+        json.put(KEY_LAST_ENABLED_DATE_TIME, toEpoch(medicineReminder.lastEnabledDateTime));
+        json.put(KEY_LAST_DISABLED_DATE_TIME, toEpoch(medicineReminder.lastDisabledDateTime));
         return json;
     }
 

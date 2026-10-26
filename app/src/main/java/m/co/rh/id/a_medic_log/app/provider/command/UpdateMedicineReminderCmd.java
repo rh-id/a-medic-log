@@ -18,7 +18,7 @@ public class UpdateMedicineReminderCmd extends NewMedicineReminderCmd {
     public Single<MedicineReminder> execute(MedicineReminder medicineReminder) {
         return Single.fromCallable(() -> {
             MedicineReminder beforeUpdate = mMedicineReminderDao.get().findMedicineReminderById(medicineReminder.id);
-            mMedicineReminderDao.get().update(medicineReminder);
+            mMedicineRepository.get().updateMedicineReminder(medicineReminder);
             mMedicineReminderChangeNotifier.get().medicineReminderUpdated(beforeUpdate, medicineReminder.clone());
             return medicineReminder;
         }).subscribeOn(Schedulers.from(mExecutorService.get()));

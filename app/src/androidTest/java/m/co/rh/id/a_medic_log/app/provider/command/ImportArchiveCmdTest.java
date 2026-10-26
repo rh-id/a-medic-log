@@ -65,6 +65,7 @@ import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
 import m.co.rh.id.a_medic_log.base.AppDatabase;
 import m.co.rh.id.a_medic_log.base.dao.AndroidNotificationDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.dao.MedicineDoseOccurrenceDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineIntakeDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentDao;
@@ -112,6 +113,24 @@ public class ImportArchiveCmdTest {
     private static final String KEY_PROFILES = "profiles";
     private static final String KEY_ID = "id";
     private static final String KEY_NAME = "name";
+    private static final String KEY_NOTES = "notes";
+    private static final String KEY_ENTRY_DATE_TIME = "entry_date_time";
+    private static final String KEY_CONTENT = "content";
+    private static final String KEY_MEDICINES = "medicines";
+    private static final String KEY_REMINDERS = "reminders";
+    private static final String KEY_START_DATE_TIME = "start_date_time";
+    private static final String KEY_REMINDER_ENABLED = "reminder_enabled";
+    private static final String KEY_MESSAGE = "message";
+    private static final String KEY_REMINDER_DAYS = "reminder_days";
+    private static final String KEY_CREATED_DATE_TIME = "created_date_time";
+    private static final String KEY_UPDATED_DATE_TIME = "updated_date_time";
+    private static final String KEY_LAST_ENABLED_DATE_TIME = "last_enabled_date_time";
+    private static final String KEY_LAST_DISABLED_DATE_TIME = "last_disabled_date_time";
+    // fixed epoch millis anchors for the stamp tests (2025-01-01T00:00:00Z and
+    // one day later), written raw into the hand-built archives so the stamp
+    // assertions never depend on the device timezone
+    private static final long STAMP_CREATED_MILLIS = 1_735_689_600_000L;
+    private static final long STAMP_DISABLED_MILLIS = 1_735_776_000_000L;
     private static final byte[] ATTACHMENT_BYTES =
             "crash safety attachment image content".getBytes();
     private static final String ATTACHMENT_FILE_NAME = "crash-safety-image.png";
@@ -345,8 +364,8 @@ public class ImportArchiveCmdTest {
     @Test
     public void importProfiles_failedTransaction_deletesCopiedAttachmentFiles() throws Exception {
         // arrange: a real export of a profile subtree containing an attachment file,
-        // then a forced mid-transaction failure (see the class javadoc for why the
-        // transaction must be forced through a test decorator instead of crafted json)
+        // then a forced mid-transaction failure (the import commits everything
+        // in one runInTransaction, so crafted json cannot make it fail midway)
         Profile profile = createProfile(mProfileDao, "Failed Import Profile", "about");
         Note note = createNote(mNoteDao, profile.id, "failed import note");
         NoteAttachment attachment = createNoteAttachment(note.id, "photo");
@@ -732,6 +751,153 @@ public class ImportArchiveCmdTest {
         assertTrue(importedProfileNames.contains("Empty Selection Profile B"));
     }
 
+    @Test
+    public void importProfiles_stampKeysPresent_importedReminderCarriesExactStamps()
+            throws Exception {
+        // arrange: a new-format archive whose reminder carries both real stamps
+        // (enabled at creation, disabled one day later) — import must use them
+        // verbatim instead of the stampCreation defaults
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        File stampArchiveFile = new File(context.getCacheDir(), "stamps_export.zip");
+        mCreatedTempFiles.add(stampArchiveFile);
+        createReminderArchive(stampArchiveFile, "Stamp Profile",
+                createReminderJson(1, STAMP_CREATED_MILLIS, false,
+                        STAMP_CREATED_MILLIS, STAMP_DISABLED_MILLIS));
+
+        // act: import into a wiped database
+        mAppDatabase.clearAllTables();
+        ImportArchiveCmd.ImportResult importResult = mImportArchiveCmd
+                .importProfiles(Uri.fromFile(stampArchiveFile), null).blockingGet();
+        assertEquals(1, importResult.reminderCount);
+        List<MedicineReminder> importedReminders = findImportedRemindersOfSingleMedicine();
+        assertEquals(1, importedReminders.size());
+        MedicineReminder importedReminder = importedReminders.get(0);
+
+        // assert: the archive's stamps are carried over exactly,
+        // stampCreation's fallback did not overwrite them
+        assertEquals(STAMP_CREATED_MILLIS, importedReminder.lastEnabledDateTime.getTime());
+        assertEquals(STAMP_DISABLED_MILLIS, importedReminder.lastDisabledDateTime.getTime());
+        assertFalse(importedReminder.reminderEnabled);
+    }
+
+    @Test
+    public void importProfiles_legacyArchiveWithoutStampKeys_fallsBackToStampCreation()
+            throws Exception {
+        // arrange: a legacy archive (older app version) whose reminders carry no
+        // stamp keys at all, one enabled and one disabled reminder
+        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        File legacyArchiveFile = new File(context.getCacheDir(), "legacy_no_stamps_export.zip");
+        mCreatedTempFiles.add(legacyArchiveFile);
+        createReminderArchive(legacyArchiveFile, "Legacy Profile",
+                createReminderJson(1, STAMP_CREATED_MILLIS, true, null, null),
+                createReminderJson(2, STAMP_CREATED_MILLIS, false, null, null));
+
+        // act: import into a wiped database
+        mAppDatabase.clearAllTables();
+        ImportArchiveCmd.ImportResult importResult = mImportArchiveCmd
+                .importProfiles(Uri.fromFile(legacyArchiveFile), null).blockingGet();
+        assertEquals(2, importResult.reminderCount);
+        List<MedicineReminder> importedReminders = findImportedRemindersOfSingleMedicine();
+        assertEquals(2, importedReminders.size());
+
+        // assert: stampCreation fallback, exactly as the repository's insert
+        // paths stamp: enabled -> lastEnabled = createdDateTime, lastDisabled
+        // null; disabled -> lastDisabled = createdDateTime, lastEnabled null
+        for (MedicineReminder importedReminder : importedReminders) {
+            if (importedReminder.reminderEnabled != null && importedReminder.reminderEnabled) {
+                assertEquals(STAMP_CREATED_MILLIS,
+                        importedReminder.lastEnabledDateTime.getTime());
+                assertNull(importedReminder.lastDisabledDateTime);
+            } else {
+                assertEquals(STAMP_CREATED_MILLIS,
+                        importedReminder.lastDisabledDateTime.getTime());
+                assertNull(importedReminder.lastEnabledDateTime);
+            }
+        }
+    }
+
+    /**
+     * Build a zip archive whose single profile entry (id 1) carries one note
+     * with one medicine holding the given reminders, hand-built with only the
+     * keys the parser reads (mirrors the other hand-built archives of this
+     * class so stamp values are under full test control).
+     */
+    private static File createReminderArchive(File outFile, String profileName,
+                                              JSONObject... reminderJsons) throws Exception {
+        JSONObject medicineJson = new JSONObject();
+        medicineJson.put(KEY_ID, 1);
+        medicineJson.put(KEY_NAME, "Stamp Medicine");
+        medicineJson.put(KEY_CREATED_DATE_TIME, STAMP_CREATED_MILLIS);
+        medicineJson.put(KEY_UPDATED_DATE_TIME, STAMP_CREATED_MILLIS);
+        JSONArray reminderArray = new JSONArray();
+        for (JSONObject reminderJson : reminderJsons) {
+            reminderArray.put(reminderJson);
+        }
+        medicineJson.put(KEY_REMINDERS, reminderArray);
+        JSONObject noteJson = new JSONObject();
+        noteJson.put(KEY_ID, 1);
+        noteJson.put(KEY_ENTRY_DATE_TIME, STAMP_CREATED_MILLIS);
+        noteJson.put(KEY_CONTENT, "stamp note");
+        noteJson.put(KEY_CREATED_DATE_TIME, STAMP_CREATED_MILLIS);
+        noteJson.put(KEY_UPDATED_DATE_TIME, STAMP_CREATED_MILLIS);
+        noteJson.put(KEY_MEDICINES, new JSONArray(Collections.singletonList(medicineJson)));
+        JSONObject profileEntryJson = new JSONObject();
+        profileEntryJson.put(KEY_ID, 1);
+        profileEntryJson.put(KEY_NAME, profileName);
+        profileEntryJson.put(KEY_NOTES, new JSONArray(Collections.singletonList(noteJson)));
+        Map<String, String> textEntriesByName = new LinkedHashMap<>();
+        textEntriesByName.put(ENTRY_EXPORT_JSON, createManifestText(
+                ExportArchiveCmd.FORMAT_VERSION,
+                createManifestProfileEntries(1, profileName)));
+        textEntriesByName.put(profileEntryName(1), profileEntryJson.toString());
+        createTextEntriesZip(outFile, textEntriesByName);
+        return outFile;
+    }
+
+    /**
+     * Build one reminder JSON of the hand-built stamp archive: the given
+     * created/enabled millis and, when non-null, the stamp key values
+     * (a null stamp millis omits the key, mirroring legacy archives that
+     * were written before the stamps existed).
+     */
+    private static JSONObject createReminderJson(long id, long createdMillis,
+                                                 boolean reminderEnabled,
+                                                 Long lastEnabledMillis,
+                                                 Long lastDisabledMillis) throws JSONException {
+        JSONObject reminderJson = new JSONObject();
+        reminderJson.put(KEY_ID, id);
+        reminderJson.put(KEY_START_DATE_TIME, createdMillis);
+        reminderJson.put(KEY_REMINDER_ENABLED, reminderEnabled);
+        reminderJson.put(KEY_MESSAGE, reminderEnabled ? "take enabled pill" : "take disabled pill");
+        reminderJson.put(KEY_REMINDER_DAYS,
+                new JSONArray(Collections.singletonList(Calendar.MONDAY)));
+        reminderJson.put(KEY_CREATED_DATE_TIME, createdMillis);
+        reminderJson.put(KEY_UPDATED_DATE_TIME, createdMillis);
+        if (lastEnabledMillis != null) {
+            reminderJson.put(KEY_LAST_ENABLED_DATE_TIME, lastEnabledMillis.longValue());
+        }
+        if (lastDisabledMillis != null) {
+            reminderJson.put(KEY_LAST_DISABLED_DATE_TIME, lastDisabledMillis.longValue());
+        }
+        return reminderJson;
+    }
+
+    /**
+     * @return the reminders of the single imported medicine of the hand-built
+     * single-medicine archive (profile 1 ⊃ note 1 ⊃ medicine 1)
+     */
+    private List<MedicineReminder> findImportedRemindersOfSingleMedicine() {
+        List<Profile> profiles = mProfileDao.findProfiles();
+        assertEquals(1, profiles.size());
+        List<Note> importedNotes = mNoteDao.findNotesByProfileId(profiles.get(0).id);
+        assertEquals(1, importedNotes.size());
+        List<Medicine> importedMedicines =
+                mMedicineDao.findMedicinesByNoteId(importedNotes.get(0).id);
+        assertEquals(1, importedMedicines.size());
+        return mMedicineReminderDao
+                .findMedicineRemindersByMedicineId(importedMedicines.get(0).id);
+    }
+
     /**
      * Build a zip archive that contains only an export.json manifest entry
      * with the given format version and manifest profiles index
@@ -1012,6 +1178,11 @@ public class ImportArchiveCmdTest {
         @Override
         public MedicineIntakeDao medicineIntakeDao() {
             return mDelegate.medicineIntakeDao();
+        }
+
+        @Override
+        public MedicineDoseOccurrenceDao medicineDoseOccurrenceDao() {
+            return mDelegate.medicineDoseOccurrenceDao();
         }
 
         @Override

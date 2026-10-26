@@ -4,7 +4,7 @@
 - `./gradlew build` — full build (debug+release, lint, `generateLicenseHtml`); first build needs network for POM/license resolution.
 - `./gradlew assembleDebug` / `assembleRelease` — APK only (release unsigned unless `SIGNING_KEY` env set).
 - `./gradlew connectedCheck` — REAL test suite (instrumented; needs device/emulator; CI matrix API 23/26/31/36).
-- `./gradlew :app:testDebugUnitTest` — unit tests (33 real: permission-gate decisions, adherence/today calculators, reminder event handler).
+- `./gradlew :app:testDebugUnitTest` — unit tests (62 real: permission-gate decisions, adherence/today calculators, reminder event handler, delete-scope builder).
 - `./gradlew generateLicenseHtml` — regenerate `app/src/main/assets/licenses.html` after dependency changes; delete `app/build/license-pom-cache` to force POM refetch.
 - `./gradlew clean` — deletes root build dir.
 

@@ -19,6 +19,7 @@ import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.ProfileChangeNotifier;
 import m.co.rh.id.a_medic_log.base.AppDatabase;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.dao.MedicineDoseOccurrenceDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineIntakeDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentDao;
@@ -28,6 +29,7 @@ import m.co.rh.id.a_medic_log.base.dao.NoteTagDao;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.provider.BaseProviderModule;
+import m.co.rh.id.a_medic_log.base.repository.MedicineRepository;
 import m.co.rh.id.a_medic_log.base.room.converter.LinkedHashSetConverter;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -93,6 +95,8 @@ public class ExportImportTestProviderModule implements ProviderModule {
                 .medicineReminderDao());
         providerRegistry.registerAsync(MedicineIntakeDao.class, () -> provider.get(AppDatabase.class)
                 .medicineIntakeDao());
+        providerRegistry.registerAsync(MedicineDoseOccurrenceDao.class, () -> provider.get(AppDatabase.class)
+                .medicineDoseOccurrenceDao());
         providerRegistry.registerAsync(ProfileChangeNotifier.class, ProfileChangeNotifier::new);
         providerRegistry.registerAsync(NoteChangeNotifier.class, NoteChangeNotifier::new);
         providerRegistry.registerAsync(MedicineChangeNotifier.class, MedicineChangeNotifier::new);
@@ -103,6 +107,10 @@ public class ExportImportTestProviderModule implements ProviderModule {
         // records alarm scheduling so tests can assert which reminders got an alarm
         providerRegistry.registerAsync(MedicineReminderAlarmScheduler.class,
                 () -> new RecordingMedicineReminderAlarmScheduler(provider));
+        // registered before MedicineReminderEventHandler, the handler resolves it in
+        // its constructor (lazyGet validates the registration eagerly) to backfill
+        // the dose occurrence table
+        providerRegistry.registerLazy(MedicineRepository.class, () -> new MedicineRepository(provider));
         // subscribes to the change notifiers so reminder alarms are scheduled on imported note added events,
         // mirrors the production wiring of AppProviderModule
         providerRegistry.registerAsync(MedicineReminderEventHandler.class,

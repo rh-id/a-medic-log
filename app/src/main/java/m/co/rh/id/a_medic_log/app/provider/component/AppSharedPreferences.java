@@ -17,6 +17,7 @@ public class AppSharedPreferences {
     private static final boolean DEFAULT_APP_LOCK_ENABLED = false;
     private static final boolean DEFAULT_NOTIFICATION_PERMISSION_ASKED = false;
     private static final boolean DEFAULT_MEDICINE_REMINDER_ALARM_MIGRATED = false;
+    private static final boolean DEFAULT_DOSE_OCCURRENCE_BACKFILLED = false;
     private ProviderValue<ExecutorService> mExecutorService;
     private ProviderValue<Handler> mHandler;
     private SharedPreferences mSharedPreferences;
@@ -35,6 +36,9 @@ public class AppSharedPreferences {
 
     private boolean mMedicineReminderAlarmMigrated;
     private String mMedicineReminderAlarmMigratedKey;
+
+    private boolean mDoseOccurrenceBackfilled;
+    private String mDoseOccurrenceBackfilledKey;
 
     public AppSharedPreferences(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
@@ -72,6 +76,11 @@ public class AppSharedPreferences {
                 + ".medicineReminderAlarmMigrated";
         mMedicineReminderAlarmMigrated = mSharedPreferences.getBoolean(
                 mMedicineReminderAlarmMigratedKey, DEFAULT_MEDICINE_REMINDER_ALARM_MIGRATED);
+
+        mDoseOccurrenceBackfilledKey = SHARED_PREFERENCES_NAME
+                + ".doseOccurrenceBackfilled";
+        mDoseOccurrenceBackfilled = mSharedPreferences.getBoolean(
+                mDoseOccurrenceBackfilledKey, DEFAULT_DOSE_OCCURRENCE_BACKFILLED);
     }
 
     private void selectedTheme(int setting) {
@@ -149,5 +158,20 @@ public class AppSharedPreferences {
 
     public boolean isMedicineReminderAlarmMigrated() {
         return mMedicineReminderAlarmMigrated;
+    }
+
+    private void doseOccurrenceBackfilled(boolean backfilled) {
+        mDoseOccurrenceBackfilled = backfilled;
+        mExecutorService.get().execute(() ->
+                mSharedPreferences.edit().putBoolean(mDoseOccurrenceBackfilledKey, backfilled)
+                        .commit());
+    }
+
+    public void setDoseOccurrenceBackfilled(boolean backfilled) {
+        doseOccurrenceBackfilled(backfilled);
+    }
+
+    public boolean isDoseOccurrenceBackfilled() {
+        return mDoseOccurrenceBackfilled;
     }
 }

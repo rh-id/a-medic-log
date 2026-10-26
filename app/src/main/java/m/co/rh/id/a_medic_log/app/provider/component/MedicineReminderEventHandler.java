@@ -23,6 +23,7 @@ import m.co.rh.id.a_medic_log.app.workmanager.Tags;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
+import m.co.rh.id.a_medic_log.base.repository.MedicineRepository;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.a_medic_log.base.state.ProfileState;
@@ -42,6 +43,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
     private final MedicineReminderDao mMedicineReminderDao;
     private final ProviderValue<AppSharedPreferences> mAppSharedPreferences;
     private final ProviderValue<MedicineReminderAlarmScheduler> mMedicineReminderAlarmScheduler;
+    private final ProviderValue<MedicineRepository> mMedicineRepository;
     private final ProviderValue<ILogger> mLogger;
     private final NoteChangeNotifier mNoteChangeNotifier;
     private final MedicineChangeNotifier mMedicineChangeNotifier;
@@ -57,6 +59,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
         mMedicineReminderDao = provider.get(MedicineReminderDao.class);
         mAppSharedPreferences = provider.lazyGet(AppSharedPreferences.class);
         mMedicineReminderAlarmScheduler = provider.lazyGet(MedicineReminderAlarmScheduler.class);
+        mMedicineRepository = provider.lazyGet(MedicineRepository.class);
         mLogger = provider.lazyGet(ILogger.class);
         mNoteChangeNotifier = provider.get(NoteChangeNotifier.class);
         mMedicineChangeNotifier = provider.get(MedicineChangeNotifier.class);
@@ -66,6 +69,7 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
         mLock = new ReentrantLock(); // lock to prevent inconsistency when scheduling alarm
         init();
         migrateWorkManagerRemindersIfNeeded();
+        backfillDoseOccurrencesIfNeeded();
     }
 
     private void init() {
@@ -209,6 +213,10 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
                                 {
                                     mLock.lock();
                                     try {
+                                        // the repository already truncated the
+                                        // deleted reminder's future occurrences
+                                        // inside its delete transaction, only
+                                        // the alarm cancellation is left here
                                         cancelMedicineReminderNotificationWork(Collections.singletonList(medicineReminder));
                                     } finally {
                                         mLock.unlock();
@@ -276,6 +284,34 @@ public class MedicineReminderEventHandler implements ProviderDisposable {
                 mLogger.get().e(TAG, "Failed to migrate medicine reminders to AlarmManager", e);
             } finally {
                 mLock.unlock();
+            }
+        });
+    }
+
+    /**
+     * One-time backfill of the medicine_dose_occurrence snapshot table after
+     * the upgrade that introduced occurrence tracking: every ENABLED reminder's
+     * expected doses from creation to end of today are recorded. Disabled
+     * reminders are skipped entirely by the repository, without a recorded
+     * disable time their history is unknowable. Idempotent, the insert is
+     * conflict-IGNORE and the AppSharedPreferences flag makes it run once.
+     * No local lock is taken: occurrence correctness is the repository's
+     * encompassing transaction's job, this method only guards the once-only
+     * flag.
+     */
+    public void backfillDoseOccurrencesIfNeeded() {
+        mExecutorService.execute(() -> {
+            AppSharedPreferences appSharedPreferences = mAppSharedPreferences.get();
+            if (appSharedPreferences.isDoseOccurrenceBackfilled()) {
+                return;
+            }
+            try {
+                // the repository re-reads the authoritative reminder list
+                // inside its transaction, no local snapshot is passed
+                mMedicineRepository.get().backfillOccurrences(new Date());
+                appSharedPreferences.setDoseOccurrenceBackfilled(true);
+            } catch (Exception e) {
+                mLogger.get().e(TAG, "Failed to backfill dose occurrences", e);
             }
         });
     }

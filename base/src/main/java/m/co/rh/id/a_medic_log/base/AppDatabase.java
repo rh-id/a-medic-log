@@ -6,6 +6,7 @@ import androidx.room.TypeConverters;
 
 import m.co.rh.id.a_medic_log.base.dao.AndroidNotificationDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.dao.MedicineDoseOccurrenceDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineIntakeDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentDao;
@@ -15,6 +16,7 @@ import m.co.rh.id.a_medic_log.base.dao.NoteTagDao;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
 import m.co.rh.id.a_medic_log.base.entity.AndroidNotification;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
+import m.co.rh.id.a_medic_log.base.entity.MedicineDoseOccurrence;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.entity.Note;
@@ -26,8 +28,8 @@ import m.co.rh.id.a_medic_log.base.room.converter.LinkedHashSetConverter;
 
 @Database(entities = {Profile.class, Note.class, NoteTag.class, NoteAttachment.class,
         NoteAttachmentFile.class, Medicine.class, MedicineReminder.class, MedicineIntake.class
-        , AndroidNotification.class},
-        version = 5)
+        , AndroidNotification.class, MedicineDoseOccurrence.class},
+        version = 6)
 @TypeConverters({LinkedHashSetConverter.class})
 public abstract class AppDatabase extends RoomDatabase {
 
@@ -44,6 +46,8 @@ public abstract class AppDatabase extends RoomDatabase {
     public abstract MedicineReminderDao medicineReminderDao();
 
     public abstract MedicineIntakeDao medicineIntakeDao();
+
+    public abstract MedicineDoseOccurrenceDao medicineDoseOccurrenceDao();
 
     public abstract MedicineDao medicineDao();
 

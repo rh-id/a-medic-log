@@ -6,28 +6,41 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
+import m.co.rh.id.a_medic_log.base.entity.MedicineDoseOccurrence;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
-import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
-import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 
 /**
  * Computes the adherence report purely from the given data, no Android dependency.
- * The report is scoped to a single profile: only medicines linked to that profile
- * (via the note's profileId) are considered.
- * Expected doses are derived from enabled reminders (day-of-week + time-of-day
- * anchored at startDateTime); a dose counts as TAKEN if the medicine has an intake
- * logged on that occurrence's calendar day (greedy nearest-time matching),
- * otherwise MISSED.
+ * The report is scoped to a single profile: only medicines passed in the
+ * medicineMap belong to it (the command pre-scopes via its profile-scoped
+ * queries, the calculator skips any occurrence/intake whose medicineId is
+ * missing from the map).
+ * Expected doses come from the pre-generated persistent occurrence snapshot
+ * (medicine_dose_occurrence), NOT from live reminders. A dose counts as TAKEN
+ * if an intake of the same medicine is logged within
+ * ±{@link #WINDOW_MILLIS} of the occurrence's scheduled time (nearest intake
+ * wins, matching runs over the whole range per medicine, not day-bucketed, so
+ * a 23:00 dose taken at 01:00 the next day counts for the scheduled day),
+ * otherwise MISSED. Occurrences scheduled after now are not yet due and are
+ * excluded from both taken and missed. Intakes of the same medicine that
+ * remained unconsumed after matching inside [rangeStart, rangeEnd] count as
+ * EXTRA (attributed to the intake's day) but never affect the percentages.
  */
 public final class AdherenceCalculator {
+
+    /**
+     * Default matching window: a dose counts TAKEN if an intake of the same
+     * medicine is logged within ±3 hours of the scheduled time — a common
+     * ±2-3h protocol window in adherence literature; fixed constant, matching
+     * Consumer reminder-app practice.
+     */
+    public static final long WINDOW_MILLIS = 3L * 60 * 60 * 1000;
 
     private AdherenceCalculator() {
     }
@@ -73,92 +86,99 @@ public final class AdherenceCalculator {
     }
 
     public static AdherenceReport calculate(long profileId, int rangeDays, Date now,
-                                            List<MedicineIntake> intakesInRange,
-                                            List<MedicineReminder> enabledReminders,
+                                            List<MedicineDoseOccurrence> occurrencesInRange,
+                                            List<MedicineIntake> intakesInRangeWidened,
                                             Map<Long, Medicine> medicineMap,
-                                            Map<Long, Note> noteMap,
-                                            Map<Long, Profile> profileMap) {
+                                            Profile selectedProfile) {
+        return calculate(profileId, rangeDays, now, occurrencesInRange,
+                intakesInRangeWidened, medicineMap, selectedProfile, WINDOW_MILLIS);
+    }
+
+    /**
+     * Overload with an explicit matching window for testability
+     */
+    public static AdherenceReport calculate(long profileId, int rangeDays, Date now,
+                                            List<MedicineDoseOccurrence> occurrencesInRange,
+                                            List<MedicineIntake> intakesInRangeWidened,
+                                            Map<Long, Medicine> medicineMap,
+                                            Profile selectedProfile, long windowMillis) {
         AdherenceReport report = new AdherenceReport();
         report.rangeDays = rangeDays;
 
-        // only medicines that belong to the selected profile (via the note's
-        // profileId) are part of this report
-        Set<Long> profileMedicineIds = new HashSet<>();
-        for (Medicine medicine : medicineMap.values()) {
-            if (medicine == null || medicine.id == null || medicine.noteId == null) {
-                continue;
-            }
-            Note note = noteMap.get(medicine.noteId);
-            if (note != null && note.profileId != null && note.profileId == profileId) {
-                profileMedicineIds.add(medicine.id);
+        // only medicines that belong to the selected profile are part of this
+        // report, the command pre-scopes and the map membership is re-checked
+        // for every occurrence/intake below
+        Map<Long, List<MedicineDoseOccurrence>> occurrenceMap = new HashMap<>();
+        if (occurrencesInRange != null) {
+            for (MedicineDoseOccurrence occurrence : occurrencesInRange) {
+                if (occurrence == null || occurrence.scheduledDateTime == null
+                        || occurrence.medicineId <= 0
+                        || !medicineMap.containsKey(occurrence.medicineId)) {
+                    continue;
+                }
+                occurrenceMap
+                        .computeIfAbsent(occurrence.medicineId, k -> new ArrayList<>())
+                        .add(occurrence);
             }
         }
-        Profile selectedProfile = profileMap.get(profileId);
+
+        // intakes grouped by medicineId, the fetch was widened by the matching
+        // window so boundary intakes can match; grouping by medicine (instead
+        // of pooling) keeps a medicine's intake from marking another medicine's
+        // dose taken
+        Map<Long, List<MedicineIntake>> intakeMap = new HashMap<>();
+        if (intakesInRangeWidened != null) {
+            for (MedicineIntake intake : intakesInRangeWidened) {
+                if (intake == null || intake.medicineId == null || intake.takenDateTime == null
+                        || !medicineMap.containsKey(intake.medicineId)) {
+                    continue;
+                }
+                intakeMap
+                        .computeIfAbsent(intake.medicineId, k -> new ArrayList<>())
+                        .add(intake);
+            }
+        }
 
         // ordered oldest -> newest, key is the day's start-of-day millis
+        long rangeStartMillis = rangeStart(now, rangeDays);
+        long rangeEndMillis = rangeEnd(now);
         Map<Long, AdherenceReport.DailyCount> dailyMap = new LinkedHashMap<>();
         Calendar dayCursor = Calendar.getInstance();
-        dayCursor.setTimeInMillis(rangeStart(now, rangeDays));
-        long endMillis = rangeEnd(now);
-        while (dayCursor.getTimeInMillis() <= endMillis) {
+        dayCursor.setTimeInMillis(rangeStartMillis);
+        while (dayCursor.getTimeInMillis() <= rangeEndMillis) {
             AdherenceReport.DailyCount dailyCount = new AdherenceReport.DailyCount();
             dailyCount.date = dayCursor.getTime();
             dailyMap.put(dayCursor.getTimeInMillis(), dailyCount);
             dayCursor.add(Calendar.DAY_OF_MONTH, 1);
         }
 
-        // occurrences grouped by medicineId then calendar-day of the occurrence
-        Map<Long, Map<Long, List<Date>>> occurrenceMap = new HashMap<>();
-        if (enabledReminders != null) {
-            for (MedicineReminder reminder : enabledReminders) {
-                if (reminder == null || reminder.medicineId == null
-                        || !profileMedicineIds.contains(reminder.medicineId)) {
-                    continue;
-                }
-                collectOccurrences(reminder, now, dailyMap, occurrenceMap);
-            }
-        }
-
-        // intakes grouped by medicineId then calendar-day of takenDateTime
-        Map<Long, Map<Long, List<Date>>> intakeMap = new HashMap<>();
-        if (intakesInRange != null) {
-            for (MedicineIntake intake : intakesInRange) {
-                if (intake == null || intake.medicineId == null || intake.takenDateTime == null
-                        || !profileMedicineIds.contains(intake.medicineId)) {
-                    continue;
-                }
-                intakeMap
-                        .computeIfAbsent(intake.medicineId, k -> new HashMap<>())
-                        .computeIfAbsent(startOfDayMillis(intake.takenDateTime), k -> new ArrayList<>())
-                        .add(intake.takenDateTime);
-            }
-        }
-
         Map<Long, AdherenceReport.MedicineAdherence> adherenceMap = new LinkedHashMap<>();
-        for (Map.Entry<Long, Map<Long, List<Date>>> medicineEntry : occurrenceMap.entrySet()) {
-            Medicine medicine = medicineMap.get(medicineEntry.getKey());
-            Note note = medicine == null || medicine.noteId == null
-                    ? null : noteMap.get(medicine.noteId);
-            // skip reminders whose medicine/note is missing from the maps
-            if (medicine == null || note == null) {
+        for (Medicine medicine : medicineMap.values()) {
+            if (medicine == null || medicine.id == null) {
                 continue;
             }
-            AdherenceReport.MedicineAdherence medicineAdherence = adherenceMap
-                    .computeIfAbsent(medicineEntry.getKey(), k -> {
-                        AdherenceReport.MedicineAdherence created = new AdherenceReport.MedicineAdherence();
-                        created.medicineId = k;
-                        created.medicineName = medicine.name;
-                        created.profileName = selectedProfile == null ? null : selectedProfile.name;
-                        return created;
-                    });
-            for (Map.Entry<Long, List<Date>> dayEntry : medicineEntry.getValue().entrySet()) {
-                List<Date> occurrences = dayEntry.getValue();
-                List<Date> intakes = intakeMap
-                        .getOrDefault(medicineEntry.getKey(), Collections.emptyMap())
-                        .getOrDefault(dayEntry.getKey(), Collections.emptyList());
-                matchDay(occurrences, intakes, medicineAdherence,
-                        dailyMap.get(dayEntry.getKey()));
+            List<MedicineDoseOccurrence> occurrences =
+                    occurrenceMap.getOrDefault(medicine.id, Collections.emptyList());
+            List<MedicineIntake> intakes =
+                    intakeMap.getOrDefault(medicine.id, Collections.emptyList());
+            if (occurrences.isEmpty() && intakes.isEmpty()) {
+                // nothing expected and nothing logged for this medicine
+                continue;
             }
+            AdherenceReport.MedicineAdherence medicineAdherence = new AdherenceReport.MedicineAdherence();
+            medicineAdherence.medicineId = medicine.id;
+            medicineAdherence.medicineName = medicine.name;
+            medicineAdherence.profileName = selectedProfile == null ? null : selectedProfile.name;
+            matchMedicine(occurrences, intakes, now, windowMillis,
+                    rangeStartMillis, rangeEndMillis, medicineAdherence, dailyMap);
+            if (medicineAdherence.taken == 0 && medicineAdherence.missed == 0
+                    && medicineAdherence.extra == 0) {
+                // all-zero row: every occurrence is not yet due and nothing was
+                // logged, the previous reminder-derived behavior omitted such
+                // medicines entirely so the UI keeps showing no empty rows
+                continue;
+            }
+            adherenceMap.put(medicine.id, medicineAdherence);
         }
 
         report.perMedicine = new ArrayList<>(adherenceMap.values());
@@ -166,87 +186,82 @@ public final class AdherenceCalculator {
         for (AdherenceReport.DailyCount dailyCount : report.daily) {
             report.totalTaken += dailyCount.taken;
             report.totalMissed += dailyCount.missed;
+            report.totalExtra += dailyCount.extra;
         }
         report.adherencePercent = percent(report.totalTaken, report.totalMissed);
         return report;
     }
 
-    private static void collectOccurrences(MedicineReminder reminder, Date now,
-                                           Map<Long, AdherenceReport.DailyCount> dailyMap,
-                                           Map<Long, Map<Long, List<Date>>> occurrenceMap) {
-        if (reminder == null || reminder.medicineId == null
-                || reminder.startDateTime == null || reminder.reminderDays == null
-                || reminder.reminderDays.isEmpty()) {
-            return;
-        }
-        Calendar startCalendar = Calendar.getInstance();
-        startCalendar.setTime(reminder.startDateTime);
-        int hourOfDay = startCalendar.get(Calendar.HOUR_OF_DAY);
-        int minute = startCalendar.get(Calendar.MINUTE);
-        int second = startCalendar.get(Calendar.SECOND);
-
-        Calendar occurrenceCalendar = Calendar.getInstance();
-        for (Long dayStartMillis : dailyMap.keySet()) {
-            occurrenceCalendar.setTimeInMillis(dayStartMillis);
-            int dayOfWeek = occurrenceCalendar.get(Calendar.DAY_OF_WEEK);
-            if (!reminder.reminderDays.contains(dayOfWeek)) {
-                continue;
-            }
-            occurrenceCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-            occurrenceCalendar.set(Calendar.MINUTE, minute);
-            occurrenceCalendar.set(Calendar.SECOND, second);
-            occurrenceCalendar.set(Calendar.MILLISECOND, 0);
-            Date occurrence = occurrenceCalendar.getTime();
-            // occurrence >= startDateTime already covers the reminder's start date,
-            // and occurrence <= now excludes future doses of today
-            if (occurrence.compareTo(reminder.startDateTime) < 0
-                    || occurrence.compareTo(now) > 0
-                    || reminder.createdDateTime == null
-                    || occurrence.compareTo(reminder.createdDateTime) < 0) {
-                continue;
-            }
-            occurrenceMap
-                    .computeIfAbsent(reminder.medicineId, k -> new HashMap<>())
-                    .computeIfAbsent(dayStartMillis, k -> new ArrayList<>())
-                    .add(occurrence);
-        }
-    }
-
     /**
-     * Greedy nearest-time matching: occurrences and intakes are sorted by time
-     * ascending, each occurrence pairs with the unconsumed intake having the
-     * minimum absolute time difference.
+     * Matches one medicine's occurrences against its own intakes, sorted by
+     * time ascending, each not-yet-due occurrence pairs with the unconsumed
+     * intake having the minimum absolute time difference; the pair only counts
+     * as TAKEN when the difference is within the matching window, otherwise the
+     * occurrence is MISSED. Matching is over the whole range (not day-bucketed)
+     * so cross-midnight intakes attribute to the occurrence's day. Remaining
+     * unconsumed intakes inside [rangeStartMillis, rangeEndMillis] count as
+     * EXTRA on the intake's day; the widened fetch bounds never count as extra.
      */
-    private static void matchDay(List<Date> occurrences, List<Date> intakes,
-                                 AdherenceReport.MedicineAdherence medicineAdherence,
-                                 AdherenceReport.DailyCount dailyCount) {
-        List<Date> sortedOccurrences = new ArrayList<>(occurrences);
-        List<Date> sortedIntakes = new ArrayList<>(intakes);
-        sortedOccurrences.sort(Comparator.naturalOrder());
-        sortedIntakes.sort(Comparator.naturalOrder());
+    private static void matchMedicine(List<MedicineDoseOccurrence> occurrences,
+                                      List<MedicineIntake> intakes, Date now, long windowMillis,
+                                      long rangeStartMillis, long rangeEndMillis,
+                                      AdherenceReport.MedicineAdherence medicineAdherence,
+                                      Map<Long, AdherenceReport.DailyCount> dailyMap) {
+        List<MedicineDoseOccurrence> sortedOccurrences = new ArrayList<>(occurrences);
+        sortedOccurrences.sort(Comparator.comparing(o -> o.scheduledDateTime));
+        List<MedicineIntake> sortedIntakes = new ArrayList<>(intakes);
+        sortedIntakes.sort(Comparator.comparing(o -> o.takenDateTime));
         boolean[] consumed = new boolean[sortedIntakes.size()];
-        for (Date occurrence : sortedOccurrences) {
+        for (MedicineDoseOccurrence occurrence : sortedOccurrences) {
+            // occurrences after now are not yet due, excluded from taken/missed
+            if (occurrence.scheduledDateTime.after(now)) {
+                continue;
+            }
             int nearestIdx = -1;
             long nearestDiff = Long.MAX_VALUE;
             for (int i = 0; i < sortedIntakes.size(); i++) {
                 if (consumed[i]) {
                     continue;
                 }
-                long diff = Math.abs(occurrence.getTime()
-                        - sortedIntakes.get(i).getTime());
+                long diff = Math.abs(occurrence.scheduledDateTime.getTime()
+                        - sortedIntakes.get(i).takenDateTime.getTime());
                 if (diff < nearestDiff) {
                     nearestDiff = diff;
                     nearestIdx = i;
                 }
             }
-            boolean taken = nearestIdx != -1;
-            if (taken) {
+            AdherenceReport.DailyCount dailyCount = dailyMap.get(
+                    startOfDayMillis(occurrence.scheduledDateTime));
+            if (nearestIdx != -1 && nearestDiff <= windowMillis) {
                 consumed[nearestIdx] = true;
                 medicineAdherence.taken++;
-                dailyCount.taken++;
+                if (dailyCount != null) {
+                    dailyCount.taken++;
+                }
             } else {
                 medicineAdherence.missed++;
-                dailyCount.missed++;
+                if (dailyCount != null) {
+                    dailyCount.missed++;
+                }
+            }
+        }
+        // every intake of this medicine that no occurrence consumed and that
+        // lies inside the actual report range is an extra intake (e.g. PRN),
+        // attributed to the intake's own calendar day
+        for (int i = 0; i < sortedIntakes.size(); i++) {
+            if (consumed[i]) {
+                continue;
+            }
+            Date takenDateTime = sortedIntakes.get(i).takenDateTime;
+            long takenMillis = takenDateTime.getTime();
+            if (takenMillis < rangeStartMillis || takenMillis > rangeEndMillis) {
+                // present only because the fetch was widened by the window
+                continue;
+            }
+            medicineAdherence.extra++;
+            AdherenceReport.DailyCount dailyCount = dailyMap.get(startOfDayMillis(takenDateTime));
+            if (dailyCount != null) {
+                dailyCount.extra++;
             }
         }
         medicineAdherence.adherencePercent =

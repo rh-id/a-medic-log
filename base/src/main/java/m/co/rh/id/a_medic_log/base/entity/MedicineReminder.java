@@ -69,6 +69,26 @@ public class MedicineReminder implements Serializable, Cloneable {
     @ColumnInfo(name = "updated_date_time")
     public Date updatedDateTime;
 
+    /**
+     * The date time that this reminder was last enabled, set on every
+     * disabled -> enabled transition and never cleared once set
+     */
+    @TypeConverters({Converter.class})
+    @ColumnInfo(name = "last_enabled_date_time")
+    public Date lastEnabledDateTime;
+
+    /**
+     * The date time that this reminder was last disabled, set on every
+     * enabled -> disabled transition and never cleared once set.
+     * Together with {@link #lastEnabledDateTime} these record the reminder's
+     * enable/disable transition times and bound occurrence generation: an
+     * off-period between lastDisabledDateTime and the next lastEnabledDateTime
+     * must never produce expected doses.
+     */
+    @TypeConverters({Converter.class})
+    @ColumnInfo(name = "last_disabled_date_time")
+    public Date lastDisabledDateTime;
+
     public MedicineReminder() {
         Date date = new Date();
         createdDateTime = date;
@@ -100,7 +120,11 @@ public class MedicineReminder implements Serializable, Cloneable {
             return false;
         if (createdDateTime != null ? !createdDateTime.equals(that.createdDateTime) : that.createdDateTime != null)
             return false;
-        return updatedDateTime != null ? updatedDateTime.equals(that.updatedDateTime) : that.updatedDateTime == null;
+        if (updatedDateTime != null ? !updatedDateTime.equals(that.updatedDateTime) : that.updatedDateTime != null)
+            return false;
+        if (lastEnabledDateTime != null ? !lastEnabledDateTime.equals(that.lastEnabledDateTime) : that.lastEnabledDateTime != null)
+            return false;
+        return lastDisabledDateTime != null ? lastDisabledDateTime.equals(that.lastDisabledDateTime) : that.lastDisabledDateTime == null;
     }
 
     @Override
@@ -113,6 +137,8 @@ public class MedicineReminder implements Serializable, Cloneable {
         result = 31 * result + (reminderDays != null ? reminderDays.hashCode() : 0);
         result = 31 * result + (createdDateTime != null ? createdDateTime.hashCode() : 0);
         result = 31 * result + (updatedDateTime != null ? updatedDateTime.hashCode() : 0);
+        result = 31 * result + (lastEnabledDateTime != null ? lastEnabledDateTime.hashCode() : 0);
+        result = 31 * result + (lastDisabledDateTime != null ? lastDisabledDateTime.hashCode() : 0);
         return result;
     }
 

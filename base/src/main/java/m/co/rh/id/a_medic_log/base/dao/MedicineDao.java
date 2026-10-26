@@ -24,6 +24,11 @@ public abstract class MedicineDao {
     @Query("SELECT * FROM medicine ORDER BY created_date_time DESC")
     public abstract List<Medicine> findAllMedicines();
 
+    @Query("SELECT medicine.* FROM medicine INNER JOIN note " +
+            "ON medicine.note_id = note.id WHERE note.profile_id = :profileId " +
+            "ORDER BY medicine.created_date_time DESC")
+    public abstract List<Medicine> findMedicinesByProfileId(long profileId);
+
     @Query("SELECT COUNT(*) FROM medicine INNER JOIN note " +
             "ON medicine.note_id = note.id WHERE note.profile_id = :profileId")
     public abstract int countMedicinesByProfileId(long profileId);

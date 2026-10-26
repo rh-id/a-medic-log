@@ -4,6 +4,7 @@ import androidx.room.Room;
 
 import m.co.rh.id.a_medic_log.base.AppDatabase;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.dao.MedicineDoseOccurrenceDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineIntakeDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentDao;
@@ -59,6 +60,8 @@ class RepositoryTestProviderModule implements ProviderModule {
                 .medicineReminderDao());
         providerRegistry.registerAsync(MedicineIntakeDao.class, () -> provider.get(AppDatabase.class)
                 .medicineIntakeDao());
+        providerRegistry.registerAsync(MedicineDoseOccurrenceDao.class, () -> provider.get(AppDatabase.class)
+                .medicineDoseOccurrenceDao());
         // repositories, mirrors the DatabaseProviderModule registration
         providerRegistry.registerLazy(NoteRepository.class, () -> new NoteRepository(provider));
         providerRegistry.registerLazy(NoteAttachmentRepository.class, () -> new NoteAttachmentRepository(provider));

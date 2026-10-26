@@ -1,8 +1,6 @@
 package m.co.rh.id.a_medic_log.app.provider.command;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -10,20 +8,27 @@ import java.util.List;
 import java.util.Map;
 
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
+import m.co.rh.id.a_medic_log.base.entity.MedicineDoseOccurrence;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
-import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 
 /**
  * Computes today's dose status per profile purely from the given data,
  * no Android dependency. Only medicines linked to a profile (via the
- * note's profileId) are considered. Expected doses for today are derived
- * from enabled reminders (day-of-week + time-of-day anchored at
- * startDateTime); unlike the report calculator, upcoming doses of today
- * are included. A dose counts as TAKEN via greedy nearest-time matching
- * of the profile's intakes from today, otherwise it is missed (when its
- * time has passed) or still upcoming.
+ * note's profileId) are considered. Expected doses come from the
+ * pre-generated persistent occurrence snapshot (medicine_dose_occurrence),
+ * NOT from live reminders; unlike the report calculator, upcoming doses of
+ * today are included. Matching is per medicine: a dose counts as TAKEN only
+ * via an intake of the SAME medicine within
+ * ±{@link AdherenceCalculator#WINDOW_MILLIS} (nearest-intake matching),
+ * otherwise it is missed once its take-window has fully elapsed (an untaken
+ * dose whose time has passed but whose window is still open is due yet still
+ * takeable, so the card counts it in-progress rather than missed) or it is
+ * still upcoming.
+ * The occurrence table is truncated on disable, so reminders disabled
+ * mid-day produce no upcoming doses and PRN-only profiles (no occurrences)
+ * remain omitted from the cards.
  */
 public final class TodayCalculator {
 
@@ -48,8 +53,9 @@ public final class TodayCalculator {
     private TodayCalculator() {
     }
 
-    public static List<TodayStatus> compute(Date now, List<MedicineIntake> intakesToday,
-                                            List<MedicineReminder> enabledReminders,
+    public static List<TodayStatus> compute(Date now,
+                                            List<MedicineDoseOccurrence> occurrencesToday,
+                                            List<MedicineIntake> intakesToday,
                                             Map<Long, Medicine> medicineMap,
                                             Map<Long, Note> noteMap,
                                             List<Profile> profiles) {
@@ -60,25 +66,34 @@ public final class TodayCalculator {
 
         // occurrences grouped by profileId, unordered here (sorted when matched)
         Map<Long, List<Occurrence>> occurrenceMap = new HashMap<>();
-        if (enabledReminders != null) {
-            for (MedicineReminder reminder : enabledReminders) {
-                collectTodayOccurrences(reminder, now, medicineMap, noteMap, occurrenceMap);
+        if (occurrencesToday != null) {
+            for (MedicineDoseOccurrence doseOccurrence : occurrencesToday) {
+                if (doseOccurrence == null || doseOccurrence.scheduledDateTime == null
+                        || doseOccurrence.medicineId <= 0) {
+                    continue;
+                }
+                Long profileId = profileIdOf(doseOccurrence.medicineId, medicineMap, noteMap);
+                if (profileId == null) {
+                    continue;
+                }
+                occurrenceMap
+                        .computeIfAbsent(profileId, k -> new ArrayList<>())
+                        .add(new Occurrence(doseOccurrence.scheduledDateTime,
+                                doseOccurrence.medicineId));
             }
         }
 
-        // intakes from today grouped by profileId
+        // intakes grouped by medicineId: intakes must only mark doses of the
+        // SAME medicine, pooling them per profile would let one medicine's
+        // intake mark another medicine's dose taken
         Map<Long, List<Date>> intakeMap = new HashMap<>();
         if (intakesToday != null) {
             for (MedicineIntake intake : intakesToday) {
                 if (intake == null || intake.medicineId == null || intake.takenDateTime == null) {
                     continue;
                 }
-                Long profileId = profileIdOf(intake.medicineId, medicineMap, noteMap);
-                if (profileId == null) {
-                    continue;
-                }
                 intakeMap
-                        .computeIfAbsent(profileId, k -> new ArrayList<>())
+                        .computeIfAbsent(intake.medicineId, k -> new ArrayList<>())
                         .add(intake.takenDateTime);
             }
         }
@@ -89,79 +104,98 @@ public final class TodayCalculator {
             }
             List<Occurrence> occurrences = occurrenceMap.get(profile.id);
             if (occurrences == null || occurrences.isEmpty()) {
-                // nothing scheduled today: the profile is omitted entirely
+                // nothing scheduled today (e.g. PRN-only medicine): the profile
+                // is omitted entirely, unchanged behavior
                 continue;
             }
-            statuses.add(buildStatus(profile, occurrences,
-                    intakeMap.getOrDefault(profile.id, Collections.emptyList()),
-                    medicineMap, now));
+            statuses.add(buildStatus(profile, occurrences, intakeMap, medicineMap, now));
         }
         statuses.sort(STATUS_ORDER);
         return statuses;
     }
 
-    private static void collectTodayOccurrences(MedicineReminder reminder, Date now,
-                                                Map<Long, Medicine> medicineMap,
-                                                Map<Long, Note> noteMap,
-                                                Map<Long, List<Occurrence>> occurrenceMap) {
-        if (reminder == null || reminder.medicineId == null
-                || reminder.startDateTime == null || reminder.reminderDays == null
-                || reminder.reminderDays.isEmpty()) {
-            return;
-        }
-        Long profileId = profileIdOf(reminder.medicineId, medicineMap, noteMap);
-        if (profileId == null) {
-            return;
-        }
-        Calendar startCalendar = Calendar.getInstance();
-        startCalendar.setTime(reminder.startDateTime);
-        int hourOfDay = startCalendar.get(Calendar.HOUR_OF_DAY);
-        int minute = startCalendar.get(Calendar.MINUTE);
-        int second = startCalendar.get(Calendar.SECOND);
-
-        Calendar occurrenceCalendar = Calendar.getInstance();
-        occurrenceCalendar.setTime(now);
-        int dayOfWeek = occurrenceCalendar.get(Calendar.DAY_OF_WEEK);
-        if (!reminder.reminderDays.contains(dayOfWeek)) {
-            return;
-        }
-        occurrenceCalendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
-        occurrenceCalendar.set(Calendar.MINUTE, minute);
-        occurrenceCalendar.set(Calendar.SECOND, second);
-        occurrenceCalendar.set(Calendar.MILLISECOND, 0);
-        Date occurrence = occurrenceCalendar.getTime();
-        // occurrence >= startDateTime already covers the reminder's start date,
-        // unlike the report calculator the occurrence <= now check is omitted so
-        // upcoming doses of today stay included
-        if (occurrence.compareTo(reminder.startDateTime) < 0
-                || reminder.createdDateTime == null
-                || occurrence.compareTo(reminder.createdDateTime) < 0) {
-            return;
-        }
-        occurrenceMap
-                .computeIfAbsent(profileId, k -> new ArrayList<>())
-                .add(new Occurrence(occurrence, reminder.medicineId));
-    }
-
     /**
-     * Greedy nearest-time matching: occurrences and intakes are sorted by time
-     * ascending, each occurrence pairs with the unconsumed intake having the
-     * minimum absolute time difference.
+     * Per-medicine matching: the profile's occurrences are grouped by
+     * medicineId and each group is matched only against that medicine's
+     * intakes within ±{@link AdherenceCalculator#WINDOW_MILLIS}
      */
     private static TodayStatus buildStatus(Profile profile, List<Occurrence> occurrences,
-                                           List<Date> intakes, Map<Long, Medicine> medicineMap,
-                                           Date now) {
+                                           Map<Long, List<Date>> intakesByMedicineId,
+                                           Map<Long, Medicine> medicineMap, Date now) {
         TodayStatus status = new TodayStatus();
         status.profileId = profile.id;
         status.profileName = profile.name;
         status.totalDoses = occurrences.size();
 
+        Map<Long, List<Occurrence>> occurrencesByMedicineId = new HashMap<>();
+        for (Occurrence occurrence : occurrences) {
+            occurrencesByMedicineId
+                    .computeIfAbsent(occurrence.medicineId, k -> new ArrayList<>())
+                    .add(occurrence);
+        }
+
+        List<Occurrence> unmatched = new ArrayList<>();
+        for (Map.Entry<Long, List<Occurrence>> medicineEntry : occurrencesByMedicineId.entrySet()) {
+            matchMedicineOccurrences(medicineEntry.getValue(),
+                    intakesByMedicineId.get(medicineEntry.getKey()),
+                    status, unmatched);
+        }
+        // the per-medicine groups came from a HashMap, so their concatenation
+        // is unordered: sort the merged list or the earliest-missed/next-dose
+        // scan below could pick a non-earliest dose
+        unmatched.sort(Comparator.naturalOrder());
+
+        Occurrence missed = null;
+        Occurrence nextDose = null;
+        boolean hasActiveDose = false;
+        for (Occurrence occurrence : unmatched) {
+            if (occurrence.time.getTime() + AdherenceCalculator.WINDOW_MILLIS <= now.getTime()) {
+                status.missedCount++;
+                if (missed == null) {
+                    // unmatched is sorted ascending (see above), so the first
+                    // hit is the earliest missed
+                    missed = occurrence;
+                }
+            } else if (occurrence.time.compareTo(now) > 0) {
+                if (nextDose == null) {
+                    nextDose = occurrence;
+                }
+            } else {
+                // due (time <= now) but its take-window is still open: not
+                // missed yet and not upcoming, just still takeable
+                hasActiveDose = true;
+            }
+        }
+        if (status.missedCount > 0) {
+            status.status = TodayStatus.STATUS_MISSED;
+            Medicine medicine = medicineMap.get(missed.medicineId);
+            status.missedMedicineName = medicine == null ? null : medicine.name;
+            status.missedDoseTime = missed.time;
+        } else if (nextDose != null || hasActiveDose) {
+            status.status = TodayStatus.STATUS_IN_PROGRESS;
+            if (nextDose != null) {
+                status.nextDoseTime = nextDose.time;
+            }
+        } else {
+            status.status = TodayStatus.STATUS_DONE;
+        }
+        return status;
+    }
+
+    /**
+     * Greedy nearest-time matching within ±WINDOW_MILLIS: occurrences and
+     * intakes are sorted by time ascending, each occurrence pairs with the
+     * unconsumed intake having the minimum absolute time difference; pairs
+     * further apart than the window leave the occurrence unmatched
+     */
+    private static void matchMedicineOccurrences(List<Occurrence> occurrences, List<Date> intakes,
+                                                 TodayStatus status, List<Occurrence> unmatchedOut) {
         List<Occurrence> sortedOccurrences = new ArrayList<>(occurrences);
-        List<Date> sortedIntakes = new ArrayList<>(intakes);
+        List<Date> sortedIntakes = intakes == null
+                ? new ArrayList<>() : new ArrayList<>(intakes);
         sortedOccurrences.sort(Comparator.naturalOrder());
         sortedIntakes.sort(Comparator.naturalOrder());
         boolean[] consumed = new boolean[sortedIntakes.size()];
-        List<Occurrence> unmatched = new ArrayList<>();
         for (Occurrence occurrence : sortedOccurrences) {
             int nearestIdx = -1;
             long nearestDiff = Long.MAX_VALUE;
@@ -176,39 +210,13 @@ public final class TodayCalculator {
                     nearestIdx = i;
                 }
             }
-            if (nearestIdx != -1) {
+            if (nearestIdx != -1 && nearestDiff <= AdherenceCalculator.WINDOW_MILLIS) {
                 consumed[nearestIdx] = true;
                 status.takenDoses++;
             } else {
-                unmatched.add(occurrence);
+                unmatchedOut.add(occurrence);
             }
         }
-
-        Occurrence missed = null;
-        Occurrence nextDose = null;
-        for (Occurrence occurrence : unmatched) {
-            if (occurrence.time.compareTo(now) <= 0) {
-                status.missedCount++;
-                if (missed == null) {
-                    // sorted ascending, so the first hit is the earliest missed
-                    missed = occurrence;
-                }
-            } else if (nextDose == null) {
-                nextDose = occurrence;
-            }
-        }
-        if (status.missedCount > 0) {
-            status.status = TodayStatus.STATUS_MISSED;
-            Medicine medicine = medicineMap.get(missed.medicineId);
-            status.missedMedicineName = medicine == null ? null : medicine.name;
-            status.missedDoseTime = missed.time;
-        } else if (nextDose != null) {
-            status.status = TodayStatus.STATUS_IN_PROGRESS;
-            status.nextDoseTime = nextDose.time;
-        } else {
-            status.status = TodayStatus.STATUS_DONE;
-        }
-        return status;
     }
 
     private static Long profileIdOf(Long medicineId, Map<Long, Medicine> medicineMap,

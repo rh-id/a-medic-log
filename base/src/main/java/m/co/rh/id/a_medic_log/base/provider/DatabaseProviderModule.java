@@ -5,6 +5,7 @@ import androidx.room.Room;
 import m.co.rh.id.a_medic_log.base.AppDatabase;
 import m.co.rh.id.a_medic_log.base.dao.AndroidNotificationDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
+import m.co.rh.id.a_medic_log.base.dao.MedicineDoseOccurrenceDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineIntakeDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentDao;
@@ -66,6 +67,8 @@ public class DatabaseProviderModule implements ProviderModule {
                 .medicineReminderDao());
         providerRegistry.registerAsync(MedicineIntakeDao.class, () -> provider.get(AppDatabase.class)
                 .medicineIntakeDao());
+        providerRegistry.registerAsync(MedicineDoseOccurrenceDao.class, () -> provider.get(AppDatabase.class)
+                .medicineDoseOccurrenceDao());
         providerRegistry.registerLazy(AndroidNotificationRepository.class, () ->
                 new AndroidNotificationRepository(provider));
         providerRegistry.registerLazy(NoteRepository.class, () ->

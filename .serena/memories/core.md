@@ -9,7 +9,7 @@ Personal medical-notes Android app (Java, GPL-3.0). Demo/production app for auth
 ## app package map (`app/src/main/java/m/co/rh/id/a_medic_log/app/`)
 - root: `MainApplication` (providers, WorkManager on-demand init, crash logger), `MainActivity` (single-activity container)
 - `constants/`: `Routes` (string route names), `Constants` (FileProvider authority)
-- `provider/`: `AppProviderModule` (app scope incl. navigator+route map), `CommandProviderModule` (31 commands), `RxProviderModule` (`RxDisposer`), `StatefulViewProvider(+Module)` (view scope)
+- `provider/`: `AppProviderModule` (app scope incl. navigator+route map), `CommandProviderModule` (31 commands; occurrence bookkeeping is NOT here — `MedicineRepository` in base owns it), `RxProviderModule` (`RxDisposer`), `StatefulViewProvider(+Module)` (view scope)
 - `provider/command/`: `*Cmd` business logic + validation
 - `provider/notifier/`: 7 `*ChangeNotifier` event buses
 - `provider/component/`: notification handling, notification-permission gate + launch controller, reminder event handler, exporters, prefs, file cleanup
@@ -17,8 +17,8 @@ Personal medical-notes Android app (Java, GPL-3.0). Demo/production app for auth
 - `workmanager/` (`MedicineReminderNotificationWorker`), `receiver/` (notification-action receivers), `rx/` (`RxDisposer`, `RxUtils`), `util/`
 
 ## base package map (`base/src/main/java/m/co/rh.id/a_medic_log/base/`)
-- `AppDatabase` (v5), `BaseApplication` (static `of(context)` accessor)
-- `entity/` + `dao/` (9+9), `repository/` (5), `state/` (`*State` Serializable wrappers), `room/DbMigration`, `room/converter/`, `provider/` (`BaseProviderModule`, `DatabaseProviderModule`, `FileHelper`, `ImageHelper`)
+- `AppDatabase` (v6), `BaseApplication` (static `of(context)` accessor)
+- `entity/` + `dao/` (10+10), `repository/` (5), `state/` (`*State` Serializable wrappers), `room/DbMigration`, `room/converter/`, `provider/` (`BaseProviderModule`, `DatabaseProviderModule`, `FileHelper`, `ImageHelper`)
 
 ## Project-wide invariants
 - Single `MainActivity`; every page is a `StatefulView`; navigation via string routes.
@@ -29,6 +29,7 @@ Personal medical-notes Android app (Java, GPL-3.0). Demo/production app for auth
 
 ## Detailed memories
 - Layer/scopes/command/reminder/export internals + how to add an entity or page: `mem:architecture`
+- Adherence/dose-occurrence invariants (generator floors, truncation rules, window matching, write-path bookkeeping): `mem:adherence`
 - Languages, versions, libraries, test frameworks: `mem:tech_stack`
 - Versioning, release checklist, signing, CI workflows, license-generation machinery: `mem:build-release`
 - Code style, naming, Rx rules, resource/i18n/commit conventions: `mem:conventions`

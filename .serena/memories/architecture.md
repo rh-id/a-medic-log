@@ -5,7 +5,7 @@
 - Activity scope: `MainActivity.onCreate` creates nested provider named `"ActivityProvider"` with `RxProviderModule` (→ activity `RxDisposer`).
 - View scope: `"StatefulViewProvider"` nested provider = `RxProviderModule` + `CommandProviderModule`; pages get it via `provider.get(StatefulViewProvider.class)` (see `BaseDetailPage`).
 - Resolution returns `ProviderValue<T>` from `provider.get()/lazyGet(Class)` — unwrap with `.get()`; commands cache `ProviderValue` fields.
-- base: `BaseProviderModule` = WeightedThreadPool (maxWeight 5, concurrent-utils), single-thread ScheduledExecutorService, main Handler, `CompositeLogger` (Android+File+Toast), FileHelper. `DatabaseProviderModule` = Room + each of 9 DAOs registered individually (deliberate, decoupled from AppDatabase) + 5 repositories lazy.
+- base: `BaseProviderModule` = WeightedThreadPool (maxWeight 5, concurrent-utils), single-thread ScheduledExecutorService, main Handler, `CompositeLogger` (Android+File+Toast), FileHelper. `DatabaseProviderModule` = Room + each of 10 DAOs registered individually (deliberate, decoupled from AppDatabase) + 5 repositories lazy.
 
 ## Navigation
 - Routes = plain strings in `app/constants/Routes.java` (`"splash"`, `"/"` = home, `/settings`, `/profiles*`, `/notes*`, `/medicines*`, `/medicineIntakes*`, `/common/*Dialog`); registered in navMap inside `AppProviderModule.getNavigator()` as `(args, activity) -> new XxxPage()` lambdas + merged `NavExtDialogConfig`.
@@ -16,16 +16,16 @@
 - Child StatefulViews: `@NavInject`, disposed+null'ed in `dispose(Activity)`.
 
 ## Command pattern (business logic + validation, no base class)
-- 31 `*Cmd` in `app/provider/command/`: `New/Update/Delete/Query(+Paged)` × entity + export/import trio. Registered lazy in `CommandProviderModule`.
+- 31 `*Cmd` in `app/provider/command/`: `New/Update/Delete/Query(+Paged)` × entity + export/import trio. Registered lazy in `CommandProviderModule`. Reminder/medicine commands are THIN: validation subjects + notifier + `MedicineRepository` call — ALL dose-occurrence bookkeeping lives in the repository (sole entry point; NO lock — each entry point is exactly one encompassing `runInTransaction` with its decision reads inside it; see `mem:adherence`).
 - Execution idiom: `Single.fromCallable(() -> { repo.insert(x); notifier.xAdded(x); return x; }).subscribeOn(Schedulers.from(mExecutorService.get()))` — every mutation fires its notifier.
 - Commands double as validators: `valid(state)` pushes errors into BehaviorSubjects exposed as `getXxxValid(): Flowable<String>` — UI subscribes to per-field error streams on the command instance.
 
 ## Notifiers (event bus)
 - 7 `*ChangeNotifier` in `app/provider/notifier/` — NO base class, each hand-rolls `PublishSubject.toSerialized()` exposed as `Flowable` (BackpressureStrategy.BUFFER) for added/updated/deleted. `NoteChangeNotifier.NoteUpdatedEvent` carries before/after `NoteState`.
-- Key consumer: `MedicineReminderEventHandler` — reschedules WorkManager on any reminder-affecting change.
+- Key consumer: `MedicineReminderEventHandler` — reschedules exact-alarm reminders on any reminder-affecting change and runs the one-time occurrence backfill (occurrence truncate-on-delete lives in `MedicineRepository.deleteMedicineReminder`; see `mem:adherence`).
 
 ## Reminders / notifications
-- `MedicineReminderNotificationWorker`: one-time work (input `Keys.LONG_MEDICINE_REMINDER_ID`), checks `reminderDays.contains(today)`, posts notification, re-enqueues next day; unique work tag `MEDICINE_REMINDER_TAG_<id>`; also cancels legacy periodic work.
+- Exact alarms (WorkManager retired for scheduling): `MedicineReminderAlarmScheduler` — one `AlarmManager.setAlarmClock`-ladder alarm per enabled reminder; `MedicineReminderEventHandler` reschedules on change/boot/permission change (`scheduleAll()`); one-time WorkManager→alarm migration (`migrateWorkManagerRemindersIfNeeded`, prefs flag). Legacy `MedicineReminderNotificationWorker` kept only for migration/cancel (unique tag `MEDICINE_REMINDER_TAG_<id>`).
 - Receivers (not exported): TakeMedicine (logs intake), DisableMedicineReminder, Delete — tracked via `AndroidNotification` entity/repository (persisted request_id/group_key). Channel created lazily in `MedicineReminderNotificationBuilder`.
 - POST_NOTIFICATIONS (Android 13+): `NotificationPermissionGate` = pure decisions `decide`/`shouldAskOnLaunch`/`shouldShowDialogNow` + persist-on-fire (`notificationPermissionAsked` written when the system dialog FIRES, not on result) + `contextualRequestIfNeeded`/`maybeRequestOnReminderEnabled` for pages. `NotificationPermissionController` (plain-new in MainActivity — per-activity state, NOT provider-registered) owns the launch ask from the unlocked resume: defers via main-handler post until `INavigator.getCurrentRoute()` == HOME_PAGE (a-navigator restores its stack asynchronously; `SplashPage`'s 1000 ms `replace(HOME_PAGE)` wipes a dialog pushed early); re-asks each process launch until confirmed; system-dialog code 4202 consumed by MainActivity, Settings row `NotificationMenuSV` round-trip 4203.
 
@@ -35,11 +35,11 @@
 - `ExportSpreadsheetCmd`: XLSX (`ExcelExporter`, a-poi-spreadsheet, 4 sheets) on API 26+, else ZIP of CSVs (`CsvArchiveExporter`, UTF-8 BOM, CRLF).
 
 ## base data layer
-- `AppDatabase` v5, name `"a-medic-log.db"`; entities: Profile, Note, NoteTag, NoteAttachment, NoteAttachmentFile, Medicine, MedicineReminder, MedicineIntake, AndroidNotification. Hierarchy: Profile→Note→Medicine→(Reminder|Intake); Note→Attachments/Tags.
-- `DbMigration` = raw SQL (1_2 note_tag, 2_3 attachment tables, 3_4 indexes, 4_5 full rebuild adding FK ON DELETE CASCADE). Schema JSONs exported to committed `base/schemas/` (required by `DbMigrationTest`).
+- `AppDatabase` v6, name `"a-medic-log.db"`; entities: Profile, Note, NoteTag, NoteAttachment, NoteAttachmentFile, Medicine, MedicineReminder (+ lastEnabled/lastDisabledDateTime, never cleared), MedicineIntake, MedicineDoseOccurrence, AndroidNotification. Hierarchy: Profile→Note→Medicine→(Reminder|Intake|DoseOccurrence); Note→Attachments/Tags.
+- `DbMigration` = raw SQL (1_2 note_tag, 2_3 attachment tables, 3_4 indexes, 4_5 full rebuild adding FK ON DELETE CASCADE, 5_6 dose-occurrence table + reminder status columns + last_enabled backfill). Schema JSONs exported to committed `base/schemas/` (required by `DbMigrationTest`).
 - `state/*State` = Serializable+Cloneable UI wrappers (command inputs/outputs, notifier before/after snapshots).
 - `FileHelper` (temp/export files, log file), `ImageHelper` (EXIF-aware).
 
 ## Adding a feature checklist (non-obvious)
-- New entity ⇒ FULL stack: entity + `*Dao` (1:1, abstract @Dao) + repository + `*State` + `*ChangeNotifier` + `New/Update/Delete/Query/Paged*Cmd` + registration in the right ProviderModules (missing registration = runtime `lazyGet` failure); DB change ⇒ bump version + migration + commit schema JSON.
+- New entity ⇒ FULL stack: entity + `*Dao` (1:1, abstract @Dao) + repository + `*State` + `*ChangeNotifier` + `New/Update/Delete/Query/Paged*Cmd` + registration in the right ProviderModules (missing registration = runtime `lazyGet` failure); DB change ⇒ bump version + migration + commit schema JSON. New reminder write path ⇒ occurrence stamp+truncate+generate bookkeeping, see `mem:adherence`.
 - New page ⇒ `Routes` constant + navMap entry in `AppProviderModule.getNavigator()` + dispose children in `dispose()`.

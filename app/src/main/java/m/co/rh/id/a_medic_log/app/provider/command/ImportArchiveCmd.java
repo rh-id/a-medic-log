@@ -51,6 +51,7 @@ import m.co.rh.id.a_medic_log.base.entity.NoteAttachmentFile;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.a_medic_log.base.provider.FileHelper;
+import m.co.rh.id.a_medic_log.base.repository.MedicineRepository;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.a_medic_log.base.state.NoteAttachmentState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
@@ -107,6 +108,8 @@ public class ImportArchiveCmd {
     private static final String KEY_REMINDER_ENABLED = "reminder_enabled";
     private static final String KEY_MESSAGE = "message";
     private static final String KEY_REMINDER_DAYS = "reminder_days";
+    private static final String KEY_LAST_ENABLED_DATE_TIME = "last_enabled_date_time";
+    private static final String KEY_LAST_DISABLED_DATE_TIME = "last_disabled_date_time";
     private static final String KEY_INTAKES = "intakes";
     private static final String KEY_TAKEN_DATE_TIME = "taken_date_time";
 
@@ -556,7 +559,29 @@ public class ImportArchiveCmd {
         medicineReminder.reminderDays = reminderDays;
         medicineReminder.createdDateTime = parseDate(reminderJson, KEY_CREATED_DATE_TIME);
         medicineReminder.updatedDateTime = parseDate(reminderJson, KEY_UPDATED_DATE_TIME);
+        // create-time stamp defaults via the shared repository helper; the
+        // archive's own stamps (parseStamp below) override them when present.
+        // No occurrence generation on import — raw inserts defer generation
+        // to the readers' routine catch-up (see MedicineRepository javadoc)
+        MedicineRepository.stampCreation(medicineReminder);
+        medicineReminder.lastEnabledDateTime = parseStamp(reminderJson,
+                KEY_LAST_ENABLED_DATE_TIME, medicineReminder.lastEnabledDateTime);
+        medicineReminder.lastDisabledDateTime = parseStamp(reminderJson,
+                KEY_LAST_DISABLED_DATE_TIME, medicineReminder.lastDisabledDateTime);
         return medicineReminder;
+    }
+
+    /**
+     * Tolerant stamp parse: an explicitly present value overrides the given
+     * stampCreation fallback, an absent key or a JSON null keeps the fallback
+     * (legacy archives carry no stamp keys at all, new-format archives write
+     * JSON null for a stamp that was never set).
+     */
+    private static Date parseStamp(JSONObject json, String key, Date fallback) {
+        if (!json.has(key) || json.isNull(key)) {
+            return fallback;
+        }
+        return parseDate(json, key);
     }
 
     private static Date parseDate(JSONObject json, String key) {

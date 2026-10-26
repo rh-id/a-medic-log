@@ -62,9 +62,17 @@ public class AdherenceReportAdapter extends RecyclerView.Adapter<AdherenceReport
         public void setItem(AdherenceReport.MedicineAdherence item) {
             mTextMedicineName.setText(item.medicineName);
             mTextProfileName.setText(item.profileName);
-            // "taken / missed / percent" e.g. "20 · 3 · 87%"
-            mTextAdherenceStats.setText(String.format(Locale.getDefault(),
-                    "%d · %d · %d%%", item.taken, item.missed, item.adherencePercent));
+            // "taken · missed · extra · percent" e.g. "20 · 3 · 1 · 87%",
+            // the extra segment is dropped while there is no extra intake:
+            // "20 · 3 · 87%"
+            if (item.extra > 0) {
+                mTextAdherenceStats.setText(String.format(Locale.getDefault(),
+                        "%d · %d · %d · %d%%", item.taken, item.missed,
+                        item.extra, item.adherencePercent));
+            } else {
+                mTextAdherenceStats.setText(String.format(Locale.getDefault(),
+                        "%d · %d · %d%%", item.taken, item.missed, item.adherencePercent));
+            }
         }
     }
 }
