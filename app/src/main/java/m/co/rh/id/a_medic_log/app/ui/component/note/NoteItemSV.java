@@ -227,7 +227,7 @@ public class NoteItemSV extends StatefulView<Activity> implements RequireCompone
                                     mLogger.e(TAG, throwable.getMessage(), throwable);
                                     content = context.getString(R.string.confirm_delete_note);
                                 }
-                                UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
+                                UiUtils.showConfirmDialog(mNavigator, title, content,
                                         this::deleteNote);
                             }));
         }

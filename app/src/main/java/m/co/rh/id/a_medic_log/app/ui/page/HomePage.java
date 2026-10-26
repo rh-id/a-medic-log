@@ -506,7 +506,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         String title = context.getString(R.string.title_confirm);
         String content = context.getString(R.string.confirm_import_profiles,
                 result.getSelectedFileProfileIds().size());
-        UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
+        UiUtils.showConfirmDialog(mNavigator, title, content,
                 () -> importProfiles(zipUri, result));
     }
 

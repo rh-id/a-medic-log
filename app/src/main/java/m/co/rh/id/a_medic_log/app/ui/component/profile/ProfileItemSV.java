@@ -216,7 +216,7 @@ public class ProfileItemSV extends StatefulView<Activity> implements RequireComp
                                                     context.getString(R.string.error_deleting_profile), throwable);
                                             content = context.getString(R.string.confirm_delete_profile, mProfile.name);
                                         }
-                                        UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
+                                        UiUtils.showConfirmDialog(mNavigator, title, content,
                                                 this::deleteProfile);
                                     }));
         }

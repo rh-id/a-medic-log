@@ -290,7 +290,7 @@ public class MedicineDetailPage extends BaseDetailPage implements Toolbar.OnMenu
             Context context = mSvProvider.getContext();
             String title = context.getString(R.string.title_confirm);
             String content = context.getString(R.string.confirm_delete_medicine_reminder, medicineReminder.message);
-            UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
+            UiUtils.showConfirmDialog(mNavigator, title, content,
                     () -> confirmDeleteMedicineReminder(medicineReminder));
         } else {
             mMedicineReminderRecyclerViewAdapter.notifyItemDeleted(medicineReminder);

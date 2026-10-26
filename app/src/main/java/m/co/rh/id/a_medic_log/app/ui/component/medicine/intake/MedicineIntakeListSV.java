@@ -175,7 +175,7 @@ public class MedicineIntakeListSV extends StatefulView<Activity> implements Requ
         Context context = mSvProvider.getContext();
         String title = context.getString(R.string.title_confirm);
         String content = context.getString(R.string.confirm_delete_medicine_intake, medicineIntake.description);
-        UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
+        UiUtils.showConfirmDialog(mNavigator, title, content,
                 () -> confirmDeleteMedicineIntake(medicineIntake));
     }
 

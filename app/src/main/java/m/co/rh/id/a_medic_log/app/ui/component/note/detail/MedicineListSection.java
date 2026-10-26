@@ -197,7 +197,7 @@ public class MedicineListSection implements View.OnClickListener,
         Context context = mSvProvider.getContext();
         String title = context.getString(R.string.title_confirm);
         String content = buildDeleteMessage(context, medicineState, medicineCounts);
-        UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
+        UiUtils.showConfirmDialog(mNavigator, title, content,
                 () -> confirmDeleteMedicine(medicineState));
     }
 

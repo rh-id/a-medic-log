@@ -20,9 +20,11 @@ import m.co.rh.id.aprovider.Provider;
 
 public class UiUtils {
 
-    public static void showConfirmDialog(INavigator navigator, Provider provider,
+    public static void showConfirmDialog(INavigator navigator,
                                          String title, String content, Runnable onConfirm) {
-        NavExtDialogConfig navExtDialogConfig = provider.get(NavExtDialogConfig.class);
+        Provider rootComponent = (Provider) navigator
+                .getNavConfiguration().getRequiredComponent();
+        NavExtDialogConfig navExtDialogConfig = rootComponent.get(NavExtDialogConfig.class);
         navigator.push(navExtDialogConfig.route_confirmDialog(),
                 navExtDialogConfig.args_confirmDialog(title, content),
                 (navigator1, navRoute, activity, currentView) -> {

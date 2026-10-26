@@ -52,11 +52,10 @@ import m.co.rh.id.aprovider.ProviderValue;
  * {@link #onHostDestroy()} (listener unregistered from the
  * application-scoped navigator, activity reference dropped). The gate,
  * handler, preferences and lock manager it holds are application-scoped
- * singletons; the one deliberate exception is the provider — the host's
- * ACTIVITY-scoped nested provider, needed only for the confirm-dialog
- * config, lifetime-bound to the same activity that owns this controller:
- * onHostDestroy runs before the host disposes it and no controller method
- * runs afterwards, so it is never used post-dispose.
+ * singletons; no provider reference is kept beyond the constructor's
+ * resolutions — the confirm-dialog configuration is resolved inside
+ * {@link UiUtils#showConfirmDialog} from the navigator's required
+ * (root) component, so nothing provider-scoped is captured here.
  * <p>
  * Constructor style mirrors {@link NotificationPermissionGate} itself: the
  * host's activity-scoped nested provider comes in as the single argument and
@@ -74,11 +73,6 @@ import m.co.rh.id.aprovider.ProviderValue;
  */
 public class NotificationPermissionController {
 
-    /**
-     * The host's activity-scoped provider, needed only to resolve the
-     * navigator's confirm-dialog configuration for the dialog show.
-     */
-    private final Provider mProvider;
     private final ProviderValue<NotificationPermissionGate> mGate;
     /**
      * The provider-registered main-looper Handler (BaseProviderModule's
@@ -127,7 +121,6 @@ public class NotificationPermissionController {
     private boolean mIsResumed;
 
     public NotificationPermissionController(Provider provider) {
-        mProvider = provider;
         mGate = provider.lazyGet(NotificationPermissionGate.class);
         // eagerly registered in BaseProviderModule, resolve at construction
         mHandler = provider.get(Handler.class);
@@ -299,7 +292,6 @@ public class NotificationPermissionController {
         }
         mAskedThisSession = true;
         UiUtils.showConfirmDialog(navigator,
-                mProvider,
                 activity.getString(R.string.title_confirm),
                 activity.getString(R.string.notification_permission_rationale),
                 // confirmed: fire the system dialog, the gate persists the

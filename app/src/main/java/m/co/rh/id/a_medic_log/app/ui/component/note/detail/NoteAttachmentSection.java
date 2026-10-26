@@ -161,7 +161,7 @@ public class NoteAttachmentSection implements View.OnClickListener,
             Context context = mSvProvider.getContext();
             String title = context.getString(R.string.title_confirm);
             String content = context.getString(R.string.confirm_delete_attachment);
-            UiUtils.showConfirmDialog(mNavigator, mSvProvider, title, content,
+            UiUtils.showConfirmDialog(mNavigator, title, content,
                     () -> deleteNoteAttachment(noteAttachmentState));
         } else {
             mNoteAttachmentRecyclerViewAdapter.notifyItemDeleted(noteAttachmentState);
