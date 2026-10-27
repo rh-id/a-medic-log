@@ -30,6 +30,14 @@ The app works as a production app even though it is a demo app.
 - **Dark/Light Mode** - Support for both dark mode and light mode themes
 - **Multi-language** - Available in English, German, French, Italian, Indonesian, Estonian, Icelandic, Norwegian (Bokmål & Nynorsk), and Romansh
 
+## Data Privacy and Transfer
+
+All app data — including the health database and note attachments — is excluded from Android Auto Backup (Google Drive) and from Android 12+ device-to-device transfers. Your data stays on the device unless you explicitly share or export it.
+
+To move data between devices, use the app's **Export & Import** feature (see Features above): export profiles to a ZIP archive and import them on the other device.
+
+In-app settings (e.g., theme, app lock) are not carried over between devices either, since they are also excluded from backup.
+
 ## Tech Stack
 
 | Component | Detail |
