@@ -30,6 +30,7 @@ import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.provider.BaseProviderModule;
 import m.co.rh.id.a_medic_log.base.repository.MedicineRepository;
+import m.co.rh.id.a_medic_log.base.repository.NoteRepository;
 import m.co.rh.id.a_medic_log.base.room.converter.LinkedHashSetConverter;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -111,6 +112,7 @@ public class ExportImportTestProviderModule implements ProviderModule {
         // its constructor (lazyGet validates the registration eagerly) to backfill
         // the dose occurrence table
         providerRegistry.registerLazy(MedicineRepository.class, () -> new MedicineRepository(provider));
+        providerRegistry.registerLazy(NoteRepository.class, () -> new NoteRepository(provider));
         // subscribes to the change notifiers so reminder alarms are scheduled on imported note added events,
         // mirrors the production wiring of AppProviderModule
         providerRegistry.registerAsync(MedicineReminderEventHandler.class,

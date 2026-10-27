@@ -1,27 +1,21 @@
 package m.co.rh.id.a_medic_log.app.provider.command;
 
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
-import m.co.rh.id.a_medic_log.base.dao.NoteDao;
-import m.co.rh.id.a_medic_log.base.dao.NoteTagDao;
 import m.co.rh.id.a_medic_log.base.entity.Note;
-import m.co.rh.id.a_medic_log.base.entity.NoteTag;
+import m.co.rh.id.a_medic_log.base.repository.NoteRepository;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
+import m.co.rh.id.aprovider.ProviderValue;
 
 public class PagedNoteItemsCmd {
     private static final String TAG = PagedNoteItemsCmd.class.getName();
     private ExecutorService mExecutorService;
-    private NoteDao mNoteDao;
-    private NoteTagDao mNoteTagDao;
+    private ProviderValue<NoteRepository> mNoteRepository;
     private ILogger mLogger;
     private Long mProfileId;
     private int mLimit;
@@ -31,8 +25,7 @@ public class PagedNoteItemsCmd {
 
     public PagedNoteItemsCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
-        mNoteDao = provider.get(NoteDao.class);
-        mNoteTagDao = provider.get(NoteTagDao.class);
+        mNoteRepository = provider.lazyGet(NoteRepository.class);
         mLogger = provider.get(ILogger.class);
         mItemsSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
@@ -45,71 +38,48 @@ public class PagedNoteItemsCmd {
 
     public void search(String search) {
         mSearch = search;
+        resetPage();
         mExecutorService.execute(() -> {
             if (!isSearching()) {
                 load();
             } else {
-                mIsLoadingSubject.onNext(true);
-                try {
-                    ArrayList<Note> resultList;
-                    Future<List<Note>> futureNoteListFromNoteTag = searchNoteTag(mSearch);
-                    List<Note> noteList = mNoteDao.searchNote(mSearch);
-                    List<Note> noteListFromNoteTag = futureNoteListFromNoteTag.get();
-                    if (!noteListFromNoteTag.isEmpty()) {
-                        Set<Note> noteResult = new LinkedHashSet<>();
-                        noteResult.addAll(noteList);
-                        noteResult.addAll(noteListFromNoteTag);
-                        resultList = new ArrayList<>(noteResult);
-                    } else {
-                        resultList = new ArrayList<>(noteList);
-                    }
-                    mItemsSubject.onNext(resultList);
-                } catch (Throwable throwable) {
-                    mLogger.e(TAG, throwable.getMessage(), throwable);
-                    mItemsSubject.onNext(new ArrayList<>());
-                } finally {
-                    mIsLoadingSubject.onNext(false);
-                }
+                executeSearch();
             }
         });
     }
 
-    private Future<List<Note>> searchNoteTag(String search) {
-        return mExecutorService.submit(() -> {
-            List<NoteTag> noteTagList = mNoteTagDao.searchNoteTag(search);
-            List<Note> noteList = new ArrayList<>();
-            Set<Long> noteIds = new LinkedHashSet<>();
-            if (!noteTagList.isEmpty()) {
-                for (NoteTag noteTag : noteTagList) {
-                    noteIds.add(noteTag.noteId);
-                }
-                List<Note> notes = mNoteDao.findNoteByIds(noteIds);
-                noteList.addAll(notes);
-            }
-            return noteList;
-        });
+    private void executeSearch() {
+        mIsLoadingSubject.onNext(true);
+        try {
+            mItemsSubject.onNext(
+                    mNoteRepository.get().searchNotes(mProfileId, mSearch, mLimit));
+        } catch (Throwable throwable) {
+            mLogger.e(TAG, throwable.getMessage(), throwable);
+            mItemsSubject.onNext(new ArrayList<>());
+        } finally {
+            mIsLoadingSubject.onNext(false);
+        }
     }
 
     public void loadNextPage() {
-        // no pagination for search
-        if (isSearching()) return;
         if (getAllItems().size() < mLimit) {
             return;
         }
         mLimit += mLimit;
-        load();
-    }
-
-    public void refresh() {
         if (isSearching()) {
-            doSearch();
+            mExecutorService.execute(this::executeSearch);
         } else {
             load();
         }
     }
 
-    private void doSearch() {
-        search(mSearch);
+    public void refresh() {
+        if (isSearching()) {
+            // re-run the current search keeping the current mLimit
+            mExecutorService.execute(this::executeSearch);
+        } else {
+            load();
+        }
     }
 
     private void load() {
@@ -128,13 +98,7 @@ public class PagedNoteItemsCmd {
     }
 
     private ArrayList<Note> loadItems() {
-        List<Note> noteList;
-        if (mProfileId != null) {
-            noteList = mNoteDao.findNotesByProfileIdWithLimit(mProfileId, mLimit);
-        } else {
-            noteList = mNoteDao.findNotesWithLimit(mLimit);
-        }
-        return new ArrayList<>(noteList);
+        return mNoteRepository.get().findNotes(mProfileId, mLimit);
     }
 
     public ArrayList<Note> getAllItems() {

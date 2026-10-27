@@ -6,7 +6,6 @@ import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Update;
 
-import java.util.Collection;
 import java.util.List;
 
 import m.co.rh.id.a_medic_log.base.entity.Note;
@@ -26,9 +25,32 @@ public abstract class NoteDao {
             "ORDER BY entry_date_time DESC LIMIT :limit")
     public abstract List<Note> findNotesWithLimit(int limit);
 
-    @Query("SELECT * FROM note WHERE content LIKE '%'||:search||'%' " +
-            "ORDER BY entry_date_time DESC")
-    public abstract List<Note> searchNote(String search);
+    @Query("SELECT * FROM note WHERE profile_id = :profileId " +
+            "AND (content LIKE '%'||:search||'%' " +
+            "OR EXISTS (SELECT 1 FROM note_tag " +
+            "WHERE note_tag.note_id = note.id AND tag LIKE '%'||:search||'%') " +
+            "OR EXISTS (SELECT 1 FROM medicine " +
+            "WHERE medicine.note_id = note.id " +
+            "AND (name LIKE '%'||:search||'%' OR description LIKE '%'||:search||'%')) " +
+            "OR EXISTS (SELECT 1 FROM medicine " +
+            "JOIN medicine_intake ON medicine_intake.medicine_id = medicine.id " +
+            "WHERE medicine.note_id = note.id " +
+            "AND medicine_intake.description LIKE '%'||:search||'%')) " +
+            "ORDER BY entry_date_time DESC, id DESC LIMIT :limit")
+    public abstract List<Note> searchNotesWithProfileLimit(long profileId, String search, int limit);
+
+    @Query("SELECT * FROM note WHERE (content LIKE '%'||:search||'%' " +
+            "OR EXISTS (SELECT 1 FROM note_tag " +
+            "WHERE note_tag.note_id = note.id AND tag LIKE '%'||:search||'%') " +
+            "OR EXISTS (SELECT 1 FROM medicine " +
+            "WHERE medicine.note_id = note.id " +
+            "AND (name LIKE '%'||:search||'%' OR description LIKE '%'||:search||'%')) " +
+            "OR EXISTS (SELECT 1 FROM medicine " +
+            "JOIN medicine_intake ON medicine_intake.medicine_id = medicine.id " +
+            "WHERE medicine.note_id = note.id " +
+            "AND medicine_intake.description LIKE '%'||:search||'%')) " +
+            "ORDER BY entry_date_time DESC, id DESC LIMIT :limit")
+    public abstract List<Note> searchNotesWithLimit(String search, int limit);
 
     @Query("SELECT * FROM note ORDER BY entry_date_time DESC")
     public abstract List<Note> findAllNotes();
@@ -38,9 +60,6 @@ public abstract class NoteDao {
 
     @Query("SELECT * FROM note WHERE id = :noteId")
     public abstract Note findNoteById(Long noteId);
-
-    @Query("SELECT * FROM note WHERE id in (:noteIds)")
-    public abstract List<Note> findNoteByIds(Collection<Long> noteIds);
 
     @Insert
     public abstract long insert(Note note);

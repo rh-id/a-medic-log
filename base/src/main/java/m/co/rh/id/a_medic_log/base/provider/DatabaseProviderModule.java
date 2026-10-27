@@ -15,7 +15,6 @@ import m.co.rh.id.a_medic_log.base.dao.NoteTagDao;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
 import m.co.rh.id.a_medic_log.base.repository.AndroidNotificationRepository;
 import m.co.rh.id.a_medic_log.base.repository.MedicineRepository;
-import m.co.rh.id.a_medic_log.base.repository.NoteAttachmentRepository;
 import m.co.rh.id.a_medic_log.base.repository.NoteRepository;
 import m.co.rh.id.a_medic_log.base.repository.ProfileRepository;
 import m.co.rh.id.a_medic_log.base.room.DbMigration;
@@ -73,8 +72,6 @@ public class DatabaseProviderModule implements ProviderModule {
                 new AndroidNotificationRepository(provider));
         providerRegistry.registerLazy(NoteRepository.class, () ->
                 new NoteRepository(provider));
-        providerRegistry.registerLazy(NoteAttachmentRepository.class, () ->
-                new NoteAttachmentRepository(provider));
         providerRegistry.registerLazy(MedicineRepository.class, () ->
                 new MedicineRepository(provider));
         providerRegistry.registerLazy(ProfileRepository.class, () ->

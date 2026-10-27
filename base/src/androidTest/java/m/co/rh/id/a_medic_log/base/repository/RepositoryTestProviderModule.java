@@ -64,7 +64,6 @@ class RepositoryTestProviderModule implements ProviderModule {
                 .medicineDoseOccurrenceDao());
         // repositories, mirrors the DatabaseProviderModule registration
         providerRegistry.registerLazy(NoteRepository.class, () -> new NoteRepository(provider));
-        providerRegistry.registerLazy(NoteAttachmentRepository.class, () -> new NoteAttachmentRepository(provider));
         providerRegistry.registerLazy(MedicineRepository.class, () -> new MedicineRepository(provider));
         providerRegistry.registerLazy(ProfileRepository.class, () -> new ProfileRepository(provider));
     }

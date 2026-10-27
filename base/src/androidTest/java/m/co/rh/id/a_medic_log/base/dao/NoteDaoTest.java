@@ -3,6 +3,7 @@ package m.co.rh.id.a_medic_log.base.dao;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import androidx.room.Room;
 import androidx.room.testing.MigrationTestHelper;
@@ -17,8 +18,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import m.co.rh.id.a_medic_log.base.AppDatabase;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
@@ -43,6 +47,9 @@ public class NoteDaoTest {
 
     private AppDatabase mAppDatabase;
 
+    // fixed base in the past so seeded notes have distinct, ordered entry dates
+    private long mBaseTime;
+
     @SuppressWarnings("deprecation")
     public NoteDaoTest() {
         helper = new MigrationTestHelper(InstrumentationRegistry.getInstrumentation(),
@@ -53,6 +60,7 @@ public class NoteDaoTest {
     @Before
     public void init() {
         mAppDatabase = createAppDb();
+        mBaseTime = System.currentTimeMillis() - TimeUnit.DAYS.toMillis(30);
     }
 
     @After
@@ -336,5 +344,278 @@ public class NoteDaoTest {
         assertEquals(1, medicineReminderDao.countMedicineRemindersByProfileId(profileB.id));
         assertEquals(0, noteAttachmentDao.countNoteAttachmentsByProfileId(profileB.id));
         assertEquals(1, medicineIntakeDao.countMedicineIntakesByProfileId(profileB.id));
+    }
+
+    // ---------------------------------------------------------------- note search queries
+
+    @Test
+    public void searchNotesWithProfileLimit_excludesOtherProfilesNotes_unscopedSeesBoth() {
+        // arrange: profile B owns a note matched by every search source,
+        // profile A owns one content match and one tag-only match (the tag
+        // match resolves noteATag even though its content never matches)
+        Profile profileA = insertProfile("Profile A", "about A");
+        Profile profileB = insertProfile("Profile B", "about B");
+        Note noteAContent = insertNote(profileA.id, "shared keyword content", minutesAfterBase(1));
+        Note noteATag = insertNote(profileA.id, "plain A content", minutesAfterBase(2));
+        insertNoteTag(noteATag.id, "shared keyword tag");
+        Note noteB = insertNote(profileB.id, "shared keyword content", minutesAfterBase(3));
+        insertNoteTag(noteB.id, "shared keyword tag");
+        Medicine medicineB = insertMedicine(noteB.id, "shared keyword medicine", "desc B");
+        insertMedicineIntake(medicineB.id, "shared keyword intake");
+        NoteDao noteDao = mAppDatabase.noteDao();
+
+        // assert: the profile-scoped query filters out profile B's note even
+        // though that note matches all four sources; profile A's content and
+        // tag source remain, newest first
+        List<Note> scopedNotes = noteDao.searchNotesWithProfileLimit(profileA.id, "keyword", 100);
+        assertEquals(2, scopedNotes.size());
+        assertEquals(noteATag.id, scopedNotes.get(0).id);
+        assertEquals(noteAContent.id, scopedNotes.get(1).id);
+        assertEquals(profileA.id, scopedNotes.get(0).profileId);
+
+        // assert: the same query without the profile scope sees both
+        // profiles, proving the scoped variant does the filtering; profile
+        // B's note matches content, tag, medicine and intake yet appears
+        // exactly once
+        List<Note> unscopedNotes = noteDao.searchNotesWithLimit("keyword", 100);
+        assertEquals(3, unscopedNotes.size());
+        assertEquals(noteB.id, unscopedNotes.get(0).id);
+    }
+
+    @Test
+    public void searchNotes_tagMatch_returnsParentNote() {
+        Profile profile = insertProfile("Profile", "about");
+        Note note = insertNote(profile.id, "plain content", minutesAfterBase(1));
+        insertNoteTag(note.id, "tagword");
+        NoteDao noteDao = mAppDatabase.noteDao();
+
+        List<Note> byTag = noteDao.searchNotesWithLimit("tagword", 100);
+        assertEquals(1, byTag.size());
+        assertEquals(note.id, byTag.get(0).id);
+    }
+
+    @Test
+    public void searchNotes_medicineNameAndDescriptionMatch_returnsParentNote_orphanNeverSurfaces() {
+        // arrange
+        Profile profile = insertProfile("Profile", "about");
+        Note note = insertNote(profile.id, "medicine note", minutesAfterBase(1));
+        insertMedicine(note.id, "Zyrtec", "cetirizine 10mg against allergy");
+        // an orphan medicine (no parent note) can never appear as a result:
+        // results are notes, so this seed alone cannot detect a dropped
+        // medicine.note_id = note.id correlation; cross-note leakage through
+        // the EXISTS correlations is covered by
+        // noteSearch_siblingRelations_doNotLeakIntoUnrelatedNotes
+        insertMedicine(null, "Zyrtec", "orphan medicine row");
+        NoteDao noteDao = mAppDatabase.noteDao();
+
+        // assert: name match and description match both resolve to the parent note
+        List<Note> byName = noteDao.searchNotesWithLimit("Zyrtec", 100);
+        assertEquals(1, byName.size());
+        assertEquals(note.id, byName.get(0).id);
+        List<Note> byDescription = noteDao.searchNotesWithLimit("cetirizine", 100);
+        assertEquals(1, byDescription.size());
+        assertEquals(note.id, byDescription.get(0).id);
+        List<Note> scoped = noteDao.searchNotesWithProfileLimit(profile.id, "allergy", 100);
+        assertEquals(1, scoped.size());
+        assertEquals(note.id, scoped.get(0).id);
+        assertTrue(noteDao.searchNotesWithLimit("nonexistent", 100).isEmpty());
+    }
+
+    @Test
+    public void searchNotes_intakeDescriptionMatch_returnsParentNote_noMatchTermEmpty() {
+        // arrange: two medicines under one note, each with an intake that
+        // matches the search term
+        Profile profile = insertProfile("Profile", "about");
+        Note note = insertNote(profile.id, "intake parent note", minutesAfterBase(1));
+        Medicine medicine1 = insertMedicine(note.id, "Med One", "desc one");
+        Medicine medicine2 = insertMedicine(note.id, "Med Two", "desc two");
+        insertMedicineIntake(medicine1.id, "breakfast dose");
+        insertMedicineIntake(medicine2.id, "breakfast snack");
+        NoteDao noteDao = mAppDatabase.noteDao();
+
+        // assert: the intake description reaches the note through the
+        // medicine chain; both matching intakes collapse into one note row
+        List<Note> byDescription = noteDao.searchNotesWithLimit("breakfast", 100);
+        assertEquals(1, byDescription.size());
+        assertEquals(note.id, byDescription.get(0).id);
+        List<Note> scoped = noteDao.searchNotesWithProfileLimit(profile.id, "breakfast", 100);
+        assertEquals(1, scoped.size());
+        assertEquals(note.id, scoped.get(0).id);
+        assertTrue(noteDao.searchNotesWithLimit("lunch", 100).isEmpty());
+    }
+
+    @Test
+    public void noteSearch_siblingRelations_doNotLeakIntoUnrelatedNotes() {
+        // arrange: one profile, four notes with distinct entry dates and a
+        // distinct search term per source so a failure localizes to one
+        // EXISTS branch. The control note matches no source at all; its own
+        // non-matching medicine and intake are what make dropping
+        // medicine_intake.medicine_id = medicine.id detectable, because the
+        // resulting cross join would pair the control's medicine with the
+        // intake sibling's matching intake.
+        Profile profile = insertProfile("Profile", "about");
+        Note control = insertNote(profile.id, "unrelated plain note", minutesAfterBase(1));
+        Medicine controlMedicine = insertMedicine(control.id, "Calcium", "bone supplement");
+        insertMedicineIntake(controlMedicine.id, "morning pill");
+        // tag sibling: matches the tag source only
+        Note tagSibling = insertNote(profile.id, "note with plain content", minutesAfterBase(2));
+        insertNoteTag(tagSibling.id, "tagword");
+        // medicine sibling: matches the medicine source only; the orphan
+        // medicine below is an extra, defense-in-depth trigger for a dropped
+        // medicine.note_id = note.id correlation: results are notes, so the
+        // orphan can never be a result row itself and can only help expose
+        // the dropped correlation — though the sibling's own "medword"
+        // medicine already satisfies an uncorrelated EXISTS just the same
+        Note medicineSibling = insertNote(profile.id, "another plain note", minutesAfterBase(3));
+        insertMedicine(medicineSibling.id, "medword", "plain description");
+        insertMedicine(null, "medword", "orphan medicine row");
+        // intake sibling: matches the intake source only, through the medicine chain
+        Note intakeSibling = insertNote(profile.id, "yet another plain note", minutesAfterBase(4));
+        Medicine intakeMedicine = insertMedicine(intakeSibling.id, "Vitamin C", "immune support");
+        insertMedicineIntake(intakeMedicine.id, "intakeword after meal");
+        NoteDao noteDao = mAppDatabase.noteDao();
+
+        // assert: each term resolves to exactly its own sibling note, so no
+        // sibling's tag, medicine or intake leaks into an unrelated note
+        List<Note> byTag = noteDao.searchNotesWithLimit("tagword", 100);
+        assertEquals(1, byTag.size());
+        assertEquals(tagSibling.id, byTag.get(0).id);
+        List<Note> byMedicine = noteDao.searchNotesWithLimit("medword", 100);
+        assertEquals(1, byMedicine.size());
+        assertEquals(medicineSibling.id, byMedicine.get(0).id);
+        List<Note> byIntake = noteDao.searchNotesWithLimit("intakeword", 100);
+        assertEquals(1, byIntake.size());
+        assertEquals(intakeSibling.id, byIntake.get(0).id);
+
+        // belt and braces: the control note is absent from every result
+        for (List<Note> result : Arrays.asList(byTag, byMedicine, byIntake)) {
+            for (Note note : result) {
+                assertTrue("control note must not match the search, got note "
+                        + note.id, !note.id.equals(control.id));
+            }
+        }
+
+        // assert: profile scoping composes with the EXISTS filtering
+        List<Note> scoped = noteDao.searchNotesWithProfileLimit(profile.id, "intakeword", 100);
+        assertEquals(1, scoped.size());
+        assertEquals(intakeSibling.id, scoped.get(0).id);
+    }
+
+    @Test
+    public void searchNotesWithLimit_capsRowsAndReturnsNewestFirst() {
+        // arrange: five fully decorated notes (tag + medicine + intake each)
+        Profile profile = insertProfile("Profile", "about");
+        Note newestNote = null;
+        for (int i = 0; i < 5; i++) {
+            Note note = insertNote(profile.id, "limit keyword note " + i, minutesAfterBase(i));
+            insertNoteTag(note.id, "limit keyword tag " + i);
+            Medicine medicine = insertMedicine(note.id, "limit keyword medicine " + i, "desc");
+            insertMedicineIntake(medicine.id, "limit keyword intake " + i);
+            newestNote = note;
+        }
+        Long newestNoteId = newestNote.id;
+        NoteDao noteDao = mAppDatabase.noteDao();
+
+        // assert: the capped note search respects LIMIT and returns the
+        // newest rows first (entry_date_time DESC); every note matches all
+        // four sources, so the single OR'd query exercises every source
+        List<Note> notes = noteDao.searchNotesWithLimit("limit", 2);
+        assertEquals(2, notes.size());
+        assertEquals(newestNoteId, notes.get(0).id);
+        List<Note> scopedNotes = noteDao.searchNotesWithProfileLimit(profile.id, "limit", 3);
+        assertEquals(3, scopedNotes.size());
+        assertEquals(newestNoteId, scopedNotes.get(0).id);
+    }
+
+    @Test
+    public void searchNotes_mergesAllSources_globallyOrderedByEntryDateTimeDescThenIdDesc() {
+        // arrange: four notes matched by different sources with distinct
+        // entry dates plus two same-date notes proving the id tiebreaker;
+        // noteTag matches both the content and the tag source
+        Profile profile = insertProfile("Profile", "about");
+        Note noteContent = insertNote(profile.id, "magicword in content", minutesAfterBase(10));
+        Note noteMedicine = insertNote(profile.id, "plain content", minutesAfterBase(20));
+        insertMedicine(noteMedicine.id, "magicword medicine", "desc");
+        Note noteIntake = insertNote(profile.id, "another plain content", minutesAfterBase(30));
+        Medicine intakeMedicine = insertMedicine(noteIntake.id, "Insulin", "desc");
+        insertMedicineIntake(intakeMedicine.id, "took with magicword remark");
+        Note noteTag = insertNote(profile.id, "magicword in content and tag", minutesAfterBase(40));
+        insertNoteTag(noteTag.id, "magicword tag");
+        // identical entry_date_time: the later-inserted (higher id) note wins
+        Note tieOlder = insertNote(profile.id, "magicword tie note one", minutesAfterBase(1));
+        Note tieNewer = insertNote(profile.id, "magicword tie note two", minutesAfterBase(1));
+        assertTrue(tieOlder.id < tieNewer.id);
+        NoteDao noteDao = mAppDatabase.noteDao();
+
+        // assert: six unique notes, newest first regardless of which source
+        // matched, with equal entry dates ordered by id DESC
+        List<Note> result = noteDao.searchNotesWithProfileLimit(profile.id, "magicword", 100);
+        assertEquals(6, result.size());
+        assertEquals(noteTag.id, result.get(0).id);
+        assertEquals(noteIntake.id, result.get(1).id);
+        assertEquals(noteMedicine.id, result.get(2).id);
+        assertEquals(noteContent.id, result.get(3).id);
+        assertEquals(tieNewer.id, result.get(4).id);
+        assertEquals(tieOlder.id, result.get(5).id);
+        assertSortedByEntryDateTimeDesc(result);
+    }
+
+    private static void assertSortedByEntryDateTimeDesc(List<Note> notes) {
+        for (int i = 1; i < notes.size(); i++) {
+            long previous = notes.get(i - 1).entryDateTime.getTime();
+            long current = notes.get(i).entryDateTime.getTime();
+            assertTrue("notes must be ordered by entry_date_time DESC, got "
+                            + previous + " before " + current,
+                    previous >= current);
+        }
+    }
+
+    // ---------------------------------------------------------------- seed builders
+
+    private Profile insertProfile(String name, String about) {
+        Profile profile = new Profile();
+        profile.name = name;
+        profile.about = about;
+        profile.id = mAppDatabase.profileDao().insert(profile);
+        return profile;
+    }
+
+    private Note insertNote(Long profileId, String content, Date entryDateTime) {
+        Note note = new Note();
+        note.profileId = profileId;
+        note.content = content;
+        note.entryDateTime = entryDateTime;
+        note.id = mAppDatabase.noteDao().insert(note);
+        return note;
+    }
+
+    private NoteTag insertNoteTag(Long noteId, String tag) {
+        NoteTag noteTag = new NoteTag();
+        noteTag.noteId = noteId;
+        noteTag.tag = tag;
+        noteTag.id = mAppDatabase.noteTagDao().insert(noteTag);
+        return noteTag;
+    }
+
+    private Medicine insertMedicine(Long noteId, String name, String description) {
+        Medicine medicine = new Medicine();
+        medicine.noteId = noteId;
+        medicine.name = name;
+        medicine.description = description;
+        medicine.id = mAppDatabase.medicineDao().insert(medicine);
+        return medicine;
+    }
+
+    private MedicineIntake insertMedicineIntake(Long medicineId, String description) {
+        MedicineIntake medicineIntake = new MedicineIntake();
+        medicineIntake.medicineId = medicineId;
+        medicineIntake.description = description;
+        medicineIntake.takenDateTime = new Date();
+        medicineIntake.id = mAppDatabase.medicineIntakeDao().insert(medicineIntake);
+        return medicineIntake;
+    }
+
+    private Date minutesAfterBase(int minutes) {
+        return new Date(mBaseTime + TimeUnit.MINUTES.toMillis(minutes));
     }
 }

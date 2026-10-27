@@ -14,6 +14,7 @@ import m.co.rh.id.a_medic_log.base.dao.MedicineIntakeDao;
 import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineDoseOccurrence;
+import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.aprovider.Provider;
@@ -91,6 +92,52 @@ public class MedicineRepository {
         medicineState.updateMedicine(medicine);
         medicineState.updateMedicineReminderList(medicineReminders);
         return medicineState;
+    }
+
+    /**
+     * Loads the medicine states of a note with their reminders; the returned
+     * list is fresh and never shared with any state
+     */
+    public List<MedicineState> queryMedicineStatesByNoteId(long noteId) {
+        List<Medicine> medicineList = mMedicineDao.get().findMedicinesByNoteId(noteId);
+        ArrayList<MedicineState> medicineStates = new ArrayList<>();
+        for (Medicine medicine : medicineList) {
+            List<MedicineReminder> medicineReminders = mMedicineReminderDao.get().findMedicineRemindersByMedicineId(medicine.id);
+            MedicineState medicineState = new MedicineState();
+            medicineState.updateMedicine(medicine);
+            medicineState.updateMedicineReminderList(medicineReminders);
+            medicineStates.add(medicineState);
+        }
+        return medicineStates;
+    }
+
+    /**
+     * Loads intakes newest-first capped at limit, scoped to the medicine when
+     * given; the returned list is fresh and never shared
+     */
+    public ArrayList<MedicineIntake> findMedicineIntakes(Long medicineId, int limit) {
+        List<MedicineIntake> medicineIntakes;
+        if (medicineId != null) {
+            medicineIntakes = mMedicineIntakeDao.get().findMedicineIntakesByMedicineIdWithLimit(medicineId, limit);
+        } else {
+            medicineIntakes = mMedicineIntakeDao.get().findMedicineIntakesByWithLimit(limit);
+        }
+        return new ArrayList<>(medicineIntakes);
+    }
+
+    /**
+     * Searches intakes matching the intake description, scoped to the
+     * medicine when given; results are ordered by created_date_time DESC then
+     * id DESC and capped at limit; the returned list is fresh and never shared
+     */
+    public ArrayList<MedicineIntake> searchMedicineIntakes(Long medicineId, String search, int limit) {
+        List<MedicineIntake> medicineIntakes;
+        if (medicineId != null) {
+            medicineIntakes = mMedicineIntakeDao.get().searchMedicineIntakeDescriptionWithMedicineLimit(medicineId, search, limit);
+        } else {
+            medicineIntakes = mMedicineIntakeDao.get().searchMedicineIntakeDescriptionWithLimit(search, limit);
+        }
+        return new ArrayList<>(medicineIntakes);
     }
 
     public void insertMedicine(Medicine medicine, List<MedicineReminder> medicineReminders) {

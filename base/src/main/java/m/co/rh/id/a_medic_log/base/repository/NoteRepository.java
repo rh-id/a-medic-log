@@ -21,6 +21,7 @@ import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +37,7 @@ public class NoteRepository {
     private final ProviderValue<MedicineReminderDao> mMedicineReminderDao;
     private final ProviderValue<MedicineIntakeDao> mMedicineIntakeDao;
     private final ProviderValue<NoteTagDao> mNoteTagDao;
+    private final ProviderValue<MedicineRepository> mMedicineRepository;
 
     public NoteRepository(Provider provider) {
         mAppDatabase = provider.lazyGet(AppDatabase.class);
@@ -46,6 +48,7 @@ public class NoteRepository {
         mMedicineReminderDao = provider.lazyGet(MedicineReminderDao.class);
         mMedicineIntakeDao = provider.lazyGet(MedicineIntakeDao.class);
         mNoteTagDao = provider.lazyGet(NoteTagDao.class);
+        mMedicineRepository = provider.lazyGet(MedicineRepository.class);
     }
 
     public void insertNote(NoteState noteState) {
@@ -118,25 +121,8 @@ public class NoteRepository {
         List<NoteTag> noteTags = mNoteTagDao.get().findNoteTagsByNoteId(noteId);
         noteState.updateNoteTagSet(noteTags);
         noteState.updateNoteAttachments(queryNoteAttachmentStatesByNoteId(noteId));
-        noteState.updateMedicineStates(queryMedicineStatesByNoteId(noteId));
+        noteState.updateMedicineStates(mMedicineRepository.get().queryMedicineStatesByNoteId(noteId));
         return noteState;
-    }
-
-    /**
-     * Loads the medicine states of a note with their reminders; the returned
-     * list is fresh and never shared with any state
-     */
-    public List<MedicineState> queryMedicineStatesByNoteId(long noteId) {
-        List<Medicine> medicineList = mMedicineDao.get().findMedicinesByNoteId(noteId);
-        ArrayList<MedicineState> medicineStates = new ArrayList<>();
-        for (Medicine medicine : medicineList) {
-            List<MedicineReminder> medicineReminders = mMedicineReminderDao.get().findMedicineRemindersByMedicineId(medicine.id);
-            MedicineState medicineState = new MedicineState();
-            medicineState.updateMedicine(medicine);
-            medicineState.updateMedicineReminderList(medicineReminders);
-            medicineStates.add(medicineState);
-        }
-        return medicineStates;
     }
 
     /**
@@ -154,6 +140,33 @@ public class NoteRepository {
             noteAttachmentStates.add(noteAttachmentState);
         }
         return noteAttachmentStates;
+    }
+
+    public void insertNoteAttachment(NoteAttachmentState noteAttachmentState) {
+        mAppDatabase.get().runInTransaction(() -> {
+            NoteAttachment noteAttachment = noteAttachmentState.getNoteAttachment();
+            long noteAttachmentId = mNoteAttachmentDao.get().insert(noteAttachment);
+            noteAttachment.id = noteAttachmentId;
+            Collection<NoteAttachmentFile> noteAttachmentFiles =
+                    noteAttachmentState.getNoteAttachmentFiles();
+            if (noteAttachmentFiles != null && !noteAttachmentFiles.isEmpty()) {
+                for (NoteAttachmentFile noteAttachmentFile : noteAttachmentFiles) {
+                    noteAttachmentFile.attachmentId = noteAttachmentId;
+                    noteAttachmentFile.id = mNoteAttachmentFileDao.get().insert(noteAttachmentFile);
+                }
+            }
+        });
+    }
+
+    public void deleteNoteAttachment(NoteAttachmentState noteAttachmentState) {
+        mAppDatabase.get().runInTransaction(() -> {
+            NoteAttachment noteAttachment = noteAttachmentState.getNoteAttachment();
+            Long noteAttachmentId = noteAttachment.id;
+            if (noteAttachmentId != null) {
+                mNoteAttachmentFileDao.get().deleteNoteAttachmentFilesByAttachmentId(noteAttachmentId);
+                mNoteAttachmentDao.get().delete(noteAttachment);
+            }
+        });
     }
 
     public TreeSet<NoteTag> findNoteTagsByNoteId(long noteId) {
@@ -192,6 +205,37 @@ public class NoteRepository {
         int attachmentCount = noteState.getNoteAttachmentStates().size();
         int intakeCount = mMedicineIntakeDao.get().countMedicineIntakesByNoteId(noteId);
         return new NoteCounts(medicineCount, reminderCount, attachmentCount, intakeCount);
+    }
+
+    /**
+     * Loads notes newest-first capped at limit, scoped to the profile when
+     * given; the returned list is fresh and never shared
+     */
+    public ArrayList<Note> findNotes(Long profileId, int limit) {
+        List<Note> noteList;
+        if (profileId != null) {
+            noteList = mNoteDao.get().findNotesByProfileIdWithLimit(profileId, limit);
+        } else {
+            noteList = mNoteDao.get().findNotesWithLimit(limit);
+        }
+        return new ArrayList<>(noteList);
+    }
+
+    /**
+     * Searches notes matching the note content, a tag, a medicine name or
+     * description, or an intake description (reached through its medicine);
+     * results are ordered by entry_date_time DESC then id DESC and globally
+     * capped at limit across all match sources; the returned list is fresh
+     * and never shared
+     */
+    public ArrayList<Note> searchNotes(Long profileId, String search, int limit) {
+        List<Note> notes;
+        if (profileId != null) {
+            notes = mNoteDao.get().searchNotesWithProfileLimit(profileId, search, limit);
+        } else {
+            notes = mNoteDao.get().searchNotesWithLimit(search, limit);
+        }
+        return new ArrayList<>(notes);
     }
 
     /**

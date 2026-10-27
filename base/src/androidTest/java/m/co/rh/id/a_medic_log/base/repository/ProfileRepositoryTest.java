@@ -37,7 +37,6 @@ public class ProfileRepositoryTest {
     private Provider mProvider;
     private ProfileRepository mProfileRepository;
     private NoteRepository mNoteRepository;
-    private NoteAttachmentRepository mNoteAttachmentRepository;
     private MedicineIntakeDao mMedicineIntakeDao;
 
     @Before
@@ -46,7 +45,6 @@ public class ProfileRepositoryTest {
         mProvider = Provider.createProvider(context, new RepositoryTestProviderModule());
         mProfileRepository = mProvider.get(ProfileRepository.class);
         mNoteRepository = mProvider.get(NoteRepository.class);
-        mNoteAttachmentRepository = mProvider.get(NoteAttachmentRepository.class);
         mMedicineIntakeDao = mProvider.get(MedicineIntakeDao.class);
     }
 
@@ -173,13 +171,13 @@ public class ProfileRepositoryTest {
         // note B: plain
         insertProfileNote(profile.id, "note B", null);
 
-        // attachment owned by note A, inserted through the attachment repository
+        // attachment owned by note A, inserted through the note repository
         NoteAttachment noteAttachment = new NoteAttachment();
         noteAttachment.name = "attachment A";
         noteAttachment.noteId = noteAState.getNoteId();
         NoteAttachmentState noteAttachmentState = new NoteAttachmentState();
         noteAttachmentState.updateNoteAttachment(noteAttachment);
-        mNoteAttachmentRepository.insertNoteAttachment(noteAttachmentState);
+        mNoteRepository.insertNoteAttachment(noteAttachmentState);
 
         // intakes: 2 for note A's medicine A1, 1 for medicine A2 (DAO, paged history)
         Long medicineA1Id = noteAState.getMedicineList().get(0).getMedicineId();

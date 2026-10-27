@@ -32,6 +32,16 @@ public abstract class MedicineIntakeDao {
     @Query("SELECT * FROM medicine_intake WHERE description LIKE '%'||:search||'%' ORDER BY created_date_time DESC")
     public abstract List<MedicineIntake> searchMedicineIntakeDescription(String search);
 
+    @Query("SELECT * FROM medicine_intake WHERE medicine_id = :medicineId " +
+            "AND description LIKE '%'||:search||'%' " +
+            "ORDER BY created_date_time DESC, id DESC LIMIT :limit")
+    public abstract List<MedicineIntake> searchMedicineIntakeDescriptionWithMedicineLimit(long medicineId,
+                                                                                           String search, int limit);
+
+    @Query("SELECT * FROM medicine_intake WHERE description LIKE '%'||:search||'%' " +
+            "ORDER BY created_date_time DESC, id DESC LIMIT :limit")
+    public abstract List<MedicineIntake> searchMedicineIntakeDescriptionWithLimit(String search, int limit);
+
     @Query("SELECT * FROM medicine_intake WHERE taken_date_time BETWEEN :from AND :to " +
             "ORDER BY taken_date_time DESC")
     public abstract List<MedicineIntake> findMedicineIntakesByTakenDateTimeBetween(long from, long to);

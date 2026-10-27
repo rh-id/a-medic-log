@@ -337,6 +337,48 @@ public class MedicineRepositoryTest {
         assertEquals(0, mMedicineIntakeDao.countMedicineIntakesByMedicineId(medicine.id));
     }
 
+    @Test
+    public void findMedicineIntakesAndSearchMedicineIntakes_routeByMedicineIdAndReturnFreshLists() {
+        // arrange: two intakes under medicine one and one under medicine two,
+        // all descriptions matching the same term
+        Medicine medicine1 = insertMedicine("route medicine one", 0);
+        Medicine medicine2 = insertMedicine("route medicine two", 0);
+        MedicineIntake intake1 = createMedicineIntake(medicine1.id);
+        intake1.description = "route keyword intake one";
+        mMedicineIntakeDao.insert(intake1);
+        MedicineIntake intake2 = createMedicineIntake(medicine1.id);
+        intake2.description = "route keyword intake two";
+        mMedicineIntakeDao.insert(intake2);
+        MedicineIntake intake3 = createMedicineIntake(medicine2.id);
+        intake3.description = "route keyword intake three";
+        mMedicineIntakeDao.insert(intake3);
+
+        // assert: a set medicineId routes to the medicine-scoped query, only
+        // that medicine's rows
+        ArrayList<MedicineIntake> scopedFind =
+                mMedicineRepository.findMedicineIntakes(medicine1.id, 10);
+        assertEquals(2, scopedFind.size());
+        for (MedicineIntake intake : scopedFind) {
+            assertEquals(medicine1.id, intake.medicineId);
+        }
+        ArrayList<MedicineIntake> scopedSearch =
+                mMedicineRepository.searchMedicineIntakes(medicine1.id, "route keyword", 10);
+        assertEquals(2, scopedSearch.size());
+
+        // assert: a null medicineId routes to the global query, all medicines
+        assertEquals(3, mMedicineRepository.findMedicineIntakes(null, 10).size());
+        assertEquals(3, mMedicineRepository.searchMedicineIntakes(null, "route keyword", 10).size());
+
+        // assert: fresh-list semantics - mutating a returned list never
+        // affects subsequent results
+        scopedFind.clear();
+        scopedSearch.clear();
+        assertEquals(2, mMedicineRepository.findMedicineIntakes(medicine1.id, 10).size());
+        assertEquals(2, mMedicineRepository.searchMedicineIntakes(medicine1.id, "route keyword", 10).size());
+        assertEquals(3, mMedicineRepository.findMedicineIntakes(null, 10).size());
+        assertEquals(3, mMedicineRepository.searchMedicineIntakes(null, "route keyword", 10).size());
+    }
+
     // ---- repository-level occurrence bookkeeping, run against the real table ----
 
     @Test

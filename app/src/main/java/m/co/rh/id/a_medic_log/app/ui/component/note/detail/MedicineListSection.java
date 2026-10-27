@@ -33,7 +33,6 @@ import m.co.rh.id.a_medic_log.app.util.DeleteScopeSummaryBuilder;
 import m.co.rh.id.a_medic_log.app.util.UiUtils;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.a_medic_log.base.repository.MedicineRepository;
-import m.co.rh.id.a_medic_log.base.repository.NoteRepository;
 import m.co.rh.id.a_medic_log.base.repository.ProfileRepository;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
 import m.co.rh.id.a_medic_log.base.state.NoteState;
@@ -56,7 +55,6 @@ public class MedicineListSection implements View.OnClickListener,
     private final ILogger mLogger;
     private final RxDisposer mRxDisposer;
     private final ExecutorService mExecutorService;
-    private final NoteRepository mNoteRepository;
     private final ProfileRepository mProfileRepository;
     private final DeleteMedicineCmd mDeleteMedicineCmd;
     private final MedicineRepository mMedicineRepository;
@@ -80,7 +78,6 @@ public class MedicineListSection implements View.OnClickListener,
         mLogger = svProvider.get(ILogger.class);
         mRxDisposer = svProvider.get(RxDisposer.class);
         mExecutorService = svProvider.get(ExecutorService.class);
-        mNoteRepository = svProvider.get(NoteRepository.class);
         mProfileRepository = svProvider.get(ProfileRepository.class);
         mDeleteMedicineCmd = svProvider.get(DeleteMedicineCmd.class);
         mMedicineRepository = svProvider.get(MedicineRepository.class);
@@ -134,7 +131,7 @@ public class MedicineListSection implements View.OnClickListener,
                             if (isUpdate()) {
                                 return Single.fromCallable(() -> {
                                     List<MedicineState> fresh =
-                                            mNoteRepository.queryMedicineStatesByNoteId(mRouteNoteId);
+                                            mMedicineRepository.queryMedicineStatesByNoteId(mRouteNoteId);
                                     mNoteState.updateMedicineStates(fresh);
                                     return fresh;
                                 }).subscribeOn(Schedulers.from(mExecutorService));

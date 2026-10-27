@@ -10,27 +10,28 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_medic_log.R;
-import m.co.rh.id.a_medic_log.base.repository.NoteAttachmentRepository;
 import m.co.rh.id.a_medic_log.base.entity.NoteAttachment;
+import m.co.rh.id.a_medic_log.base.repository.NoteRepository;
 import m.co.rh.id.a_medic_log.base.state.NoteAttachmentState;
 import m.co.rh.id.aprovider.Provider;
+import m.co.rh.id.aprovider.ProviderValue;
 
 public class NewNoteAttachmentCmd {
     protected Context mAppContext;
     protected ExecutorService mExecutorService;
-    protected NoteAttachmentRepository mNoteAttachmentRepo;
+    protected ProviderValue<NoteRepository> mNoteRepository;
     protected BehaviorSubject<String> mNameValidSubject;
 
     public NewNoteAttachmentCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
-        mNoteAttachmentRepo = provider.get(NoteAttachmentRepository.class);
+        mNoteRepository = provider.lazyGet(NoteRepository.class);
         mNameValidSubject = BehaviorSubject.create();
     }
 
     public Single<NoteAttachmentState> execute(NoteAttachmentState noteAttachmentState) {
         return Single.fromCallable(() -> {
-            mNoteAttachmentRepo.insertNoteAttachment(noteAttachmentState);
+            mNoteRepository.get().insertNoteAttachment(noteAttachmentState);
             return noteAttachmentState;
         }).subscribeOn(Schedulers.from(mExecutorService));
     }
