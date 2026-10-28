@@ -10,11 +10,13 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import m.co.rh.id.a_medic_log.app.provider.CommandProviderModule;
+import m.co.rh.id.a_medic_log.app.provider.component.AdherenceReportGenerator;
 import m.co.rh.id.a_medic_log.app.provider.component.AppSharedPreferences;
 import m.co.rh.id.a_medic_log.app.provider.component.CsvArchiveExporter;
 import m.co.rh.id.a_medic_log.app.provider.component.ExcelExporter;
 import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderAlarmScheduler;
 import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderEventHandler;
+import m.co.rh.id.a_medic_log.app.provider.component.PdfReportExporter;
 import m.co.rh.id.a_medic_log.app.provider.component.ProfileExportDataGenerator;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineReminderChangeNotifier;
@@ -127,6 +129,8 @@ public class ExportImportTestProviderModule implements ProviderModule {
         // export path)
         providerRegistry.registerLazy(ExcelExporter.class, () -> new ExcelExporter(provider));
         providerRegistry.registerLazy(CsvArchiveExporter.class, CsvArchiveExporter::new);
+        providerRegistry.registerLazy(PdfReportExporter.class, () -> new PdfReportExporter(provider));
+        providerRegistry.registerLazy(AdherenceReportGenerator.class, () -> new AdherenceReportGenerator(provider));
         providerRegistry.registerLazy(ProfileExportDataGenerator.class, () -> new ProfileExportDataGenerator(provider));
         // commands registered last, mirror the real app command wiring
         providerRegistry.registerModule(new CommandProviderModule());

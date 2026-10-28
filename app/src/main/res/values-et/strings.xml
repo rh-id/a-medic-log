@@ -196,4 +196,33 @@
     <string name="settings_notifications_summary_denied">Ravimi meeldetuletuste märguannete kuvamiseks on vaja luba, lubamiseks puuduta</string>
     <string name="settings_notifications_summary_not_required">Märguanded on lubatud selles Androidi versioonis</string>
     <string name="notification_permission_rationale">Ravimi meeldetuletused kuvatakse märguannetena. Rakendus soovib küsida märguannete luba, et meeldetuletused jõuaksid teieni.</string>
+    <string name="title_export_pdf">Ekspordi PDF-raport</string>
+    <string name="pdf_report_progress_generating">Loon PDF-i…</string>
+    <string name="share_medication_report">Jaga ravimiraportit</string>
+    <string name="pdf_report_title">Ravimiraport</string>
+    <string name="pdf_report_patient_generated">Patsiendi sisestatud andmed</string>
+    <string name="pdf_report_generated_at">Loodud %s</string>
+    <string name="pdf_report_period">Võtmise periood: %s</string>
+    <string name="pdf_report_section_medicines">Ravimid</string>
+    <string name="pdf_report_col_name">Nimi</string>
+    <string name="pdf_report_col_description">Kirjeldus</string>
+    <string name="pdf_report_col_schedule">Võtmiskava</string>
+    <string name="pdf_report_as_needed">Vajadusel (PRN)</string>
+    <string name="pdf_report_section_adherence">Järgimise kokkuvõte</string>
+    <string name="pdf_report_range_7_days">Viimased 7 päeva</string>
+    <string name="pdf_report_range_30_days">Viimased 30 päeva</string>
+    <string name="pdf_report_range_90_days">Viimased 90 päeva</string>
+    <string name="pdf_report_adherence_overall">Kokku: %s</string>
+    <string name="pdf_report_adherence_counts_format">%1$d võetud · %2$d puuduv · %3$d%%</string>
+    <string name="pdf_report_adherence_counts_extra_format">%1$d võetud · %2$d puuduv · %3$d lisaks · %4$d%%</string>
+    <string name="pdf_report_adherence_empty">Sellel perioodil pole planeeritud annuseid</string>
+    <string name="pdf_report_adherence_window_note">Võetud = võtmine, mis on registreeritud ±3 tunni jooksul planeeritud annuse ajast. Patsiendi sisestatud andmed.</string>
+    <string name="pdf_report_section_intakes">Võtmiste ajalugu</string>
+    <string name="pdf_report_col_date">Kuupäev</string>
+    <string name="pdf_report_col_time">Aeg</string>
+    <string name="pdf_report_col_medicine">Ravim</string>
+    <string name="pdf_report_col_notes">Kirjeldus</string>
+    <string name="pdf_report_intakes_empty">Sellel perioodil pole võtmisi registreeritud</string>
+    <string name="pdf_report_page_format">Lehekülg %1$d / %2$d</string>
+    <string name="dialog_pdf_report_range_title">Võtmise periood</string>
 </resources>

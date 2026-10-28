@@ -196,4 +196,33 @@
     <string name="settings_notifications_summary_denied">Permission requise pour afficher les rappels de médicament, touchez pour autoriser</string>
     <string name="settings_notifications_summary_not_required">Les notifications sont autorisées sur cette version d\'Android</string>
     <string name="notification_permission_rationale">Les rappels de médicament s\'affichent sous forme de notifications. L\'application souhaite demander la permission de notification pour que les rappels vous parviennent.</string>
+    <string name="title_export_pdf">Exporter le rapport PDF</string>
+    <string name="pdf_report_progress_generating">Génération du PDF…</string>
+    <string name="share_medication_report">Partager le rapport de médicament</string>
+    <string name="pdf_report_title">Rapport de médicament</string>
+    <string name="pdf_report_patient_generated">Données saisies par le patient</string>
+    <string name="pdf_report_generated_at">Généré le %s</string>
+    <string name="pdf_report_period">Période de prise : %s</string>
+    <string name="pdf_report_section_medicines">Médicaments</string>
+    <string name="pdf_report_col_name">Nom</string>
+    <string name="pdf_report_col_description">Description</string>
+    <string name="pdf_report_col_schedule">Horaires</string>
+    <string name="pdf_report_as_needed">Si besoin (PRN)</string>
+    <string name="pdf_report_section_adherence">Résumé de l\'observance</string>
+    <string name="pdf_report_range_7_days">7 derniers jours</string>
+    <string name="pdf_report_range_30_days">30 derniers jours</string>
+    <string name="pdf_report_range_90_days">90 derniers jours</string>
+    <string name="pdf_report_adherence_overall">Global : %s</string>
+    <string name="pdf_report_adherence_counts_format">%1$d pris · %2$d manqués · %3$d%%</string>
+    <string name="pdf_report_adherence_counts_extra_format">%1$d pris · %2$d manqués · %3$d supplémentaires · %4$d%%</string>
+    <string name="pdf_report_adherence_empty">Aucune dose prévue sur cette période</string>
+    <string name="pdf_report_adherence_window_note">Pris = une prise enregistrée à ±3 heures de l\'heure de dose prévue. Données saisies par le patient.</string>
+    <string name="pdf_report_section_intakes">Historique des prises</string>
+    <string name="pdf_report_col_date">Date</string>
+    <string name="pdf_report_col_time">Heure</string>
+    <string name="pdf_report_col_medicine">Médicament</string>
+    <string name="pdf_report_col_notes">Description</string>
+    <string name="pdf_report_intakes_empty">Aucune prise enregistrée sur cette période</string>
+    <string name="pdf_report_page_format">Page %1$d sur %2$d</string>
+    <string name="dialog_pdf_report_range_title">Période des prises</string>
 </resources>

@@ -196,4 +196,33 @@
     <string name="settings_notifications_summary_denied">Permesso necessario per mostrare le notifiche dei promemoria dei medicinali, tocca per consentire</string>
     <string name="settings_notifications_summary_not_required">Le notifiche sono consentite su questa versione di Android</string>
     <string name="notification_permission_rationale">I promemoria dei medicinali appaiono come notifiche. L\'app vorrebbe chiedere il permesso di notifica affinché i promemoria ti raggiungano.</string>
+    <string name="title_export_pdf">Esporta report PDF</string>
+    <string name="pdf_report_progress_generating">Generazione del PDF…</string>
+    <string name="share_medication_report">Condividi report dei medicinali</string>
+    <string name="pdf_report_title">Report dei medicinali</string>
+    <string name="pdf_report_patient_generated">Dati generati dal paziente</string>
+    <string name="pdf_report_generated_at">Generato il %s</string>
+    <string name="pdf_report_period">Periodo di assunzione: %s</string>
+    <string name="pdf_report_section_medicines">Medicinali</string>
+    <string name="pdf_report_col_name">Nome</string>
+    <string name="pdf_report_col_description">Descrizione</string>
+    <string name="pdf_report_col_schedule">Orari</string>
+    <string name="pdf_report_as_needed">Al bisogno (PRN)</string>
+    <string name="pdf_report_section_adherence">Riepilogo aderenza</string>
+    <string name="pdf_report_range_7_days">Ultimi 7 giorni</string>
+    <string name="pdf_report_range_30_days">Ultimi 30 giorni</string>
+    <string name="pdf_report_range_90_days">Ultimi 90 giorni</string>
+    <string name="pdf_report_adherence_overall">Complessivo: %s</string>
+    <string name="pdf_report_adherence_counts_format">%1$d preso · %2$d saltate · %3$d%%</string>
+    <string name="pdf_report_adherence_counts_extra_format">%1$d preso · %2$d saltate · %3$d extra · %4$d%%</string>
+    <string name="pdf_report_adherence_empty">Nessuna dose pianificata in questo periodo</string>
+    <string name="pdf_report_adherence_window_note">Preso = un\'assunzione registrata entro ±3 ore dall\'orario della dose pianificata. Dati generati dal paziente.</string>
+    <string name="pdf_report_section_intakes">Cronologia assunzioni</string>
+    <string name="pdf_report_col_date">Data</string>
+    <string name="pdf_report_col_time">Ora</string>
+    <string name="pdf_report_col_medicine">Medicinale</string>
+    <string name="pdf_report_col_notes">Descrizione</string>
+    <string name="pdf_report_intakes_empty">Nessuna assunzione registrata in questo periodo</string>
+    <string name="pdf_report_page_format">Pagina %1$d di %2$d</string>
+    <string name="dialog_pdf_report_range_title">Periodo delle assunzioni</string>
 </resources>

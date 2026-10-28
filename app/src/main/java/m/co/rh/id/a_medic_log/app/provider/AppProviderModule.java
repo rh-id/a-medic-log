@@ -13,6 +13,7 @@ import java.util.Map;
 import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.MainActivity;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
+import m.co.rh.id.a_medic_log.app.provider.component.AdherenceReportGenerator;
 import m.co.rh.id.a_medic_log.app.provider.component.AppLockAuthHandler;
 import m.co.rh.id.a_medic_log.app.provider.component.AppLockManager;
 import m.co.rh.id.a_medic_log.app.provider.component.AppNotificationHandler;
@@ -23,6 +24,7 @@ import m.co.rh.id.a_medic_log.app.provider.component.FileCleanUpTask;
 import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderAlarmScheduler;
 import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderEventHandler;
 import m.co.rh.id.a_medic_log.app.provider.component.NotificationPermissionGate;
+import m.co.rh.id.a_medic_log.app.provider.component.PdfReportExporter;
 import m.co.rh.id.a_medic_log.app.provider.component.ProfileExportDataGenerator;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineIntakeChangeNotifier;
@@ -50,6 +52,7 @@ import m.co.rh.id.a_medic_log.app.ui.page.SettingsPage;
 import m.co.rh.id.a_medic_log.app.ui.page.SplashPage;
 import m.co.rh.id.a_medic_log.app.ui.page.common.CreateFileSVDialog;
 import m.co.rh.id.a_medic_log.app.ui.page.common.ImageViewPage;
+import m.co.rh.id.a_medic_log.app.ui.page.common.PdfReportRangeSVDialog;
 import m.co.rh.id.a_medic_log.app.ui.page.common.ProgressSVDialog;
 import m.co.rh.id.a_medic_log.base.provider.BaseProviderModule;
 import m.co.rh.id.a_medic_log.base.provider.DatabaseProviderModule;
@@ -98,6 +101,8 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerPool(StatefulViewProvider.class, () -> new StatefulViewProvider(provider));
         providerRegistry.registerLazy(ExcelExporter.class, () -> new ExcelExporter(provider));
         providerRegistry.registerLazy(CsvArchiveExporter.class, CsvArchiveExporter::new);
+        providerRegistry.registerLazy(PdfReportExporter.class, () -> new PdfReportExporter(provider));
+        providerRegistry.registerLazy(AdherenceReportGenerator.class, () -> new AdherenceReportGenerator(provider));
         providerRegistry.registerLazy(ProfileExportDataGenerator.class, () -> new ProfileExportDataGenerator(provider));
 
         providerRegistry.registerAsync(MedicineReminderEventHandler.class, () -> new MedicineReminderEventHandler(provider));
@@ -130,6 +135,7 @@ public class AppProviderModule implements ProviderModule {
         navMap.put(Routes.COMMON_CREATE_FILE_DIALOG, (args, activity) -> new CreateFileSVDialog());
         navMap.put(Routes.COMMON_IMAGEVIEW, (args, activity) -> new ImageViewPage());
         navMap.put(Routes.COMMON_PROGRESS_DIALOG, (args, activity) -> new ProgressSVDialog());
+        navMap.put(Routes.COMMON_PDF_RANGE_DIALOG, (args, activity) -> new PdfReportRangeSVDialog());
         navMap.putAll(provider.get(NavExtDialogConfig.class).getNavMap());
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =
                 new NavConfiguration.Builder(Routes.SPLASH_PAGE, navMap);

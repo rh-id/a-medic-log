@@ -196,4 +196,33 @@
     <string name="settings_notifications_summary_denied">Permissiun necessaria per mussar avis dad Erinner da medikaments, tocca per permetter</string>
     <string name="settings_notifications_summary_not_required">Avis èn permessos sin questa versiun dad Android</string>
     <string name="notification_permission_rationale">Erinner da medikaments cumparan sco avis. L\'app dovra la permissiun per avis per retschaiver las erinneras.</string>
+    <string name="title_export_pdf">Exportar il rapport PDF</string>
+    <string name="pdf_report_progress_generating">Generescha il PDF…</string>
+    <string name="share_medication_report">Partir il rapport da medikaments</string>
+    <string name="pdf_report_title">Rapport da medikaments</string>
+    <string name="pdf_report_patient_generated">Datas generadas dal pazient</string>
+    <string name="pdf_report_generated_at">Generà %s</string>
+    <string name="pdf_report_period">Perioda da prenda: %s</string>
+    <string name="pdf_report_section_medicines">Medikaments</string>
+    <string name="pdf_report_col_name">Num</string>
+    <string name="pdf_report_col_description">Descripziun</string>
+    <string name="pdf_report_col_schedule">Plan</string>
+    <string name="pdf_report_as_needed">Sin basegn (PRN)</string>
+    <string name="pdf_report_section_adherence">Resumen da l\'observanza</string>
+    <string name="pdf_report_range_7_days">Ultims 7 dis</string>
+    <string name="pdf_report_range_30_days">Ultims 30 dis</string>
+    <string name="pdf_report_range_90_days">Ultims 90 dis</string>
+    <string name="pdf_report_adherence_overall">Total: %s</string>
+    <string name="pdf_report_adherence_counts_format">%1$d prendì · %2$d manchà · %3$d%%</string>
+    <string name="pdf_report_adherence_counts_extra_format">%1$d prendì · %2$d manchà · %3$d extra · %4$d%%</string>
+    <string name="pdf_report_adherence_empty">Naginas dosas planisadas en quest interval</string>
+    <string name="pdf_report_adherence_window_note">Prendì = ina prenda registrada entaifer ±3 uras dal temp da la dosa planisada. Datas generadas dal pazient.</string>
+    <string name="pdf_report_section_intakes">Cronologia da prenda</string>
+    <string name="pdf_report_col_date">Data</string>
+    <string name="pdf_report_col_time">Temp</string>
+    <string name="pdf_report_col_medicine">Medikament</string>
+    <string name="pdf_report_col_notes">Descripziun</string>
+    <string name="pdf_report_intakes_empty">Naginas prendas registradas en quest interval</string>
+    <string name="pdf_report_page_format">Pagina %1$d da %2$d</string>
+    <string name="dialog_pdf_report_range_title">Perioda da prenda</string>
 </resources>

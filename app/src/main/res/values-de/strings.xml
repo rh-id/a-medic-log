@@ -196,4 +196,33 @@
     <string name="settings_notifications_summary_denied">Berechtigung benötigt, um Medikamentenerinnerungen als Benachrichtigungen anzuzeigen, zum Erlauben tippen</string>
     <string name="settings_notifications_summary_not_required">Benachrichtigungen sind auf dieser Android-Version erlaubt</string>
     <string name="notification_permission_rationale">Medikamentenerinnerungen werden als Benachrichtigungen angezeigt. Die App möchte nach der Benachrichtigungsberechtigung fragen, damit Erinnerungen Sie erreichen.</string>
+    <string name="title_export_pdf">PDF-Bericht exportieren</string>
+    <string name="pdf_report_progress_generating">PDF wird erstellt…</string>
+    <string name="share_medication_report">Medikamentenbericht teilen</string>
+    <string name="pdf_report_title">Medikamentenbericht</string>
+    <string name="pdf_report_patient_generated">Vom Patienten erfasste Daten</string>
+    <string name="pdf_report_generated_at">Erstellt %s</string>
+    <string name="pdf_report_period">Einnahmezeitraum: %s</string>
+    <string name="pdf_report_section_medicines">Medikamente</string>
+    <string name="pdf_report_col_name">Name</string>
+    <string name="pdf_report_col_description">Beschreibung</string>
+    <string name="pdf_report_col_schedule">Einnahmeplan</string>
+    <string name="pdf_report_as_needed">Bei Bedarf (PRN)</string>
+    <string name="pdf_report_section_adherence">Therapietreue-Zusammenfassung</string>
+    <string name="pdf_report_range_7_days">Letzte 7 Tage</string>
+    <string name="pdf_report_range_30_days">Letzte 30 Tage</string>
+    <string name="pdf_report_range_90_days">Letzte 90 Tage</string>
+    <string name="pdf_report_adherence_overall">Gesamt: %s</string>
+    <string name="pdf_report_adherence_counts_format">%1$d genommen · %2$d verpasst · %3$d%%</string>
+    <string name="pdf_report_adherence_counts_extra_format">%1$d genommen · %2$d verpasst · %3$d zusätzlich · %4$d%%</string>
+    <string name="pdf_report_adherence_empty">Keine geplanten Dosen in diesem Zeitraum</string>
+    <string name="pdf_report_adherence_window_note">Genommen = eine Einnahme, die innerhalb von ±3 Stunden um die geplante Dosiszeit protokolliert wurde. Vom Patienten erfasste Daten.</string>
+    <string name="pdf_report_section_intakes">Einnahmenverlauf</string>
+    <string name="pdf_report_col_date">Datum</string>
+    <string name="pdf_report_col_time">Uhrzeit</string>
+    <string name="pdf_report_col_medicine">Medikament</string>
+    <string name="pdf_report_col_notes">Beschreibung</string>
+    <string name="pdf_report_intakes_empty">Keine Einnahmen in diesem Zeitraum protokolliert</string>
+    <string name="pdf_report_page_format">Seite %1$d von %2$d</string>
+    <string name="dialog_pdf_report_range_title">Einnahmezeitraum</string>
 </resources>

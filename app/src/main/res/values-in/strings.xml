@@ -191,4 +191,33 @@
     <string name="settings_notifications_summary_denied">Perlu izin untuk menampilkan notifikasi pengingat obat, ketuk untuk mengizinkan</string>
     <string name="settings_notifications_summary_not_required">Notifikasi diizinkan pada versi Android ini</string>
     <string name="notification_permission_rationale">Pengingat obat muncul sebagai notifikasi. Aplikasi ingin meminta izin notifikasi agar pengingat bisa sampai ke kamu.</string>
+    <string name="title_export_pdf">Ekspor Laporan PDF</string>
+    <string name="pdf_report_progress_generating">Membuat PDF…</string>
+    <string name="share_medication_report">Bagi laporan obat</string>
+    <string name="pdf_report_title">Laporan obat</string>
+    <string name="pdf_report_patient_generated">Data yang diinput pasien</string>
+    <string name="pdf_report_generated_at">Dibuat %s</string>
+    <string name="pdf_report_period">Periode pemasukan: %s</string>
+    <string name="pdf_report_section_medicines">Obat</string>
+    <string name="pdf_report_col_name">Nama</string>
+    <string name="pdf_report_col_description">Deskripsi</string>
+    <string name="pdf_report_col_schedule">Jadwal</string>
+    <string name="pdf_report_as_needed">Bila perlu (PRN)</string>
+    <string name="pdf_report_section_adherence">Ringkasan kepatuhan</string>
+    <string name="pdf_report_range_7_days">7 hari terakhir</string>
+    <string name="pdf_report_range_30_days">30 hari terakhir</string>
+    <string name="pdf_report_range_90_days">90 hari terakhir</string>
+    <string name="pdf_report_adherence_overall">Keseluruhan: %s</string>
+    <string name="pdf_report_adherence_counts_format">%1$d dikonsumsi · %2$d terlewat · %3$d%%</string>
+    <string name="pdf_report_adherence_counts_extra_format">%1$d dikonsumsi · %2$d terlewat · %3$d tambahan · %4$d%%</string>
+    <string name="pdf_report_adherence_empty">Tidak ada dosis terjadwal pada periode ini</string>
+    <string name="pdf_report_adherence_window_note">Dikonsumsi = pemasukan obat yang dicatat dalam ±3 jam dari waktu dosis terjadwal. Data yang diinput pasien.</string>
+    <string name="pdf_report_section_intakes">Riwayat pemasukan obat</string>
+    <string name="pdf_report_col_date">Tanggal</string>
+    <string name="pdf_report_col_time">Waktu</string>
+    <string name="pdf_report_col_medicine">Obat</string>
+    <string name="pdf_report_col_notes">Deskripsi</string>
+    <string name="pdf_report_intakes_empty">Tidak ada pemasukan obat yang dicatat pada periode ini</string>
+    <string name="pdf_report_page_format">Halaman %1$d dari %2$d</string>
+    <string name="dialog_pdf_report_range_title">Rentang riwayat pemasukan obat</string>
 </resources>

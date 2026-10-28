@@ -9,6 +9,7 @@ import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteNoteTagCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.DeleteProfileCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.ExportArchiveCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.ExportPdfReportCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.ExportSpreadsheetCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.GetAdherenceReportCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.GetTodayDoseStatusCmd;
@@ -70,5 +71,6 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerLazy(ExportArchiveCmd.class, () -> new ExportArchiveCmd(provider));
         providerRegistry.registerLazy(ImportArchiveCmd.class, () -> new ImportArchiveCmd(provider));
         providerRegistry.registerLazy(ExportSpreadsheetCmd.class, () -> new ExportSpreadsheetCmd(provider));
+        providerRegistry.registerLazy(ExportPdfReportCmd.class, () -> new ExportPdfReportCmd(provider));
     }
 }

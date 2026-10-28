@@ -197,4 +197,33 @@
     <string name="settings_notifications_summary_granted">Medicine reminders can show notifications</string>
     <string name="settings_notifications_summary_denied">Permission needed to show medicine reminder notifications, tap to allow</string>
     <string name="settings_notifications_summary_not_required">Notifications are allowed on this Android version</string>
+    <string name="title_export_pdf">Export PDF Report</string>
+    <string name="pdf_report_progress_generating">Generating PDF…</string>
+    <string name="share_medication_report">Share medication report</string>
+    <string name="pdf_report_title">Medication report</string>
+    <string name="pdf_report_patient_generated">Patient-generated data</string>
+    <string name="pdf_report_generated_at">Generated %s</string>
+    <string name="pdf_report_period">Intake period: %s</string>
+    <string name="pdf_report_section_medicines">Medications</string>
+    <string name="pdf_report_col_name">Name</string>
+    <string name="pdf_report_col_description">Description</string>
+    <string name="pdf_report_col_schedule">Schedule</string>
+    <string name="pdf_report_as_needed">As needed (PRN)</string>
+    <string name="pdf_report_section_adherence">Adherence summary</string>
+    <string name="pdf_report_range_7_days">Last 7 days</string>
+    <string name="pdf_report_range_30_days">Last 30 days</string>
+    <string name="pdf_report_range_90_days">Last 90 days</string>
+    <string name="pdf_report_adherence_overall">Overall: %s</string>
+    <string name="pdf_report_adherence_counts_format">%1$d taken · %2$d missed · %3$d%%</string>
+    <string name="pdf_report_adherence_counts_extra_format">%1$d taken · %2$d missed · %3$d extra · %4$d%%</string>
+    <string name="pdf_report_adherence_empty">No scheduled doses in this period</string>
+    <string name="pdf_report_adherence_window_note">Taken = an intake logged within ±3 hours of the scheduled dose time. Patient-generated data.</string>
+    <string name="pdf_report_section_intakes">Intake history</string>
+    <string name="pdf_report_col_date">Date</string>
+    <string name="pdf_report_col_time">Time</string>
+    <string name="pdf_report_col_medicine">Medicine</string>
+    <string name="pdf_report_col_notes">Description</string>
+    <string name="pdf_report_intakes_empty">No intakes logged in this period</string>
+    <string name="pdf_report_page_format">Page %1$d of %2$d</string>
+    <string name="dialog_pdf_report_range_title">Intake history range</string>
 </resources>

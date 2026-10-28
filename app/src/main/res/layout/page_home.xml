@@ -102,6 +102,16 @@
                         app:icon="@drawable/ic_table_chart_black"
                         app:layout_columnWeight="1"
                         app:layout_gravity="fill" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_export_pdf"
+                        style="@style/Theme.Amediclog.HomeMenuButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:text="@string/title_export_pdf"
+                        app:icon="@drawable/ic_picture_as_pdf_black"
+                        app:layout_columnWeight="1"
+                        app:layout_gravity="fill" />
                 </androidx.gridlayout.widget.GridLayout>
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>

@@ -196,4 +196,33 @@
     <string name="settings_notifications_summary_denied">Treng løyve for å visa varslingar for medisinpåminningar, trykk for å tillate</string>
     <string name="settings_notifications_summary_not_required">Varslingar er tillate på denne Android-versjonen</string>
     <string name="notification_permission_rationale">Medisinpåminningar visast som varslingar. Appen vil gjerne spørja om løyve til varslingar slik at påminningane når deg.</string>
+    <string name="title_export_pdf">Eksporter PDF-rapport</string>
+    <string name="pdf_report_progress_generating">Genererer PDF…</string>
+    <string name="share_medication_report">Del medisinrapport</string>
+    <string name="pdf_report_title">Medisinrapport</string>
+    <string name="pdf_report_patient_generated">Pasientgenererte data</string>
+    <string name="pdf_report_generated_at">Generert %s</string>
+    <string name="pdf_report_period">Inntaksperiode: %s</string>
+    <string name="pdf_report_section_medicines">Medisinar</string>
+    <string name="pdf_report_col_name">Namn</string>
+    <string name="pdf_report_col_description">Skildring</string>
+    <string name="pdf_report_col_schedule">Tidsplan</string>
+    <string name="pdf_report_as_needed">Ved behov (PRN)</string>
+    <string name="pdf_report_section_adherence">Samandrag av etterlevnad</string>
+    <string name="pdf_report_range_7_days">Siste 7 dagar</string>
+    <string name="pdf_report_range_30_days">Siste 30 dagar</string>
+    <string name="pdf_report_range_90_days">Siste 90 dagar</string>
+    <string name="pdf_report_adherence_overall">Totalt: %s</string>
+    <string name="pdf_report_adherence_counts_format">%1$d teke · %2$d savnad · %3$d%%</string>
+    <string name="pdf_report_adherence_counts_extra_format">%1$d teke · %2$d savnad · %3$d ekstra · %4$d%%</string>
+    <string name="pdf_report_adherence_empty">Ingen planlagte dosar i denne perioda</string>
+    <string name="pdf_report_adherence_window_note">Teke = eit inntak loggført innan ±3 timar frå planlagt dosetidspunkt. Pasientgenererte data.</string>
+    <string name="pdf_report_section_intakes">Inntakshistorikk</string>
+    <string name="pdf_report_col_date">Dato</string>
+    <string name="pdf_report_col_time">Tid</string>
+    <string name="pdf_report_col_medicine">Medisin</string>
+    <string name="pdf_report_col_notes">Skildring</string>
+    <string name="pdf_report_intakes_empty">Ingen inntak loggført i denne perioda</string>
+    <string name="pdf_report_page_format">Side %1$d av %2$d</string>
+    <string name="dialog_pdf_report_range_title">Inntaksperiode</string>
 </resources>

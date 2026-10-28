@@ -29,6 +29,7 @@ import m.co.rh.id.a_medic_log.R;
 import m.co.rh.id.a_medic_log.app.constants.Routes;
 import m.co.rh.id.a_medic_log.app.provider.StatefulViewProvider;
 import m.co.rh.id.a_medic_log.app.provider.command.ExportArchiveCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.ExportPdfReportCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.ExportSpreadsheetCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.ImportArchiveCmd;
 import m.co.rh.id.a_medic_log.app.provider.component.AppNotificationHandler;
@@ -36,6 +37,7 @@ import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.report.TodayCardSV;
+import m.co.rh.id.a_medic_log.app.ui.page.common.PdfReportRangeSVDialog;
 import m.co.rh.id.a_medic_log.app.ui.page.common.ProgressSVDialog;
 import m.co.rh.id.a_medic_log.app.util.UiUtils;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
@@ -64,6 +66,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private static final String EXPORT_ZIP_MIME_TYPE = "application/zip";
     private static final String EXPORT_XLSX_MIME_TYPE =
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    private static final String EXPORT_PDF_MIME_TYPE = "application/pdf";
     private static final String EXPORT_ZIP_FILE_PREFIX = "a-medic-log-export-";
     private static final String EXPORT_TIMESTAMP_FORMAT = "yyyyMMdd-HHmmss";
 
@@ -79,6 +82,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     // pending export/import request states
     private ArrayList<Long> mPendingExportProfileIds;
     private Profile mPendingSpreadsheetProfile;
+    private Profile mPendingPdfProfile;
 
     /**
      * Gate for the medicine-reminder navigation flow: {@code true} means a
@@ -105,6 +109,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient ExportArchiveCmd mExportArchiveCmd;
     private transient ImportArchiveCmd mImportArchiveCmd;
     private transient ExportSpreadsheetCmd mExportSpreadsheetCmd;
+    private transient ExportPdfReportCmd mExportPdfReportCmd;
 
     // View related
     private transient DrawerLayout mDrawerLayout;
@@ -129,6 +134,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mExportArchiveCmd = mSvProvider.get(ExportArchiveCmd.class);
         mImportArchiveCmd = mSvProvider.get(ImportArchiveCmd.class);
         mExportSpreadsheetCmd = mSvProvider.get(ExportSpreadsheetCmd.class);
+        mExportPdfReportCmd = mSvProvider.get(ExportPdfReportCmd.class);
         if (mReminderNavigationGate == null) {
             // provideComponent also runs when a-navigator restores this page
             // from its process-death snapshot (deserialization skips the
@@ -187,6 +193,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         importButton.setOnClickListener(this);
         Button exportSpreadsheetButton = view.findViewById(R.id.button_export_spreadsheet);
         exportSpreadsheetButton.setOnClickListener(this);
+        Button exportPdfButton = view.findViewById(R.id.button_export_pdf);
+        exportPdfButton.setOnClickListener(this);
         mRxDisposer.add("createView_onMedicineReminderNotification",
                 mAppNotificationHandler.getMedicineReminderFlow()
                         // hold each reminder while the progress dialog shows,
@@ -247,9 +255,11 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mDrawerLayout = null;
         mOnNavigationClicked = null;
         mRxDisposer = null;
+        mPendingPdfProfile = null;
         mExportArchiveCmd = null;
         mImportArchiveCmd = null;
         mExportSpreadsheetCmd = null;
+        mExportPdfReportCmd = null;
     }
 
     @Override
@@ -313,6 +323,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             startImportFlow();
         } else if (id == R.id.button_export_spreadsheet) {
             startExportSpreadsheetFlow();
+        } else if (id == R.id.button_export_pdf) {
+            startExportPdfFlow();
         }
     }
 
@@ -403,6 +415,66 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                             isSpreadsheetSupported() ? EXPORT_XLSX_MIME_TYPE : EXPORT_ZIP_MIME_TYPE,
                             fileName);
                 });
+    }
+
+    private void startExportPdfFlow() {
+        mNavigator.push(Routes.PROFILE_SELECT_PAGE,
+                (navigator, navRoute, activity, currentView) -> {
+                    ProfileSelectPage.Result result = ProfileSelectPage.Result.of(navRoute);
+                    if (result == null) {
+                        return;
+                    }
+                    Profile profile = result.getSelectedProfile().get(0);
+                    mPendingPdfProfile = profile;
+                    mNavigator.push(Routes.COMMON_PDF_RANGE_DIALOG,
+                            (navigator1, navRoute1, activity1, currentView1) -> {
+                                PdfReportRangeSVDialog.Result rangeResult =
+                                        PdfReportRangeSVDialog.Result.of(navRoute1);
+                                if (rangeResult == null) {
+                                    return;
+                                }
+                                Integer rangeDays = rangeResult.getRangeDays();
+                                if (rangeDays == null) {
+                                    return;
+                                }
+                                exportPdfReport(rangeDays);
+                            });
+                });
+    }
+
+    private void exportPdfReport(int rangeDays) {
+        Profile profile = mPendingPdfProfile;
+        // clear the pending profile so the stale reference does not outlive this flow
+        mPendingPdfProfile = null;
+        if (profile == null || profile.id == null) {
+            // null means the pending selection is missing, e.g. after a
+            // process death while the range dialog was open
+            mLogger.e(TAG, "Pending PDF export profile selection is missing, "
+                    + "likely due to process death while the range dialog was open. "
+                    + "Skipping PDF export.");
+            return;
+        }
+        Activity activity = mNavigator.getActivity();
+        // close the gate before pushing so no reminder slips in during the
+        // push window; anything held is released when the dialog is popped
+        mReminderNavigationGate.onNext(false);
+        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG, ProgressSVDialog.Args.newArgs(
+                activity.getString(R.string.title_export_pdf),
+                activity.getString(R.string.pdf_report_progress_generating)));
+        Context context = mSvProvider.getContext();
+        mRxDisposer.add("HomePage_exportPdf", mExportPdfReportCmd.execute(profile.id, rangeDays)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe((file, throwable) -> {
+                    popProgressDialog();
+                    if (throwable != null) {
+                        RxUtils.logError(mLogger, TAG,
+                                context.getString(R.string.error_exporting_data), throwable);
+                    } else {
+                        UiUtils.shareFile(activity, file,
+                                activity.getString(R.string.share_medication_report),
+                                EXPORT_PDF_MIME_TYPE);
+                    }
+                }));
     }
 
     private void startCreateDocumentAction(int requestCode, String mimeType, String fileName) {

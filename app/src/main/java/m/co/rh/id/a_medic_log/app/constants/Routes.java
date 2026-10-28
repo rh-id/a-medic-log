@@ -22,6 +22,7 @@ public class Routes {
     public static final String COMMON_CREATE_FILE_DIALOG = "/common/createFileDialog";
     public static final String COMMON_IMAGEVIEW = "/common/imageView";
     public static final String COMMON_PROGRESS_DIALOG = "/common/progressDialog";
+    public static final String COMMON_PDF_RANGE_DIALOG = "/common/pdfRangeDialog";
 
     private Routes() {
     }

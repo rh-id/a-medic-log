@@ -196,4 +196,33 @@
     <string name="settings_notifications_summary_denied">Heimild vantar til að sýna tilkynningar um lyfminningar, ýttu til að leyfa</string>
     <string name="settings_notifications_summary_not_required">Tilkynningar eru leyfðar á þessari Android-útgáfu</string>
     <string name="notification_permission_rationale">Lyfminningar birtast sem tilkynningar. Forritið vill biðja um heimild fyrir tilkynningum svo minningar berist til þín.</string>
+    <string name="title_export_pdf">Flytja út PDF-skýrslu</string>
+    <string name="pdf_report_progress_generating">Bý til PDF…</string>
+    <string name="share_medication_report">Deila lyfjaskýrslu</string>
+    <string name="pdf_report_title">Lyfjaskýrsla</string>
+    <string name="pdf_report_patient_generated">Gögn skráð af sjúklingi</string>
+    <string name="pdf_report_generated_at">Búið til %s</string>
+    <string name="pdf_report_period">Tímabil töku: %s</string>
+    <string name="pdf_report_section_medicines">Lyf</string>
+    <string name="pdf_report_col_name">Nafn</string>
+    <string name="pdf_report_col_description">Lýsing</string>
+    <string name="pdf_report_col_schedule">Æðtlun</string>
+    <string name="pdf_report_as_needed">Eftir þörfum (PRN)</string>
+    <string name="pdf_report_section_adherence">Eftirfylgniyfirlit</string>
+    <string name="pdf_report_range_7_days">Síðustu 7 dagar</string>
+    <string name="pdf_report_range_30_days">Síðustu 30 dagar</string>
+    <string name="pdf_report_range_90_days">Síðustu 90 dagar</string>
+    <string name="pdf_report_adherence_overall">Samtals: %s</string>
+    <string name="pdf_report_adherence_counts_format">%1$d tekið · %2$d ekki tekið · %3$d%%</string>
+    <string name="pdf_report_adherence_counts_extra_format">%1$d tekið · %2$d ekki tekið · %3$d auka · %4$d%%</string>
+    <string name="pdf_report_adherence_empty">Engar áætlaðar skammtar á þessu tímabili</string>
+    <string name="pdf_report_adherence_window_note">Tekið = inntak skráð innan ±3 klukkustunda frá áætluðum skammtatíma. Gögn skráð af sjúklingi.</string>
+    <string name="pdf_report_section_intakes">Saga lyfjatöku</string>
+    <string name="pdf_report_col_date">Dagsetning</string>
+    <string name="pdf_report_col_time">Tími</string>
+    <string name="pdf_report_col_medicine">Lyf</string>
+    <string name="pdf_report_col_notes">Lýsing</string>
+    <string name="pdf_report_intakes_empty">Engin inntak skráð á þessu tímabili</string>
+    <string name="pdf_report_page_format">Síða %1$d af %2$d</string>
+    <string name="dialog_pdf_report_range_title">Tímabil lyfjatöku</string>
 </resources>

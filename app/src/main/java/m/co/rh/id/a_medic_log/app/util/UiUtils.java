@@ -61,6 +61,8 @@ public class UiUtils {
         Intent shareIntent = new Intent();
         shareIntent.setAction(Intent.ACTION_SEND);
         shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+        // the receiving app needs a temporary read grant for the content Uri
+        shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         shareIntent.setType(mime);
         shareIntent = Intent.createChooser(shareIntent, chooserMessage);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
