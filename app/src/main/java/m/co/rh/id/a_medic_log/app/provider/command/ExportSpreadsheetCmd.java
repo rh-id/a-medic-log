@@ -1,6 +1,5 @@
 package m.co.rh.id.a_medic_log.app.provider.command;
 
-import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
 
@@ -13,17 +12,12 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.app.provider.component.CsvArchiveExporter;
 import m.co.rh.id.a_medic_log.app.provider.component.ExcelExporter;
 import m.co.rh.id.a_medic_log.app.provider.component.ProfileExportData;
-import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
-import m.co.rh.id.a_medic_log.base.dao.MedicineIntakeDao;
-import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
-import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentDao;
-import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentFileDao;
-import m.co.rh.id.a_medic_log.base.dao.NoteDao;
-import m.co.rh.id.a_medic_log.base.dao.NoteTagDao;
+import m.co.rh.id.a_medic_log.app.provider.component.ProfileExportDataGenerator;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.a_medic_log.base.provider.FileHelper;
 import m.co.rh.id.aprovider.Provider;
+import m.co.rh.id.aprovider.ProviderValue;
 
 /**
  * Exports a single profile with all of its notes, attachments, medicines,
@@ -34,30 +28,23 @@ public class ExportSpreadsheetCmd {
     private static final String EXCEL_FILE_NAME = "profile_export.xlsx";
     private static final String CSV_FILE_NAME = "profile_export.zip";
 
-    protected Context mAppContext;
+    protected ProviderValue<ExcelExporter> mExcelExporter;
+    protected ProviderValue<CsvArchiveExporter> mCsvArchiveExporter;
+    protected ProviderValue<ProfileExportDataGenerator> mProfileExportDataGenerator;
     protected ExecutorService mExecutorService;
     protected FileHelper mFileHelper;
     protected ProfileDao mProfileDao;
-    protected NoteDao mNoteDao;
-    protected NoteTagDao mNoteTagDao;
-    protected NoteAttachmentDao mNoteAttachmentDao;
-    protected NoteAttachmentFileDao mNoteAttachmentFileDao;
-    protected MedicineDao mMedicineDao;
-    protected MedicineReminderDao mMedicineReminderDao;
-    protected MedicineIntakeDao mMedicineIntakeDao;
 
     public ExportSpreadsheetCmd(Provider provider) {
-        mAppContext = provider.getContext().getApplicationContext();
+        // lazy, not eager get: ExcelExporter loads POI which only supports
+        // API 26+, it must only be constructed on the API 26+ guarded export
+        // path, never on every command creation regardless of API level
+        mExcelExporter = provider.lazyGet(ExcelExporter.class);
+        mCsvArchiveExporter = provider.lazyGet(CsvArchiveExporter.class);
+        mProfileExportDataGenerator = provider.lazyGet(ProfileExportDataGenerator.class);
         mExecutorService = provider.get(ExecutorService.class);
         mFileHelper = provider.get(FileHelper.class);
         mProfileDao = provider.get(ProfileDao.class);
-        mNoteDao = provider.get(NoteDao.class);
-        mNoteTagDao = provider.get(NoteTagDao.class);
-        mNoteAttachmentDao = provider.get(NoteAttachmentDao.class);
-        mNoteAttachmentFileDao = provider.get(NoteAttachmentFileDao.class);
-        mMedicineDao = provider.get(MedicineDao.class);
-        mMedicineReminderDao = provider.get(MedicineReminderDao.class);
-        mMedicineIntakeDao = provider.get(MedicineIntakeDao.class);
     }
 
     /**
@@ -96,9 +83,7 @@ public class ExportSpreadsheetCmd {
         if (profile == null) {
             throw new IllegalArgumentException("Profile not found for id: " + profileId);
         }
-        ProfileExportData exportData = ProfileExportData.assemble(profile, mNoteDao, mNoteTagDao,
-                mNoteAttachmentDao, mNoteAttachmentFileDao, mMedicineDao,
-                mMedicineReminderDao, mMedicineIntakeDao);
+        ProfileExportData exportData = mProfileExportDataGenerator.get().generate(profile);
         // ExcelExporter touches POI which only supports API 26+,
         // it must never be constructed nor used below API 26
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -111,7 +96,7 @@ public class ExportSpreadsheetCmd {
         File outFile = mFileHelper.createTempFile(EXCEL_FILE_NAME);
         boolean success = false;
         try {
-            File result = new ExcelExporter(mAppContext).export(outFile, exportData);
+            File result = mExcelExporter.get().export(outFile, exportData);
             success = true;
             return result;
         } finally {
@@ -126,7 +111,7 @@ public class ExportSpreadsheetCmd {
         File outFile = mFileHelper.createTempFile(CSV_FILE_NAME);
         boolean success = false;
         try {
-            File result = new CsvArchiveExporter().export(outFile, exportData);
+            File result = mCsvArchiveExporter.get().export(outFile, exportData);
             success = true;
             return result;
         } finally {

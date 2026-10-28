@@ -21,6 +21,7 @@ import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.apoi_spreadsheet.base.POISpreadsheetContext;
+import m.co.rh.id.aprovider.Provider;
 
 /**
  * Exports a single profile's data into an XLSX spreadsheet with 4 sheets:
@@ -54,8 +55,8 @@ public class ExcelExporter {
 
     private final Context mAppContext;
 
-    public ExcelExporter(Context appContext) {
-        mAppContext = appContext;
+    public ExcelExporter(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
     }
 
     /**
@@ -113,7 +114,7 @@ public class ExcelExporter {
         createCell(row, 1, exportData.getProfile().about, null);
         row = sheet.createRow(rowIndex);
         createCell(row, 0, LABEL_GENERATED, headerCellStyle);
-        createCell(row, 1, ProfileExportData.formatIsoDateTime(new Date()), null);
+        createCell(row, 1, ExportFormatUtils.formatIsoDateTime(new Date()), null);
     }
 
     private static void writeNotesSheet(XSSFWorkbook workbook, CellStyle headerCellStyle,
@@ -126,7 +127,7 @@ public class ExcelExporter {
         int rowIndex = 1;
         for (ProfileExportData.NoteExportData noteExportData : exportData.getNotes()) {
             Row row = sheet.createRow(rowIndex++);
-            createCell(row, 0, ProfileExportData.formatIsoDateTime(
+            createCell(row, 0, ExportFormatUtils.formatIsoDateTime(
                     noteExportData.getNote().entryDateTime), null);
             createCell(row, 1, noteExportData.getNote().content, null);
             createCell(row, 2, joinTags(noteExportData.getTags()), null);
@@ -148,7 +149,7 @@ public class ExcelExporter {
                 Row row = sheet.createRow(rowIndex++);
                 createCell(row, 0, medicineExportData.getMedicine().name, null);
                 createCell(row, 1, medicineExportData.getMedicine().description, null);
-                createCell(row, 2, ProfileExportData.formatIsoDateTime(
+                createCell(row, 2, ExportFormatUtils.formatIsoDateTime(
                         noteExportData.getNote().entryDateTime), null);
                 createCell(row, 3, joinReminders(medicineExportData.getReminders()), null);
             }
@@ -168,7 +169,7 @@ public class ExcelExporter {
                 for (MedicineIntake medicineIntake : medicineExportData.getIntakes()) {
                     Row row = sheet.createRow(rowIndex++);
                     createCell(row, 0, medicineExportData.getMedicine().name, null);
-                    createCell(row, 1, ProfileExportData.formatIsoDateTime(
+                    createCell(row, 1, ExportFormatUtils.formatIsoDateTime(
                             medicineIntake.takenDateTime), null);
                     createCell(row, 2, medicineIntake.description, null);
                 }
@@ -222,7 +223,7 @@ public class ExcelExporter {
             if (stringBuilder.length() > 0) {
                 stringBuilder.append(REMINDER_SEPARATOR);
             }
-            stringBuilder.append(ProfileExportData.buildReminderSummary(medicineReminder));
+            stringBuilder.append(ExportFormatUtils.buildReminderSummary(medicineReminder));
         }
         return stringBuilder.toString();
     }

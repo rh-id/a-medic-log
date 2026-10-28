@@ -1,21 +1,7 @@
 package m.co.rh.id.a_medic_log.app.provider.component;
 
-import java.text.DateFormatSymbols;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 
-import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
-import m.co.rh.id.a_medic_log.base.dao.MedicineIntakeDao;
-import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
-import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentDao;
-import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentFileDao;
-import m.co.rh.id.a_medic_log.base.dao.NoteDao;
-import m.co.rh.id.a_medic_log.base.dao.NoteTagDao;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
@@ -26,10 +12,11 @@ import m.co.rh.id.a_medic_log.base.entity.NoteTag;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
 
 /**
- * Complete export data of a single profile with all of its notes, attachments,
- * medicines, reminders and intakes.
- * Assembled from the database queries and shared by {@link m.co.rh.id.a_medic_log.app.provider.command.ExportArchiveCmd}
- * and {@link m.co.rh.id.a_medic_log.app.provider.command.ExportSpreadsheetCmd} exporters.
+ * Value holder of the complete export data of a single profile with all of
+ * its notes, attachments, medicines, reminders and intakes.
+ * Assembled by {@link ProfileExportDataGenerator}; rendered by
+ * {@link ExcelExporter} and {@link CsvArchiveExporter}, and consumed by
+ * {@link m.co.rh.id.a_medic_log.app.provider.command.ExportArchiveCmd}.
  */
 public class ProfileExportData {
     private final Profile mProfile;
@@ -46,97 +33,6 @@ public class ProfileExportData {
 
     public List<NoteExportData> getNotes() {
         return mNotes;
-    }
-
-    /**
-     * Assemble the complete export data of a profile from the database.
-     * This performs blocking database reads, must be called on a background thread.
-     *
-     * @param profile the profile to assemble, must not be null
-     * @return complete export data of the profile
-     */
-    public static ProfileExportData assemble(Profile profile, NoteDao noteDao, NoteTagDao noteTagDao,
-                                             NoteAttachmentDao noteAttachmentDao,
-                                             NoteAttachmentFileDao noteAttachmentFileDao,
-                                             MedicineDao medicineDao,
-                                             MedicineReminderDao medicineReminderDao,
-                                             MedicineIntakeDao medicineIntakeDao) {
-        List<Note> notes = noteDao.findNotesByProfileId(profile.id);
-        List<NoteExportData> noteExportDataList = new ArrayList<>(notes.size());
-        for (Note note : notes) {
-            List<NoteTag> noteTags = noteTagDao.findNoteTagsByNoteId(note.id);
-            List<NoteAttachmentExportData> attachments = new ArrayList<>();
-            List<NoteAttachment> noteAttachments = noteAttachmentDao.findNoteAttachmentsByNoteId(note.id);
-            for (NoteAttachment noteAttachment : noteAttachments) {
-                List<NoteAttachmentFile> noteAttachmentFiles =
-                        noteAttachmentFileDao.findNoteAttachmentFilesByAttachmentId(noteAttachment.id);
-                attachments.add(new NoteAttachmentExportData(noteAttachment, noteAttachmentFiles));
-            }
-            List<MedicineExportData> medicines = new ArrayList<>();
-            List<Medicine> medicineList = medicineDao.findMedicinesByNoteId(note.id);
-            for (Medicine medicine : medicineList) {
-                List<MedicineReminder> medicineReminders =
-                        medicineReminderDao.findMedicineRemindersByMedicineId(medicine.id);
-                List<MedicineIntake> medicineIntakes =
-                        medicineIntakeDao.findMedicineIntakesByMedicineId(medicine.id);
-                medicines.add(new MedicineExportData(medicine, medicineReminders, medicineIntakes));
-            }
-            noteExportDataList.add(new NoteExportData(note, noteTags, attachments, medicines));
-        }
-        return new ProfileExportData(profile, noteExportDataList);
-    }
-
-    /**
-     * Format a date time as ISO date string, ex: 2026-09-02T08:05:00+0700
-     *
-     * @param date the date to format
-     * @return ISO date string, or empty string when date is null
-     */
-    public static String formatIsoDateTime(Date date) {
-        if (date == null) {
-            return "";
-        }
-        return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ", Locale.getDefault()).format(date);
-    }
-
-    /**
-     * Build a single line human readable summary of a medicine reminder,
-     * ex: "Mon,Tue 08:00 — take 1 pill"
-     *
-     * @param medicineReminder the reminder to summarize
-     * @return reminder summary string
-     */
-    public static String buildReminderSummary(MedicineReminder medicineReminder) {
-        if (medicineReminder == null) {
-            return "";
-        }
-        StringBuilder stringBuilder = new StringBuilder();
-        LinkedHashSet<Integer> reminderDays = medicineReminder.reminderDays;
-        if (reminderDays != null && !reminderDays.isEmpty()) {
-            String[] shortWeekDays = DateFormatSymbols.getInstance().getShortWeekdays();
-            boolean firstDay = true;
-            for (Integer dayOfWeek : reminderDays) {
-                if (dayOfWeek == null || dayOfWeek < Calendar.SUNDAY || dayOfWeek > Calendar.SATURDAY) {
-                    continue;
-                }
-                if (!firstDay) {
-                    stringBuilder.append(",");
-                }
-                stringBuilder.append(shortWeekDays[dayOfWeek]);
-                firstDay = false;
-            }
-            if (!firstDay) {
-                stringBuilder.append(" ");
-            }
-        }
-        if (medicineReminder.startDateTime != null) {
-            stringBuilder.append(new SimpleDateFormat("HH:mm", Locale.getDefault())
-                    .format(medicineReminder.startDateTime));
-        }
-        if (medicineReminder.message != null && !medicineReminder.message.isEmpty()) {
-            stringBuilder.append(" — ").append(medicineReminder.message);
-        }
-        return stringBuilder.toString();
     }
 
     /**

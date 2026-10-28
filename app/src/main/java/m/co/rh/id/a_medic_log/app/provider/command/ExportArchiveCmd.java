@@ -28,13 +28,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_medic_log.BuildConfig;
 import m.co.rh.id.a_medic_log.app.provider.component.ProfileExportData;
-import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
-import m.co.rh.id.a_medic_log.base.dao.MedicineIntakeDao;
-import m.co.rh.id.a_medic_log.base.dao.MedicineReminderDao;
-import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentDao;
-import m.co.rh.id.a_medic_log.base.dao.NoteAttachmentFileDao;
-import m.co.rh.id.a_medic_log.base.dao.NoteDao;
-import m.co.rh.id.a_medic_log.base.dao.NoteTagDao;
+import m.co.rh.id.a_medic_log.app.provider.component.ProfileExportDataGenerator;
 import m.co.rh.id.a_medic_log.base.dao.ProfileDao;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
@@ -47,6 +41,7 @@ import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.a_medic_log.base.provider.FileHelper;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
+import m.co.rh.id.aprovider.ProviderValue;
 
 /**
  * Exports selected profiles with all of their notes, attachments, medicines, reminders
@@ -107,26 +102,14 @@ public class ExportArchiveCmd {
     protected FileHelper mFileHelper;
     protected ILogger mLogger;
     protected ProfileDao mProfileDao;
-    protected NoteDao mNoteDao;
-    protected NoteTagDao mNoteTagDao;
-    protected NoteAttachmentDao mNoteAttachmentDao;
-    protected NoteAttachmentFileDao mNoteAttachmentFileDao;
-    protected MedicineDao mMedicineDao;
-    protected MedicineReminderDao mMedicineReminderDao;
-    protected MedicineIntakeDao mMedicineIntakeDao;
+    protected ProviderValue<ProfileExportDataGenerator> mProfileExportDataGenerator;
 
     public ExportArchiveCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
         mFileHelper = provider.get(FileHelper.class);
         mLogger = provider.get(ILogger.class);
         mProfileDao = provider.get(ProfileDao.class);
-        mNoteDao = provider.get(NoteDao.class);
-        mNoteTagDao = provider.get(NoteTagDao.class);
-        mNoteAttachmentDao = provider.get(NoteAttachmentDao.class);
-        mNoteAttachmentFileDao = provider.get(NoteAttachmentFileDao.class);
-        mMedicineDao = provider.get(MedicineDao.class);
-        mMedicineReminderDao = provider.get(MedicineReminderDao.class);
-        mMedicineIntakeDao = provider.get(MedicineIntakeDao.class);
+        mProfileExportDataGenerator = provider.lazyGet(ProfileExportDataGenerator.class);
     }
 
     /**
@@ -203,9 +186,7 @@ public class ExportArchiveCmd {
         }
         List<ProfileExportData> exportDataList = new ArrayList<>(profiles.size());
         for (Profile profile : profiles) {
-            exportDataList.add(ProfileExportData.assemble(profile, mNoteDao, mNoteTagDao,
-                    mNoteAttachmentDao, mNoteAttachmentFileDao, mMedicineDao,
-                    mMedicineReminderDao, mMedicineIntakeDao));
+            exportDataList.add(mProfileExportDataGenerator.get().generate(profile));
         }
         return exportDataList;
     }

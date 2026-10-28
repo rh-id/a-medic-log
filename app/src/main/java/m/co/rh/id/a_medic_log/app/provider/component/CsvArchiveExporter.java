@@ -67,7 +67,7 @@ public class CsvArchiveExporter {
         StringBuilder csv = new StringBuilder();
         appendCsvLine(csv, HEADER_NAME, exportData.getProfile().name);
         appendCsvLine(csv, HEADER_DESCRIPTION, exportData.getProfile().about);
-        appendCsvLine(csv, LABEL_GENERATED, ProfileExportData.formatIsoDateTime(new Date()));
+        appendCsvLine(csv, LABEL_GENERATED, ExportFormatUtils.formatIsoDateTime(new Date()));
         writeCsvEntry(zipOutputStream, csv);
     }
 
@@ -78,7 +78,7 @@ public class CsvArchiveExporter {
         appendCsvLine(csv, HEADER_ENTRY_DATE, HEADER_CONTENT, HEADER_TAGS);
         for (ProfileExportData.NoteExportData noteExportData : exportData.getNotes()) {
             appendCsvLine(csv,
-                    ProfileExportData.formatIsoDateTime(noteExportData.getNote().entryDateTime),
+                    ExportFormatUtils.formatIsoDateTime(noteExportData.getNote().entryDateTime),
                     noteExportData.getNote().content,
                     joinTags(noteExportData.getTags()));
         }
@@ -95,7 +95,7 @@ public class CsvArchiveExporter {
                 appendCsvLine(csv,
                         medicineExportData.getMedicine().name,
                         medicineExportData.getMedicine().description,
-                        ProfileExportData.formatIsoDateTime(noteExportData.getNote().entryDateTime),
+                        ExportFormatUtils.formatIsoDateTime(noteExportData.getNote().entryDateTime),
                         joinReminders(medicineExportData.getReminders()));
             }
         }
@@ -112,7 +112,7 @@ public class CsvArchiveExporter {
                 for (MedicineIntake medicineIntake : medicineExportData.getIntakes()) {
                     appendCsvLine(csv,
                             medicineExportData.getMedicine().name,
-                            ProfileExportData.formatIsoDateTime(medicineIntake.takenDateTime),
+                            ExportFormatUtils.formatIsoDateTime(medicineIntake.takenDateTime),
                             medicineIntake.description);
                 }
             }
@@ -182,7 +182,7 @@ public class CsvArchiveExporter {
             if (stringBuilder.length() > 0) {
                 stringBuilder.append(REMINDER_SEPARATOR);
             }
-            stringBuilder.append(ProfileExportData.buildReminderSummary(medicineReminder));
+            stringBuilder.append(ExportFormatUtils.buildReminderSummary(medicineReminder));
         }
         return stringBuilder.toString();
     }

@@ -17,10 +17,13 @@ import m.co.rh.id.a_medic_log.app.provider.component.AppLockAuthHandler;
 import m.co.rh.id.a_medic_log.app.provider.component.AppLockManager;
 import m.co.rh.id.a_medic_log.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_medic_log.app.provider.component.AppSharedPreferences;
+import m.co.rh.id.a_medic_log.app.provider.component.CsvArchiveExporter;
+import m.co.rh.id.a_medic_log.app.provider.component.ExcelExporter;
 import m.co.rh.id.a_medic_log.app.provider.component.FileCleanUpTask;
 import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderAlarmScheduler;
 import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderEventHandler;
 import m.co.rh.id.a_medic_log.app.provider.component.NotificationPermissionGate;
+import m.co.rh.id.a_medic_log.app.provider.component.ProfileExportDataGenerator;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineIntakeChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineReminderChangeNotifier;
@@ -93,6 +96,9 @@ public class AppProviderModule implements ProviderModule {
         // registered before MedicineReminderEventHandler, the handler resolves it lazily
         providerRegistry.registerAsync(MedicineReminderAlarmScheduler.class, () -> new MedicineReminderAlarmScheduler(provider));
         providerRegistry.registerPool(StatefulViewProvider.class, () -> new StatefulViewProvider(provider));
+        providerRegistry.registerLazy(ExcelExporter.class, () -> new ExcelExporter(provider));
+        providerRegistry.registerLazy(CsvArchiveExporter.class, CsvArchiveExporter::new);
+        providerRegistry.registerLazy(ProfileExportDataGenerator.class, () -> new ProfileExportDataGenerator(provider));
 
         providerRegistry.registerAsync(MedicineReminderEventHandler.class, () -> new MedicineReminderEventHandler(provider));
         // it is safer to register navigator last in case it needs dependency from all above, provider can be passed here

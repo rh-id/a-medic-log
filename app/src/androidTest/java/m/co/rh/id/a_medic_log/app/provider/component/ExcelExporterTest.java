@@ -28,6 +28,7 @@ import m.co.rh.id.a_medic_log.app.provider.component.ExcelExporter;
 import m.co.rh.id.a_medic_log.app.provider.component.ProfileExportData;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.entity.Profile;
+import m.co.rh.id.aprovider.Provider;
 
 @RunWith(AndroidJUnit4.class)
 public class ExcelExporterTest {
@@ -40,6 +41,11 @@ public class ExcelExporterTest {
     public void export_writesValidXlsxZipArchive() throws Exception {
         assumeTrue(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O);
         Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        // the exporter only reads the provider's application context, an empty
+        // module is enough for this pure component test (no db, no WorkManager)
+        Provider provider = Provider.createProvider(context, (registry, p) -> {
+            // leave blank
+        });
 
         // arrange: a small dataset
         Profile profile = new Profile();
@@ -55,7 +61,7 @@ public class ExcelExporterTest {
         File outFile = new File(context.getCacheDir(), "excel_export_test.xlsx");
         try {
             // act
-            new ExcelExporter(context).export(outFile, exportData);
+            new ExcelExporter(provider).export(outFile, exportData);
             assertTrue(outFile.exists());
             assertTrue(outFile.length() > 0);
 
@@ -82,6 +88,7 @@ public class ExcelExporterTest {
             assertTrue("workbook.xml must declare sheet Medicines", workbookXml.contains("Medicines"));
             assertTrue("workbook.xml must declare sheet Intakes", workbookXml.contains("Intakes"));
         } finally {
+            provider.dispose();
             outFile.delete();
         }
     }

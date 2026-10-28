@@ -11,8 +11,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import m.co.rh.id.a_medic_log.app.provider.CommandProviderModule;
 import m.co.rh.id.a_medic_log.app.provider.component.AppSharedPreferences;
+import m.co.rh.id.a_medic_log.app.provider.component.CsvArchiveExporter;
+import m.co.rh.id.a_medic_log.app.provider.component.ExcelExporter;
 import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderAlarmScheduler;
 import m.co.rh.id.a_medic_log.app.provider.component.MedicineReminderEventHandler;
+import m.co.rh.id.a_medic_log.app.provider.component.ProfileExportDataGenerator;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.MedicineReminderChangeNotifier;
 import m.co.rh.id.a_medic_log.app.provider.notifier.NoteChangeNotifier;
@@ -117,6 +120,14 @@ public class ExportImportTestProviderModule implements ProviderModule {
         // mirrors the production wiring of AppProviderModule
         providerRegistry.registerAsync(MedicineReminderEventHandler.class,
                 () -> new MedicineReminderEventHandler(provider));
+        // real exporter/generator components, mirror the production wiring of
+        // AppProviderModule; the commands lazyGet them in their constructors so
+        // they must be registered here, lazily (ExcelExporter loads POI which
+        // only supports API 26+, it is only constructed on the API 26+ guarded
+        // export path)
+        providerRegistry.registerLazy(ExcelExporter.class, () -> new ExcelExporter(provider));
+        providerRegistry.registerLazy(CsvArchiveExporter.class, CsvArchiveExporter::new);
+        providerRegistry.registerLazy(ProfileExportDataGenerator.class, () -> new ProfileExportDataGenerator(provider));
         // commands registered last, mirror the real app command wiring
         providerRegistry.registerModule(new CommandProviderModule());
     }
