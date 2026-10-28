@@ -1,0 +1,12 @@
+Release 2.3.0+31
+
+Nyheter:
+* Eksporter en PDF-rapport per profil: medisiner, tidsplaner, sammendrag av etterlevelse og inntakshistorikk
+* Søket omfatter nå også detaljer om medisiner og inntak, og tar hensyn til valgt profil
+* Slettebekreftelser viser nå hva som fjernes sammen med elementet
+
+Feilrettinger:
+* Medisinpåminnelser vises igjen på Android 13+ (varseltillatelsen ble aldri forespurt)
+* Medisinpåminnelser bruker nå nøyaktige alarmer: de utløses ikke lenger mange minutter for sent, og de overlever omstarter
+* Doser telles først som savnet når tidsvinduet for inntaket er utløpt
+* Appdata er nå unntatt fra sikkerhetskopiering til skyen og overføring mellom enheter

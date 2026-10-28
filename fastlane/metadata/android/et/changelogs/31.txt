@@ -1,0 +1,12 @@
+Release 2.3.0+31
+
+Uued funktsioonid:
+* Ekspordi profiilipõhine PDF-raport: ravimid, võtmiskavad, järgimise kokkuvõte ja võtmiste ajalugu
+* Otsing hõlmab nüüd ka ravimite ja võtmiste üksikasju ning arvestab valitud profiiliga
+* Kustutamise kinnitused näitavad nüüd, mis koos kirjega kustutatakse
+
+Parandused:
+* Meeldetuletused ilmuvad Android 13+ seadmetel jälle (märguannete luba jäi varem küsimata)
+* Meeldetuletused kasutavad nüüd täpseid äratusi: need ei käivitu enam mitu minutit hiljem ja säilivad taaskäivitamisel
+* Doosid loetakse puuduvaks alles siis, kui nende võtmise ajavahemik on möödunud
+* Rakenduse andmed on nüüd välistatud pilvevarukoopiatest ja seadmelt seadmesse edastamisest

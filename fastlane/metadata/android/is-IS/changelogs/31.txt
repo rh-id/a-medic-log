@@ -1,0 +1,12 @@
+Release 2.3.0+31
+
+Nýjungar:
+* Flyttu út PDF-lyfjaskýrslu fyrir hvert snið: lyf með æðtlun, yfirlit yfir eftirfylgni og sögu lyfjatöku
+* Leitin nær nú einnig til upplýsinga um lyf og lyfjatöku og tekur mið af völdu sniði
+* Staðfestingar á eyðingu sýna nú hvað eyðist saman við hlutinn
+
+Villuleiðréttingar:
+* Minningar birtast aftur á Android 13+ (heimildin fyrir tilkynningum var aldrei umbeðin)
+* Minningar nota nú nákvæma vekjara: þær koma ekki lengur marga mínútur of seint og lifa endurræsingum af
+* Skammtir eru aðeins taldir sem ekki teknir þegar tímabilið til að taka þá er runnið út
+* Gögn appsins eru nú undanþegin skýafritun og flutningi tæki til tækis

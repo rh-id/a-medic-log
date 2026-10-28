@@ -1,0 +1,12 @@
+Release 2.3.0+31
+
+Fitur Baru:
+* Ekspor laporan PDF per profil: obat, jadwal, ringkasan kepatuhan, dan riwayat pemasukan
+* Pencarian kini juga mencakup detail obat dan pemasukan, serta mengikuti profil yang dipilih
+* Konfirmasi hapus kini menampilkan apa saja yang akan ikut terhapus bersama itemnya
+
+Perbaikan:
+* Pengingat kembali muncul di Android 13+ (izin notifikasi tidak pernah diminta)
+* Pengingat kini memakai alarm presisi: tidak lagi terlambat bermenit-menit serta bertahan setelah perangkat dimulai ulang
+* Dosis baru dihitung terlewat setelah jendela waktunya berakhir
+* Data aplikasi kini dikecualikan dari pencadangan cloud dan transfer antarperangkat

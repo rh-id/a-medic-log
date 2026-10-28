@@ -1,0 +1,12 @@
+Release 2.3.0+31
+
+Features:
+* Export a per-profile PDF medication report: medicines, schedules, adherence summary and intake history
+* Search now also covers medicine and intake details and respects the selected profile
+* Delete confirmations now show what will be removed along with the item
+
+Fixes:
+* Reminders show again on Android 13+ (notification permission was never requested)
+* Reminders now use exact alarms: no more firing minutes late, and they survive reboots
+* Doses only count as missed once their take window has closed
+* App data is now excluded from cloud backup and device-to-device transfer

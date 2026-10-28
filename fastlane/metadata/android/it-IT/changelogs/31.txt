@@ -1,0 +1,12 @@
+Release 2.3.0+31
+
+Novità:
+* Esportazione di un report PDF per profilo: medicinali, orari, riepilogo dell'aderenza e cronologia delle assunzioni
+* La ricerca include ora anche i dettagli di medicinali e assunzioni e rispetta il profilo selezionato
+* Le conferme di eliminazione mostrano ora cosa verrà rimosso insieme all'elemento
+
+Correzioni:
+* I promemoria ricompaiono su Android 13+ (il permesso di notifica non era mai stato richiesto)
+* I promemoria ora usano allarmi esatti: niente più ritardi di minuti, e sopravvivono ai riavvii
+* Le dosi vengono conteggiate come saltate solo quando la loro finestra di assunzione è scaduta
+* I dati dell'app sono ora esclusi dal backup cloud e dal trasferimento da dispositivo a dispositivo

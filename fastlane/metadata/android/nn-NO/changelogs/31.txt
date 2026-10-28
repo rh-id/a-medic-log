@@ -1,0 +1,12 @@
+Release 2.3.0+31
+
+Nytt:
+* Eksporter ein PDF-rapport per profil: medisinar, tidsplanar, samandrag av etterlevnad og takingshistorikk
+* Søket omfattar no også detaljar om medisinar og taking, og tek omsyn til vald profil
+* Slettestadfestingar viser no kva som blir fjerna saman med elementet
+
+Feilrettingar:
+* Medisinpåminningar dukkar opp igjen på Android 13+ (varselløyvet vart aldri etterspurd)
+* Medisinpåminningar brukar no nøyaktige alarmar: dei går ikkje lenger mange minutt for seint, og dei overlever omstartar
+* Dosar blir først talde som savnad når tidsvindauget for takinga er utløpt
+* Appdata er no unntatte frå sikkerheitskopiering til skyen og overføring mellom einingar

@@ -1,0 +1,12 @@
+Release 2.3.0+31
+
+Nova funcziuns:
+* Exportar in rapport PDF per profil: medikaments, plans, resumen da l'observanza e l'istorgia da las prendas
+* La tschertga comprenda ussa era detagls da medikaments e prendas e tegna quat il profil tschernì
+* Las confirmaziuns da stizzar mussan ussa quai che vegn stizzà ensemen cun l'element
+
+Correcturas:
+* Las erinner da medikaments cumparan puspè sin Android 13+ (la permissiun per avis nu è mai vegnida dumandada)
+* Las erinner duvran uss alarmas exactas: ellas vegnan betg plui exequidas blers minuts tard e funcziunan anc suenter ina reaviada
+* Dosas vegnan dumbradas sco manchadas mo suenter ch'il term da prenda è scrudà
+* Las datas da l'app vegnan uss excludidas dal backup en il cloud e dal transferiment dad in apparat a l'auter

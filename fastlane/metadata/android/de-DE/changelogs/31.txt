@@ -1,0 +1,12 @@
+Release 2.3.0+31
+
+Neuheiten:
+* PDF-Medikamentenbericht pro Profil exportieren: Medikamente, Einnahmepläne, Therapietreue-Zusammenfassung und Einnahmenhistorie
+* Die Suche deckt nun auch Medikamenten- und Einnahmedetails ab und berücksichtigt das ausgewählte Profil
+* Löschbestätigungen zeigen nun, was zusammen mit dem Element mitgelöscht wird
+
+Fehlerbehebungen:
+* Erinnerungen werden auf Android 13+ wieder angezeigt (die Benachrichtigungsberechtigung wurde nie abgefragt)
+* Erinnerungen nutzen nun exakte Alarme: keine Auslösung mehr viele Minuten zu spät, und sie überstehen Neustarts
+* Dosen zählen erst als verpasst, wenn ihr Einnahmezeitfenster abgelaufen ist
+* App-Daten sind nun von der Cloud-Sicherung und der Übertragung von Gerät zu Gerät ausgeschlossen

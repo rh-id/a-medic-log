@@ -1,0 +1,12 @@
+Release 2.3.0+31
+
+Nouveautés :
+* Export d'un rapport PDF par profil : médicaments, horaires, résumé de l'observance et historique des prises
+* La recherche couvre désormais aussi les détails des médicaments et des prises, et respecte le profil sélectionné
+* Les confirmations de suppression affichent désormais ce qui sera supprimé en même temps que l'élément
+
+Corrections :
+* Les rappels s'affichent à nouveau sur Android 13+ (l'autorisation de notification n'a jamais été demandée)
+* Les rappels utilisent désormais des alarmes exactes : fini les déclenchements avec des minutes de retard, et ils survivent aux redémarrages
+* Les doses ne comptent comme manquées qu'une fois leur fenêtre de prise écoulée
+* Les données de l'app sont désormais exclues de la sauvegarde cloud et du transfert d'appareil à appareil
