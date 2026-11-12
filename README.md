@@ -38,6 +38,8 @@ To move data between devices, use the app's **Export & Import** feature (see Fea
 
 In-app settings (e.g., theme, app lock) are not carried over between devices either, since they are also excluded from backup.
 
+The home screen may show a dismissible card suggesting the companion app Personal Stuff: the check whether it is installed runs on-device only (the app has no INTERNET permission), and a dismissed card re-appears at most every 14 days.
+
 ## Tech Stack
 
 | Component | Detail |

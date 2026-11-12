@@ -18,6 +18,7 @@ public class AppSharedPreferences {
     private static final boolean DEFAULT_NOTIFICATION_PERMISSION_ASKED = false;
     private static final boolean DEFAULT_MEDICINE_REMINDER_ALARM_MIGRATED = false;
     private static final boolean DEFAULT_DOSE_OCCURRENCE_BACKFILLED = false;
+    private static final long DEFAULT_COMPANION_APP_PROMO_DISMISSED_AT = 0L; // epoch millis, 0 means never dismissed
     private ProviderValue<ExecutorService> mExecutorService;
     private ProviderValue<Handler> mHandler;
     private SharedPreferences mSharedPreferences;
@@ -39,6 +40,9 @@ public class AppSharedPreferences {
 
     private boolean mDoseOccurrenceBackfilled;
     private String mDoseOccurrenceBackfilledKey;
+
+    private long mCompanionAppPromoDismissedAt;
+    private String mCompanionAppPromoDismissedAtKey;
 
     public AppSharedPreferences(Provider provider) {
         mExecutorService = provider.lazyGet(ExecutorService.class);
@@ -81,6 +85,11 @@ public class AppSharedPreferences {
                 + ".doseOccurrenceBackfilled";
         mDoseOccurrenceBackfilled = mSharedPreferences.getBoolean(
                 mDoseOccurrenceBackfilledKey, DEFAULT_DOSE_OCCURRENCE_BACKFILLED);
+
+        mCompanionAppPromoDismissedAtKey = SHARED_PREFERENCES_NAME
+                + ".companionAppPromoDismissedAt";
+        mCompanionAppPromoDismissedAt = mSharedPreferences.getLong(
+                mCompanionAppPromoDismissedAtKey, DEFAULT_COMPANION_APP_PROMO_DISMISSED_AT);
     }
 
     private void selectedTheme(int setting) {
@@ -173,5 +182,20 @@ public class AppSharedPreferences {
 
     public boolean isDoseOccurrenceBackfilled() {
         return mDoseOccurrenceBackfilled;
+    }
+
+    private void companionAppPromoDismissedAt(long dismissedAt) {
+        mCompanionAppPromoDismissedAt = dismissedAt;
+        mExecutorService.get().execute(() ->
+                mSharedPreferences.edit().putLong(mCompanionAppPromoDismissedAtKey, dismissedAt)
+                        .commit());
+    }
+
+    public void setCompanionAppPromoDismissedAt(long dismissedAt) {
+        companionAppPromoDismissedAt(dismissedAt);
+    }
+
+    public long getCompanionAppPromoDismissedAt() {
+        return mCompanionAppPromoDismissedAt;
     }
 }

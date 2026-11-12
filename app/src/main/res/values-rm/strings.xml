@@ -225,4 +225,10 @@
     <string name="pdf_report_intakes_empty">Naginas prendas registradas en quest interval</string>
     <string name="pdf_report_page_format">Pagina %1$d da %2$d</string>
     <string name="dialog_pdf_report_range_title">Perioda da prenda</string>
+    <string name="companion_promo_title">Vulais savair il stoc da voss medikaments?</string>
+    <string name="companion_promo_description">Personal Stuff, in\'app dal medem developer, registra il stoc, las datas da scadenza e las cumpras da vossas cosas. Ella na dividescha naginas datas cun Medic Log; la controlla ha lieu mo sin quest apparat.</string>
+    <string name="companion_promo_button">Mussar en F-Droid</string>
+    <string name="companion_promo_button_github">Mussar sin GitHub</string>
+    <string name="companion_promo_dismiss">Zuppar</string>
+    <string name="error_no_app_to_open_link">Nagina app per avrir il link</string>
 </resources>

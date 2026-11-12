@@ -225,4 +225,10 @@
     <string name="pdf_report_intakes_empty">Ingen inntak loggført i denne perioda</string>
     <string name="pdf_report_page_format">Side %1$d av %2$d</string>
     <string name="dialog_pdf_report_range_title">Inntaksperiode</string>
+    <string name="companion_promo_title">Vil du ha oversikt over medisinlageret ditt?</string>
+    <string name="companion_promo_description">Personal Stuff, ein app frå same utviklar, held oversikt over lager, utløpsdatoar og kjøp av gjenstandane dine. Han deler ingen data med Medic Log; sjekken skjer berre på denne eininga.</string>
+    <string name="companion_promo_button">Sjå i F-Droid</string>
+    <string name="companion_promo_button_github">Sjå på GitHub</string>
+    <string name="companion_promo_dismiss">Gøym</string>
+    <string name="error_no_app_to_open_link">Fann ingen app for å opna lenkja</string>
 </resources>

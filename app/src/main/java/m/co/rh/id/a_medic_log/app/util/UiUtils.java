@@ -14,28 +14,55 @@ import androidx.core.content.FileProvider;
 import java.io.File;
 
 import m.co.rh.id.a_medic_log.app.constants.Constants;
+import m.co.rh.id.a_medic_log.base.model.SerializableRunnable;
+import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.NavPopCallback;
 import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
 public class UiUtils {
 
+    /**
+     * The pop callback is serialized with the route stack, so {@code onConfirm}
+     * must only capture serializable state (a plain {@link Runnable} lambda
+     * never serializes — the snapshot save would silently fail while the
+     * dialog is on the stack).
+     */
     public static void showConfirmDialog(INavigator navigator,
-                                         String title, String content, Runnable onConfirm) {
-        Provider rootComponent = (Provider) navigator
-                .getNavConfiguration().getRequiredComponent();
-        NavExtDialogConfig navExtDialogConfig = rootComponent.get(NavExtDialogConfig.class);
-        navigator.push(navExtDialogConfig.route_confirmDialog(),
-                navExtDialogConfig.args_confirmDialog(title, content),
+                                         String title, String content, SerializableRunnable onConfirm) {
+        showConfirmDialog(navigator, title, content,
                 (navigator1, navRoute, activity, currentView) -> {
-                    Provider requiredComponent = (Provider) navigator1
-                            .getNavConfiguration().getRequiredComponent();
-                    Boolean result = requiredComponent.get(NavExtDialogConfig.class)
-                            .result_confirmDialog(navRoute);
+                    Boolean result = readConfirmResult(navigator1, navRoute);
                     if (result != null && result) {
                         onConfirm.run();
                     }
                 });
+    }
+
+    /**
+     * Same confirm dialog as
+     * {@link #showConfirmDialog(INavigator, String, String, SerializableRunnable)}
+     * but with the raw pop callback (invoked on confirm AND cancel), for
+     * callers whose confirmation needs the navigator or the activity at pop
+     * time and therefore cannot capture them at push time — the callback is
+     * serialized with the route stack, so it must resolve everything from its
+     * parameters instead.
+     */
+    public static void showConfirmDialog(INavigator navigator,
+                                         String title, String content, NavPopCallback<Activity> onPop) {
+        Provider rootComponent = (Provider) navigator
+                .getNavConfiguration().getRequiredComponent();
+        NavExtDialogConfig navExtDialogConfig = rootComponent.get(NavExtDialogConfig.class);
+        navigator.push(navExtDialogConfig.route_confirmDialog(),
+                navExtDialogConfig.args_confirmDialog(title, content), onPop);
+    }
+
+    private static Boolean readConfirmResult(INavigator navigator, NavRoute navRoute) {
+        Provider requiredComponent = (Provider) navigator
+                .getNavConfiguration().getRequiredComponent();
+        return requiredComponent.get(NavExtDialogConfig.class)
+                .result_confirmDialog(navRoute);
     }
 
     public static void shareText(Context context, String textBody, String chooserMessage) {

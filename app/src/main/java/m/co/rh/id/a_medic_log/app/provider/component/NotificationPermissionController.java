@@ -13,6 +13,7 @@ import m.co.rh.id.a_medic_log.base.BaseApplication;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.NavOnRouteChangedListener;
+import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderValue;
 
@@ -294,10 +295,24 @@ public class NotificationPermissionController {
         UiUtils.showConfirmDialog(navigator,
                 activity.getString(R.string.title_confirm),
                 activity.getString(R.string.notification_permission_rationale),
-                // confirmed: fire the system dialog, the gate persists the
-                // "asked" flag on fire. Cancelled or dismissed outside:
-                // nothing is persisted, the ask is made again next launch
-                () -> mGate.get().requestPermission(activity));
+                // non-capturing on purpose: the pop callback is serialized
+                // with the route stack, and the controller (with its activity
+                // reference) is not serializable — a capturing lambda here
+                // would silently break the snapshot save while this dialog is
+                // on the stack. Confirmed: fire the system dialog, the gate
+                // (an application-scoped singleton) persists the "asked" flag
+                // on fire. Cancelled or dismissed outside: nothing is
+                // persisted, the ask is made again next launch
+                (navigator1, navRoute, currentActivity, currentView) -> {
+                    Provider requiredComponent = (Provider) navigator1
+                            .getNavConfiguration().getRequiredComponent();
+                    Boolean result = requiredComponent.get(NavExtDialogConfig.class)
+                            .result_confirmDialog(navRoute);
+                    if (result != null && result) {
+                        requiredComponent.get(NotificationPermissionGate.class)
+                                .requestPermission(currentActivity);
+                    }
+                });
         return true;
     }
 

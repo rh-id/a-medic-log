@@ -19,6 +19,12 @@
         android:name="android.permission.ACCESS_NETWORK_STATE"
         tools:node="remove" />
 
+    <!-- package visibility (API 30+) for the on-device check whether the
+         companion app is installed, which hides the home promo card -->
+    <queries>
+        <package android:name="m.co.rh.id.a_personal_stuff" />
+    </queries>
+
     <application
         android:name=".app.MainApplication"
         android:allowBackup="true"

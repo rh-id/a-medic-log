@@ -225,4 +225,10 @@
     <string name="pdf_report_intakes_empty">Aucune prise enregistrée sur cette période</string>
     <string name="pdf_report_page_format">Page %1$d sur %2$d</string>
     <string name="dialog_pdf_report_range_title">Période des prises</string>
+    <string name="companion_promo_title">Vous souhaitez suivre votre stock de médicaments ?</string>
+    <string name="companion_promo_description">Personal Stuff, une application du même développeur, suit les stocks, les dates de péremption et les achats de vos articles. Elle ne partage aucune donnée avec Medic Log ; la vérification s\'effectue uniquement sur cet appareil.</string>
+    <string name="companion_promo_button">Voir sur F-Droid</string>
+    <string name="companion_promo_button_github">Voir sur GitHub</string>
+    <string name="companion_promo_dismiss">Masquer</string>
+    <string name="error_no_app_to_open_link">Aucune application trouvée pour ouvrir le lien</string>
 </resources>

@@ -1,5 +1,6 @@
 package m.co.rh.id.a_medic_log.app.provider.command;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -7,7 +8,7 @@ import java.util.Date;
  * medicine reminders. Unlike the adherence report, upcoming doses of
  * today are included so the card can show what is still ahead.
  */
-public class TodayStatus {
+public class TodayStatus implements Serializable {
     public static final int STATUS_MISSED = 0;
     public static final int STATUS_IN_PROGRESS = 1;
     public static final int STATUS_DONE = 2;

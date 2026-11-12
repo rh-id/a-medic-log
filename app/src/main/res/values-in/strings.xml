@@ -220,4 +220,10 @@
     <string name="pdf_report_intakes_empty">Tidak ada pemasukan obat yang dicatat pada periode ini</string>
     <string name="pdf_report_page_format">Halaman %1$d dari %2$d</string>
     <string name="dialog_pdf_report_range_title">Rentang riwayat pemasukan obat</string>
+    <string name="companion_promo_title">Ingin melacak stok obat Anda?</string>
+    <string name="companion_promo_description">Personal Stuff, aplikasi dari pengembang yang sama, melacak jumlah stok, tanggal kedaluwarsa, dan pembelian barang Anda. Tidak berbagi data dengan Medic Log; pemeriksaan hanya dilakukan di perangkat ini.</string>
+    <string name="companion_promo_button">Lihat di F-Droid</string>
+    <string name="companion_promo_button_github">Lihat di GitHub</string>
+    <string name="companion_promo_dismiss">Tutup</string>
+    <string name="error_no_app_to_open_link">Tidak ada aplikasi untuk membuka tautan</string>
 </resources>

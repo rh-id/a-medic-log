@@ -225,4 +225,10 @@
     <string name="pdf_report_intakes_empty">Engin inntak skráð á þessu tímabili</string>
     <string name="pdf_report_page_format">Síða %1$d af %2$d</string>
     <string name="dialog_pdf_report_range_title">Tímabil lyfjatöku</string>
+    <string name="companion_promo_title">Viltu fylgjast með birgðum lyfja þinna?</string>
+    <string name="companion_promo_description">Personal Stuff, forrit frá sama höfundi, fylgist með birgðum, fyrningardagsetningum og kaupum á hlutum þínum. Það deilir engum gögnum með Medic Log; athugunin fer aðeins fram á þessu tæki.</string>
+    <string name="companion_promo_button">Skoða í F-Droid</string>
+    <string name="companion_promo_button_github">Skoða á GitHub</string>
+    <string name="companion_promo_dismiss">Fela</string>
+    <string name="error_no_app_to_open_link">Engin forrit fundust til að opna tengilinn</string>
 </resources>

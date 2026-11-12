@@ -53,7 +53,7 @@ public class TodayCardSV extends StatefulView<Activity> implements RequireNaviga
     private static final String TIME_FORMAT = "HH:mm";
 
     private boolean mExpanded;
-    private transient List<TodayStatus> mTodayStatusList;
+    private ArrayList<TodayStatus> mTodayStatusList;
     // component
     private transient INavigator mNavigator;
     private transient Provider mSvProvider;
@@ -133,6 +133,17 @@ public class TodayCardSV extends StatefulView<Activity> implements RequireNaviga
                                 .debounce(700, TimeUnit.MILLISECONDS)
                                 .observeOn(Schedulers.from(mExecutorService))
                                 .subscribe(profileState -> load()));
+        if (mTodayStatusList != null) {
+            // a config-change rebuild re-runs only createView on the same
+            // component instance (provideComponent does not re-run), and a
+            // process-death restore hands the serialized mTodayStatusList
+            // back with the views always rebuilt fresh either way: render
+            // the cached list right away, in the current mExpanded state,
+            // so the rebuilt card does not sit empty until the load() below
+            // re-verifies it with fresh data
+            renderList(mTodayStatusList);
+        }
+        load();
         return rootLayout;
     }
 
@@ -150,7 +161,8 @@ public class TodayCardSV extends StatefulView<Activity> implements RequireNaviga
                 || mContainerTodayRows == null || mTextTodayToggle == null) {
             return;
         }
-        mTodayStatusList = todayStatusList;
+        // defensive copy so the snapshot's serialized field is always a plain serializable ArrayList
+        mTodayStatusList = new ArrayList<>(todayStatusList);
         if (todayStatusList == null || todayStatusList.isEmpty()) {
             mCardView.setVisibility(View.GONE);
             return;

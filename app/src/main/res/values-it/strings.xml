@@ -225,4 +225,10 @@
     <string name="pdf_report_intakes_empty">Nessuna assunzione registrata in questo periodo</string>
     <string name="pdf_report_page_format">Pagina %1$d di %2$d</string>
     <string name="dialog_pdf_report_range_title">Periodo delle assunzioni</string>
+    <string name="companion_promo_title">Vuoi tenere traccia delle scorte di medicine?</string>
+    <string name="companion_promo_description">Personal Stuff, un\'app dello stesso sviluppatore, tiene traccia di scorte, date di scadenza e acquisti dei tuoi articoli. Non condivide dati con Medic Log; il controllo avviene solo su questo dispositivo.</string>
+    <string name="companion_promo_button">Vedi su F-Droid</string>
+    <string name="companion_promo_button_github">Vedi su GitHub</string>
+    <string name="companion_promo_dismiss">Nascondi</string>
+    <string name="error_no_app_to_open_link">Nessuna app trovata per aprire il collegamento</string>
 </resources>

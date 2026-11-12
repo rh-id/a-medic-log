@@ -36,6 +36,7 @@ import m.co.rh.id.a_medic_log.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_medic_log.app.rx.RxDisposer;
 import m.co.rh.id.a_medic_log.app.rx.RxUtils;
 import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
+import m.co.rh.id.a_medic_log.app.ui.component.PromoBannerSV;
 import m.co.rh.id.a_medic_log.app.ui.component.report.TodayCardSV;
 import m.co.rh.id.a_medic_log.app.ui.page.common.PdfReportRangeSVDialog;
 import m.co.rh.id.a_medic_log.app.ui.page.common.ProgressSVDialog;
@@ -50,12 +51,13 @@ import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.NavActivityLifecycle;
 import m.co.rh.id.anavigator.component.NavOnActivityResult;
 import m.co.rh.id.anavigator.component.NavOnBackPressed;
 import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
-public class HomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity>, NavOnActivityResult<Activity>, DrawerLayout.DrawerListener, View.OnClickListener {
+public class HomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity>, NavOnActivityResult<Activity>, NavActivityLifecycle<Activity>, DrawerLayout.DrawerListener, View.OnClickListener {
     private static final String TAG = HomePage.class.getName();
 
     private static final int REQUEST_CODE_EXPORT_ALL = 4001;
@@ -75,7 +77,9 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     @NavInject
     private AppBarSV mAppBarSV;
     @NavInject
-    private transient TodayCardSV mTodayCardSV;
+    private TodayCardSV mTodayCardSV;
+    @NavInject
+    private PromoBannerSV mPromoBannerSV;
     private boolean mIsDrawerOpen;
     private transient long mLastBackPressMilis;
 
@@ -83,6 +87,10 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private ArrayList<Long> mPendingExportProfileIds;
     private Profile mPendingSpreadsheetProfile;
     private Profile mPendingPdfProfile;
+    // document Uri of the picked import zip, kept as a String because
+    // android.net.Uri is not Serializable and this page is serialized
+    // with the route stack on process death
+    private String mPendingImportZipPath;
 
     /**
      * Gate for the medicine-reminder navigation flow: {@code true} means a
@@ -118,6 +126,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     public HomePage() {
         mAppBarSV = new AppBarSV();
         mTodayCardSV = new TodayCardSV();
+        mPromoBannerSV = new PromoBannerSV();
         mReminderNavigationGate = new SerialBehaviorSubject<>(true);
     }
 
@@ -141,12 +150,6 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             // constructor), where the gate must restart open because no
             // export/import can still be running
             mReminderNavigationGate = new SerialBehaviorSubject<>(true);
-        }
-        if (mTodayCardSV == null) {
-            // mTodayCardSV is transient, so it is also null when this page is
-            // restored from the process-death snapshot (deserialization skips
-            // the constructor)
-            mTodayCardSV = new TodayCardSV();
         }
     }
 
@@ -181,6 +184,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         containerAppBar.addView(mAppBarSV.buildView(activity, container));
         ViewGroup containerToday = view.findViewById(R.id.container_today);
         containerToday.addView(mTodayCardSV.buildView(activity, (ViewGroup) view));
+        ViewGroup containerPromo = view.findViewById(R.id.container_promo);
+        containerPromo.addView(mPromoBannerSV.buildView(activity, (ViewGroup) view));
         Button addProfileButton = view.findViewById(R.id.button_add_profile);
         addProfileButton.setOnClickListener(this);
         Button addNoteButton = view.findViewById(R.id.button_add_note);
@@ -248,6 +253,10 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             mTodayCardSV.dispose(activity);
             mTodayCardSV = null;
         }
+        if (mPromoBannerSV != null) {
+            mPromoBannerSV.dispose(activity);
+            mPromoBannerSV = null;
+        }
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;
@@ -256,6 +265,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mOnNavigationClicked = null;
         mRxDisposer = null;
         mPendingPdfProfile = null;
+        mPendingImportZipPath = null;
         mExportArchiveCmd = null;
         mImportArchiveCmd = null;
         mExportSpreadsheetCmd = null;
@@ -364,9 +374,19 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                 exportSpreadsheetToUri(uri);
                 break;
             case REQUEST_CODE_IMPORT:
-                importFromUri(uri);
+                // carry the document Uri as a String: the import flow pushes
+                // routes whose callbacks are serialized with the route stack
+                mPendingImportZipPath = uri.toString();
+                importFromPendingZipPath();
                 break;
         }
+    }
+
+    @Override
+    public void onNavActivityResumed(Activity activity) {
+        // re-check on every return to the app, so an installed companion
+        // app or an elapsed dismiss cooldown is reflected right away
+        mPromoBannerSV.check();
     }
 
     private void startExportAllFlow() {
@@ -533,7 +553,18 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                 mExportSpreadsheetCmd.exportTo(profile.id, destUri));
     }
 
-    private void importFromUri(Uri zipUri) {
+    private void importFromPendingZipPath() {
+        String zipPath = mPendingImportZipPath;
+        // clear the pending path so the stale reference does not outlive this flow
+        mPendingImportZipPath = null;
+        if (zipPath == null) {
+            // null means the pending selection is missing, e.g. after a
+            // process death while the file picker was open
+            mLogger.e(TAG, "Pending import zip file selection is missing, "
+                    + "likely due to process death while the file picker was open. "
+                    + "Skipping import.");
+            return;
+        }
         Activity activity = mNavigator.getActivity();
         // close the gate before pushing so no reminder slips in during the
         // push window; anything held is released when the dialog is popped
@@ -542,7 +573,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                 activity.getString(R.string.title_import),
                 activity.getString(R.string.import_progress_reading)));
         Context context = mSvProvider.getContext();
-        mRxDisposer.add("HomePage_importPeek", mImportArchiveCmd.peek(zipUri)
+        mRxDisposer.add("HomePage_importPeek", mImportArchiveCmd.peek(Uri.parse(zipPath))
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe((fileProfiles, throwable) -> {
                     popProgressDialog();
@@ -555,11 +586,17 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                         mLogger.i(TAG, context.getString(R.string.error_no_profile_in_import_file));
                         return;
                     }
-                    pushImportProfileSelect(zipUri, fileProfiles);
+                    pushImportProfileSelect(zipPath, fileProfiles);
                 }));
     }
 
-    private void pushImportProfileSelect(Uri zipUri,
+    /**
+     * The pop callback is serialized with the route stack while the select
+     * page is showing, so it must only capture serializable state: the zip
+     * document Uri travels as its String form ({@code android.net.Uri} is
+     * not Serializable, capturing it makes the snapshot save silently fail).
+     */
+    private void pushImportProfileSelect(String zipPath,
                                          List<ImportArchiveCmd.FileProfile> fileProfiles) {
         mNavigator.push(Routes.IMPORT_PROFILE_SELECT_PAGE,
                 ImportProfileSelectPage.Args.withFileProfiles(fileProfiles),
@@ -569,20 +606,22 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                     if (result == null) {
                         return;
                     }
-                    confirmImport(zipUri, result);
+                    confirmImport(zipPath, result);
                 });
     }
 
-    private void confirmImport(Uri zipUri, ImportProfileSelectPage.Result result) {
+    private void confirmImport(String zipPath, ImportProfileSelectPage.Result result) {
         Context context = mSvProvider.getContext();
         String title = context.getString(R.string.title_confirm);
         String content = context.getString(R.string.confirm_import_profiles,
                 result.getSelectedFileProfileIds().size());
+        // the confirm callback is serialized with the route stack as well,
+        // so it captures the zip path String instead of the Uri
         UiUtils.showConfirmDialog(mNavigator, title, content,
-                () -> importProfiles(zipUri, result));
+                () -> importProfiles(zipPath, result));
     }
 
-    private void importProfiles(Uri zipUri, ImportProfileSelectPage.Result result) {
+    private void importProfiles(String zipPath, ImportProfileSelectPage.Result result) {
         Activity activity = mNavigator.getActivity();
         // close the gate before pushing so no reminder slips in during the
         // push window; anything held is released when the dialog is popped
@@ -592,7 +631,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                 activity.getString(R.string.import_progress_importing)));
         Context context = mSvProvider.getContext();
         mRxDisposer.add("HomePage_importProfiles", mImportArchiveCmd
-                .importProfiles(zipUri, result.getSelectedFileProfileIds())
+                .importProfiles(Uri.parse(zipPath), result.getSelectedFileProfileIds())
                 .observeOn(AndroidSchedulers.mainThread())
                 .doFinally(() -> popProgressDialog())
                 .subscribe((importResult, throwable) -> {

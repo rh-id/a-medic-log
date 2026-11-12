@@ -34,9 +34,10 @@ import m.co.rh.id.aprovider.ProviderRegistry;
 /**
  * Instrumented test of the real {@link MedicineReminderAlarmScheduler} against
  * the device AlarmManager: a reminder scheduled seven days out must surface as
- * the device's next alarm clock at exactly its start time (a far-future unique
- * trigger time, so the test's alarm is the next one on a clean test device),
- * and the test must not leave the alarm behind.
+ * the device's next alarm clock at exactly its start time unless an earlier
+ * alarm is already registered (the assertions are delta-based, so a
+ * production-installed alarm on the same device cannot break the test), and
+ * the test must not leave the alarm behind.
  */
 @RunWith(AndroidJUnit4.class)
 public class MedicineReminderAlarmSchedulerTest {
@@ -47,6 +48,14 @@ public class MedicineReminderAlarmSchedulerTest {
      * a wrong daily roll would produce.
      */
     private static final long TRIGGER_TOLERANCE_MS = 1000;
+
+    /**
+     * Reminder id preset by the test, above the production id range
+     * (AUTOINCREMENT starts at 1): the alarm's PendingIntent request code is
+     * keyed on the reminder id, so a high id keeps the test's alarm from
+     * replacing or cancelling a production-installed alarm on the device.
+     */
+    private static final long TEST_REMINDER_ID = 1_000_000;
 
     private Context mContext;
     private Provider mProvider;
@@ -95,7 +104,9 @@ public class MedicineReminderAlarmSchedulerTest {
     public void schedule_farFutureReminder_becomesTheNextAlarmClock() {
         // arrange: a reminder starting exactly +7 days from a single captured
         // "now", a far-future unique trigger time so no other alarm clock is
-        // scheduled between now and it
+        // scheduled between now and it. The id is preset high (see
+        // TEST_REMINDER_ID) so the test's alarm never collides with a
+        // production-installed alarm's PendingIntent
         long now = System.currentTimeMillis();
         MedicineReminder reminder = new MedicineReminder();
         Calendar startCalendar = Calendar.getInstance();
@@ -104,7 +115,8 @@ public class MedicineReminderAlarmSchedulerTest {
         reminder.startDateTime = startCalendar.getTime();
         reminder.reminderDays = new LinkedHashSet<>(Collections.singletonList(
                 startCalendar.get(Calendar.DAY_OF_WEEK)));
-        reminder.id = mMedicineReminderDao.insert(reminder);
+        reminder.id = TEST_REMINDER_ID;
+        mMedicineReminderDao.insert(reminder);
         mScheduledReminder = reminder;
         // the expected trigger derives from the same captured start value
         long expectedTriggerTime = startCalendar.getTimeInMillis();
@@ -115,17 +127,22 @@ public class MedicineReminderAlarmSchedulerTest {
         mScheduler.schedule(reminder, false);
 
         // assert: the trigger lands on the reminder's start time (a future
-        // start needs no daily rolling). The scheduler reads the clock twice
-        // internally (once in schedule, once inside the delay calculation),
-        // so the trigger can land a clock-tick or two away from the start;
-        // the 1 s tolerance is negligible against the ~24 h shift a wrong
-        // daily roll would produce
+        // start needs no daily rolling), or on a pre-existing alarm that
+        // fires earlier — whichever is the actual next alarm clock. The
+        // scheduler reads the clock twice internally (once in schedule, once
+        // inside the delay calculation), so the trigger can land a
+        // clock-tick or two away from the start; the 1 s tolerance is
+        // negligible against the ~24 h shift a wrong daily roll would produce
         AlarmManager.AlarmClockInfo nextAlarmClock = alarmManager.getNextAlarmClock();
-        assertNotNull("the scheduled reminder must be registered as the next alarm clock",
+        assertNotNull("a next alarm clock must be registered after scheduling",
                 nextAlarmClock);
-        assertTrue("the next alarm clock must trigger at the reminder's start time (got "
-                        + nextAlarmClock.getTriggerTime() + ", expected " + expectedTriggerTime + ")",
-                Math.abs(nextAlarmClock.getTriggerTime() - expectedTriggerTime)
+        long expectedNextTrigger = alarmClockBefore == null
+                ? expectedTriggerTime
+                : Math.min(alarmClockBefore.getTriggerTime(), expectedTriggerTime);
+        assertTrue("the next alarm clock must trigger at the reminder's start time unless a "
+                        + "pre-existing alarm fires earlier (got "
+                        + nextAlarmClock.getTriggerTime() + ", expected " + expectedNextTrigger + ")",
+                Math.abs(nextAlarmClock.getTriggerTime() - expectedNextTrigger)
                         <= TRIGGER_TOLERANCE_MS);
 
         // act: cancel
