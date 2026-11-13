@@ -18,6 +18,7 @@ The app works as a production app even though it is a demo app.
 - **Medical Notes** - Easily add and manage your medical notes with date tracking
 - **Multiple Profiles** - Keep track of elderly and family members' medical history
 - **Medicine Tracking** - Add medicine information with detailed descriptions
+- **Medicines page** - Per-profile overview of all medicines reachable from the drawer as "Medicines": medicines sharing a name are grouped with reminder on/off counts, last intake and a 7-day adherence stat per row; each row opens the medicine detail, its intake history, and the note it belongs to; medicines are still created from medical notes (v1 is view and manage only)
 - **Medicine Reminders** - Set up notifications to remind you to take medicine, with a snooze action available directly on reminders; on Android 13+ the notification permission is requested in-app (rationale dialog first) and can be reviewed or recovered any time from Settings
 - **Medicine Intake History** - Log and review past medicine intakes
 - **Adherence Report** - 7/30-day adherence report with missed-dose tracking: a dose counts as taken when an intake is logged within ±3 hours of its scheduled time (matching works across midnight), and as-needed intakes are reported separately as extra doses

@@ -160,6 +160,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         menuProfiles.setOnClickListener(this);
         View menuNotes = view.findViewById(R.id.menu_notes);
         menuNotes.setOnClickListener(this);
+        View menuMedicines = view.findViewById(R.id.menu_medicines);
+        menuMedicines.setOnClickListener(this);
         View menuAdherence = view.findViewById(R.id.menu_adherence);
         menuAdherence.setOnClickListener(this);
         View menuSettings = view.findViewById(R.id.menu_settings);
@@ -315,6 +317,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             mNavigator.push(Routes.PROFILES_PAGE);
         } else if (id == R.id.menu_notes) {
             mNavigator.push(Routes.NOTES_PAGE);
+        } else if (id == R.id.menu_medicines) {
+            mNavigator.push(Routes.MEDICINES_PAGE);
         } else if (id == R.id.menu_adherence) {
             mNavigator.push(Routes.ADHERENCE_PAGE);
         } else if (id == R.id.menu_settings) {

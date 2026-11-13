@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group>
+        <item
+            android:id="@+id/menu_view_intake_history"
+            android:title="@string/title_medicine_intake_list"
+            app:showAsAction="ifRoom|withText" />
+        <item
+            android:id="@+id/menu_view_note"
+            android:title="@string/title_view_note"
+            app:showAsAction="ifRoom|withText" />
+    </group>
+</menu>

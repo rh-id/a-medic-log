@@ -23,6 +23,7 @@ import m.co.rh.id.a_medic_log.app.provider.command.NewNoteCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewNoteTagCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.NewProfileCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.PagedMedicineIntakeItemsCmd;
+import m.co.rh.id.a_medic_log.app.provider.command.PagedMedicinesCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.PagedNoteItemsCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.PagedProfileItemsCmd;
 import m.co.rh.id.a_medic_log.app.provider.command.QueryMedicineCmd;
@@ -61,6 +62,7 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerLazy(UpdateMedicineIntakeCmd.class, () -> new UpdateMedicineIntakeCmd(provider));
         providerRegistry.registerLazy(DeleteMedicineIntakeCmd.class, () -> new DeleteMedicineIntakeCmd(provider));
         providerRegistry.registerLazy(PagedMedicineIntakeItemsCmd.class, () -> new PagedMedicineIntakeItemsCmd(provider));
+        providerRegistry.registerLazy(PagedMedicinesCmd.class, () -> new PagedMedicinesCmd(provider));
         providerRegistry.registerLazy(GetAdherenceReportCmd.class, () -> new GetAdherenceReportCmd(provider));
         providerRegistry.registerLazy(GetTodayDoseStatusCmd.class, () -> new GetTodayDoseStatusCmd(provider));
         providerRegistry.registerLazy(NewNoteAttachmentCmd.class, () -> new NewNoteAttachmentCmd(provider));

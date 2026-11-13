@@ -23,6 +23,7 @@ import m.co.rh.id.a_medic_log.base.AppDatabase;
 import m.co.rh.id.a_medic_log.base.entity.Medicine;
 import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.a_medic_log.base.entity.Note;
+import m.co.rh.id.a_medic_log.base.entity.Profile;
 import m.co.rh.id.a_medic_log.base.room.DbMigration;
 import m.co.rh.id.a_medic_log.base.room.converter.LinkedHashSetConverter;
 
@@ -177,5 +178,93 @@ public class MedicineIntakeDaoTest {
         List<MedicineIntake> noMatches = medicineIntakeDao
                 .searchMedicineIntakeDescription("missing term");
         assertTrue(noMatches.isEmpty());
+    }
+
+    @Test
+    public void findLastIntakesByProfileId_returnsNewestIntakePerMedicine() {
+        MedicineIntakeDao medicineIntakeDao = mAppDatabase.medicineIntakeDao();
+        long baseDateTime = System.currentTimeMillis();
+        Profile profile = createProfile("Last intake profile");
+        // arrange: two medicines of the same profile, each with multiple
+        // intakes bearing distinct taken times
+        Medicine medicine1 = createProfiledMedicine(profile.id,
+                "last intake med one", new Date(baseDateTime - 3000));
+        Medicine medicine2 = createProfiledMedicine(profile.id,
+                "last intake med two", new Date(baseDateTime - 2000));
+        MedicineIntake med1Old = createMedicineIntake(medicine1.id, "med one old");
+        med1Old.takenDateTime = new Date(baseDateTime - 3000);
+        med1Old.id = medicineIntakeDao.insert(med1Old);
+        MedicineIntake med1New = createMedicineIntake(medicine1.id, "med one new");
+        med1New.takenDateTime = new Date(baseDateTime - 1000);
+        med1New.id = medicineIntakeDao.insert(med1New);
+        MedicineIntake med2Only = createMedicineIntake(medicine2.id, "med two only");
+        med2Only.takenDateTime = new Date(baseDateTime - 2000);
+        med2Only.id = medicineIntakeDao.insert(med2Only);
+
+        // assert: exactly one intake per medicine, the one with the max
+        // taken_date_time, ordered taken_date_time DESC across medicines
+        List<MedicineIntake> lastIntakes = medicineIntakeDao
+                .findLastIntakesByProfileId(profile.id);
+        assertEquals(2, lastIntakes.size());
+        assertEquals(med1New.id, lastIntakes.get(0).id);
+        assertEquals("med one new", lastIntakes.get(0).description);
+        assertEquals(med2Only.id, lastIntakes.get(1).id);
+        assertEquals("med two only", lastIntakes.get(1).description);
+    }
+
+    @Test
+    public void findLastIntakesByProfileId_scopesToProfileAndReturnsEmptyWithoutIntakes() {
+        MedicineIntakeDao medicineIntakeDao = mAppDatabase.medicineIntakeDao();
+        long baseDateTime = System.currentTimeMillis();
+        Profile profileA = createProfile("Last intake profile A");
+        Profile profileB = createProfile("Last intake profile B");
+        Medicine medicineA = createProfiledMedicine(profileA.id,
+                "scoped last intake med", new Date(baseDateTime - 2000));
+        Medicine medicineB = createProfiledMedicine(profileB.id,
+                "other profile last intake med", new Date(baseDateTime - 2000));
+        MedicineIntake intakeA = createMedicineIntake(medicineA.id, "profile A intake");
+        intakeA.takenDateTime = new Date(baseDateTime - 1000);
+        intakeA.id = medicineIntakeDao.insert(intakeA);
+        MedicineIntake intakeB = createMedicineIntake(medicineB.id, "profile B intake");
+        intakeB.takenDateTime = new Date(baseDateTime - 1000);
+        intakeB.id = medicineIntakeDao.insert(intakeB);
+
+        // assert: the query only returns the profile's own last intake
+        List<MedicineIntake> profileALast = medicineIntakeDao
+                .findLastIntakesByProfileId(profileA.id);
+        assertEquals(1, profileALast.size());
+        assertEquals(intakeA.id, profileALast.get(0).id);
+
+        // assert: a profile without any intake gets an empty result
+        Profile profileC = createProfile("Last intake profile C");
+        createProfiledMedicine(profileC.id, "no intake med",
+                new Date(baseDateTime - 2000));
+        List<MedicineIntake> empty = medicineIntakeDao
+                .findLastIntakesByProfileId(profileC.id);
+        assertTrue(empty.isEmpty());
+    }
+
+    private Profile createProfile(String profileName) {
+        ProfileDao profileDao = mAppDatabase.profileDao();
+        Profile profile = new Profile();
+        profile.name = profileName;
+        profile.id = profileDao.insert(profile);
+        return profile;
+    }
+
+    private Medicine createProfiledMedicine(Long profileId, String medicineName,
+                                            Date createdDateTime) {
+        NoteDao noteDao = mAppDatabase.noteDao();
+        MedicineDao medicineDao = mAppDatabase.medicineDao();
+        Note note = new Note();
+        note.profileId = profileId;
+        note.content = "last intake note for " + medicineName;
+        note.id = noteDao.insert(note);
+        Medicine medicine = new Medicine();
+        medicine.noteId = note.id;
+        medicine.name = medicineName;
+        medicine.createdDateTime = createdDateTime;
+        medicine.id = medicineDao.insert(medicine);
+        return medicine;
     }
 }

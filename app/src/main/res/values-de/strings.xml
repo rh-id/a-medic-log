@@ -81,6 +81,7 @@
     <string name="confirm_delete_medicine_reminder">Erinnerung \"%s\" löschen?</string>
     <string name="success_deleting_medicine_reminder">Medikamentenerinnerung gelöscht</string>
     <string name="title_medicine_intake_list">Liste der Medikamenteneinnahmen</string>
+    <string name="title_view_note">Notiz ansehen</string>
     <string name="confirm_delete_medicine_intake">Medikamenteneinnahme \"%s\" löschen?</string>
     <string name="success_deleting_medicine_intake">Medikamenteneinnahme gelöscht</string>
     <string name="theme_setting">Theme-Einstellung</string>
@@ -174,6 +175,13 @@
     <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
     <string name="adherence_taken_missed_extra_format">%1$s %2$d · %3$s %4$d · %5$s %6$d</string>
     <string name="adherence_chart_summary">Therapietreue-Diagramm: %1$d genommen, %2$d verpasst in den letzten %3$d Tagen</string>
+    <string name="title_medicines">Medikamente</string>
+    <string name="medicines_no_profile">Noch kein Profil. Bitte zuerst ein Profil hinzufügen.</string>
+    <string name="medicines_empty">Noch keine Medikamente. Medikamente werden über medizinische Notizen hinzugefügt.</string>
+    <string name="medicines_adherence_format">7 T.: %1$d%% (%2$s %3$d / %4$s %5$d)</string>
+    <string name="medicines_adherence_no_data">7 T.: keine Daten</string>
+    <string name="medicines_reminders_format">%1$d an / %2$d aus</string>
+    <string name="confirm_delete_medicines">Medikament \"%s\" löschen? Einnahmenverlauf und Erinnerungen werden dauerhaft gelöscht.</string>
     <string name="title_today_doses">Heutige Einnahmen</string>
     <string name="today_doses_format">%1$d von %2$d Dosen</string>
     <string name="today_next_dose_format">nächste %1$s</string>

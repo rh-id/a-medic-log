@@ -40,6 +40,12 @@ public abstract class MedicineReminderDao {
             "ON medicine.note_id = note.id WHERE note.profile_id = :profileId")
     public abstract int countMedicineRemindersByProfileId(long profileId);
 
+    @Query("SELECT medicine_reminder.* FROM medicine_reminder INNER JOIN medicine " +
+            "ON medicine_reminder.medicine_id = medicine.id INNER JOIN note " +
+            "ON medicine.note_id = note.id WHERE note.profile_id = :profileId " +
+            "ORDER BY medicine_reminder.created_date_time DESC")
+    public abstract List<MedicineReminder> findMedicineRemindersByProfileId(long profileId);
+
     @Insert
     public abstract long insert(MedicineReminder medicineReminder);
 

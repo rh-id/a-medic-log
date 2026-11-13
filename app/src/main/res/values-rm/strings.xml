@@ -81,6 +81,7 @@
     <string name="confirm_delete_medicine_reminder">Stizzar erinner \"%s\" ?</string>
     <string name="success_deleting_medicine_reminder">Erinner da medikaments stizzà</string>
     <string name="title_medicine_intake_list">Glista da prenda da medikaments</string>
+    <string name="title_view_note">Mussar la Nota</string>
     <string name="confirm_delete_medicine_intake">Stizzar prenda da medikament \"%s\" ?</string>
     <string name="success_deleting_medicine_intake">Prenda da medikament stizzada</string>
     <string name="theme_setting">Params da tema</string>
@@ -174,6 +175,13 @@
     <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
     <string name="adherence_taken_missed_extra_format">%1$s %2$d · %3$s %4$d · %5$s %6$d</string>
     <string name="adherence_chart_summary">Grafic d\'observanza: %1$d prendì, %2$d manchà en %3$d dis</string>
+    <string name="title_medicines">Medikaments</string>
+    <string name="medicines_no_profile">Anc nagin profil. Agiuntai l\'emprim in profil.</string>
+    <string name="medicines_empty">Anc nagins medikaments. Ils medikaments vegnan agiuntai tras notas medicas.</string>
+    <string name="medicines_adherence_format">7 dis: %1$d%% (%2$s %3$d / %4$s %5$d)</string>
+    <string name="medicines_adherence_no_data">7 dis: naginas datas</string>
+    <string name="medicines_reminders_format">%1$d activ / %2$d inactiv</string>
+    <string name="confirm_delete_medicines">Stizzar il medikament \"%s\" ? L\'istorgia da prenda ed las Erinner vegnan stizzadas permanentamain.</string>
     <string name="title_today_doses">Dosas dad oz</string>
     <string name="today_doses_format">%1$d da %2$d dosas</string>
     <string name="today_next_dose_format">proxima %1$s</string>

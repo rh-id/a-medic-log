@@ -81,6 +81,7 @@
     <string name="confirm_delete_medicine_reminder">Eliminare il promemoria \"%s\" ?</string>
     <string name="success_deleting_medicine_reminder">Promemoria medicinale eliminato</string>
     <string name="title_medicine_intake_list">Lista assunzioni medicinali</string>
+    <string name="title_view_note">Vedi nota</string>
     <string name="confirm_delete_medicine_intake">Eliminare l\'assunzione \"%s\" ?</string>
     <string name="success_deleting_medicine_intake">Assunzione medicinale eliminata</string>
     <string name="theme_setting">Impostazioni tema</string>
@@ -174,6 +175,13 @@
     <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
     <string name="adherence_taken_missed_extra_format">%1$s %2$d · %3$s %4$d · %5$s %6$d</string>
     <string name="adherence_chart_summary">Grafico di aderenza: %1$d presi, %2$d saltati su %3$d giorni</string>
+    <string name="title_medicines">Medicinali</string>
+    <string name="medicines_no_profile">Ancora nessun profilo. Aggiungi prima un profilo.</string>
+    <string name="medicines_empty">Ancora nessun medicinale. I medicinali vengono aggiunti dalle note mediche.</string>
+    <string name="medicines_adherence_format">7 gg: %1$d%% (%2$s %3$d / %4$s %5$d)</string>
+    <string name="medicines_adherence_no_data">7 gg: nessun dato</string>
+    <string name="medicines_reminders_format">%1$d attivi / %2$d disattivati</string>
+    <string name="confirm_delete_medicines">Eliminare il medicinale \"%s\" ? La cronologia delle assunzioni e i promemoria verranno eliminati definitivamente.</string>
     <string name="title_today_doses">Dosi di oggi</string>
     <string name="today_doses_format">%1$d dose su %2$d</string>
     <string name="today_next_dose_format">prossima %1$s</string>

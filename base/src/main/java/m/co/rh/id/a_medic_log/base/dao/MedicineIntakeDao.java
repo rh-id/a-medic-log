@@ -58,6 +58,16 @@ public abstract class MedicineIntakeDao {
             "ON medicine.note_id = note.id WHERE note.profile_id = :profileId")
     public abstract int countMedicineIntakesByProfileId(long profileId);
 
+    @Query("SELECT medicine_intake.* FROM medicine_intake " +
+            "INNER JOIN medicine ON medicine_intake.medicine_id = medicine.id " +
+            "INNER JOIN note ON medicine.note_id = note.id " +
+            "WHERE note.profile_id = :profileId " +
+            "AND medicine_intake.id = (SELECT last_intake.id FROM medicine_intake AS last_intake " +
+            "WHERE last_intake.medicine_id = medicine_intake.medicine_id " +
+            "ORDER BY last_intake.taken_date_time DESC, last_intake.id DESC LIMIT 1) " +
+            "ORDER BY medicine_intake.taken_date_time DESC")
+    public abstract List<MedicineIntake> findLastIntakesByProfileId(long profileId);
+
     @Insert
     public abstract long insert(MedicineIntake medicineIntake);
 

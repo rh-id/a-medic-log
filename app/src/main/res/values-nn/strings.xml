@@ -81,6 +81,7 @@
     <string name="confirm_delete_medicine_reminder">Slett påminning \"%s\" ?</string>
     <string name="success_deleting_medicine_reminder">Medisinpåminning sletta</string>
     <string name="title_medicine_intake_list">Medisintakingsliste</string>
+    <string name="title_view_note">Vis notat</string>
     <string name="confirm_delete_medicine_intake">Slett medisintaking \"%s\" ?</string>
     <string name="success_deleting_medicine_intake">Medisintaking sletta</string>
     <string name="theme_setting">Temainnstilling</string>
@@ -174,6 +175,13 @@
     <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
     <string name="adherence_taken_missed_extra_format">%1$s %2$d · %3$s %4$d · %5$s %6$d</string>
     <string name="adherence_chart_summary">Diagram for etterlevnad: %1$d teke, %2$d savnad på %3$d dagar</string>
+    <string name="title_medicines">Medisinane</string>
+    <string name="medicines_no_profile">Ingen profil ennå. Legg til ein profil først.</string>
+    <string name="medicines_empty">Ingen medisinar ennå. Medisinar blir lagt til frå medisinske notat.</string>
+    <string name="medicines_adherence_format">7 d: %1$d%% (%2$s %3$d / %4$s %5$d)</string>
+    <string name="medicines_adherence_no_data">7 d: ingen data</string>
+    <string name="medicines_reminders_format">%1$d på / %2$d av</string>
+    <string name="confirm_delete_medicines">Slette medisinen \"%s\" ? Inntakshistorikk og påminningar blir sletta permanent.</string>
     <string name="title_today_doses">Dosar i dag</string>
     <string name="today_doses_format">%1$d av %2$d dosar</string>
     <string name="today_next_dose_format">neste %1$s</string>

@@ -81,6 +81,7 @@
     <string name="confirm_delete_medicine_reminder">Supprimer le rappel \"%s\" ?</string>
     <string name="success_deleting_medicine_reminder">Rappel de médicament supprimé</string>
     <string name="title_medicine_intake_list">Liste des prises de médicament</string>
+    <string name="title_view_note">Voir la note</string>
     <string name="confirm_delete_medicine_intake">Supprimer la prise de médicament \"%s\" ?</string>
     <string name="success_deleting_medicine_intake">Prise de médicament supprimée</string>
     <string name="theme_setting">Paramètre de thème</string>
@@ -174,6 +175,13 @@
     <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
     <string name="adherence_taken_missed_extra_format">%1$s %2$d · %3$s %4$d · %5$s %6$d</string>
     <string name="adherence_chart_summary">Graphique d\'observance : %1$d pris, %2$d manqués sur %3$d jours</string>
+    <string name="title_medicines">Médicaments</string>
+    <string name="medicines_no_profile">Aucun profil pour le moment. Ajoutez d\'abord un profil.</string>
+    <string name="medicines_empty">Aucun médicament pour le moment. Les médicaments sont ajoutés depuis les notes médicales.</string>
+    <string name="medicines_adherence_format">7 j : %1$d%% (%2$s %3$d / %4$s %5$d)</string>
+    <string name="medicines_adherence_no_data">7 j : aucune donnée</string>
+    <string name="medicines_reminders_format">%1$d actifs / %2$d désactivés</string>
+    <string name="confirm_delete_medicines">Supprimer le médicament \"%s\" ? L\'historique des prises et les rappels seront définitivement supprimés.</string>
     <string name="title_today_doses">Doses du jour</string>
     <string name="today_doses_format">%1$d dose sur %2$d</string>
     <string name="today_next_dose_format">prochaine %1$s</string>

@@ -9,11 +9,11 @@ Personal medical-notes Android app (Java, GPL-3.0). Demo/production app for auth
 ## app package map (`app/src/main/java/m/co/rh/id/a_medic_log/app/`)
 - root: `MainApplication` (providers, WorkManager on-demand init, crash logger), `MainActivity` (single-activity container)
 - `constants/`: `Routes` (string route names), `Constants` (FileProvider authority)
-- `provider/`: `AppProviderModule` (app scope incl. navigator+route map), `CommandProviderModule` (31 commands; occurrence bookkeeping is NOT here — `MedicineRepository` in base owns it), `RxProviderModule` (`RxDisposer`), `StatefulViewProvider(+Module)` (view scope)
+- `provider/`: `AppProviderModule` (app scope incl. navigator+route map), `CommandProviderModule` (32 commands; occurrence bookkeeping is NOT here — `MedicineRepository` in base owns it), `RxProviderModule` (`RxDisposer`), `StatefulViewProvider(+Module)` (view scope)
 - `provider/command/`: `*Cmd` business logic + validation
 - `provider/notifier/`: 7 `*ChangeNotifier` event buses
 - `provider/component/`: notification handling, notification-permission gate + launch controller, reminder event handler, exporters, prefs, file cleanup
-- `ui/page/`: full-screen pages (17); `ui/component/`: reusable StatefulView widgets (~29, incl. `settings/LicensesPage`, `LogPage`)
+- `ui/page/`: full-screen pages (18); `ui/component/`: reusable StatefulView widgets (~32, incl. `settings/LicensesPage`, `LogPage`)
 - `workmanager/` (`MedicineReminderNotificationWorker`), `receiver/` (notification-action receivers), `rx/` (`RxDisposer`, `RxUtils`), `util/`
 
 ## base package map (`base/src/main/java/m/co/rh.id/a_medic_log/base/`)
@@ -32,6 +32,6 @@ Personal medical-notes Android app (Java, GPL-3.0). Demo/production app for auth
 - Adherence/dose-occurrence invariants (generator floors, truncation rules, window matching, write-path bookkeeping): `mem:adherence`
 - Languages, versions, libraries, test frameworks: `mem:tech_stack`
 - Versioning, release checklist, signing, CI workflows, license-generation machinery: `mem:build-release`
-- Code style, naming, Rx rules, resource/i18n/commit conventions: `mem:conventions`
+- Code style, naming, Rx rules, resource/i18n/commit conventions + hard-won gotchas (Room insert ids, aapt2 quotes, dialog/row conventions, EOL renormalize): `mem:conventions`
 - Dev/build/test commands (Windows Git Bash): `mem:suggested_commands`
 - What must pass/be updated before finishing a task: `mem:task_completion`

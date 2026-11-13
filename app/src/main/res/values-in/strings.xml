@@ -81,6 +81,7 @@
     <string name="confirm_delete_medicine_reminder">Hapus pengingat \"%s\" ?</string>
     <string name="success_deleting_medicine_reminder">Pengingat obat dihapus</string>
     <string name="title_medicine_intake_list">Daftar Pemasukan Obat</string>
+    <string name="title_view_note">Lihat Catatan</string>
     <string name="confirm_delete_medicine_intake">Hapus pemasukan obat \"%s\" ?</string>
     <string name="success_deleting_medicine_intake">Pemasukan obat dihapus</string>
     <string name="theme_setting">Pengaturan Tema</string>
@@ -169,6 +170,13 @@
     <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
     <string name="adherence_taken_missed_extra_format">%1$s %2$d · %3$s %4$d · %5$s %6$d</string>
     <string name="adherence_chart_summary">Grafik kepatuhan: %1$d dikonsumsi, %2$d terlewat selama %3$d hari</string>
+    <string name="title_medicines">Obat</string>
+    <string name="medicines_no_profile">Belum ada profil. Tambahkan profil terlebih dahulu.</string>
+    <string name="medicines_empty">Belum ada obat. Obat ditambahkan dari catatan medis.</string>
+    <string name="medicines_adherence_format">7h: %1$d%% (%2$s %3$d / %4$s %5$d)</string>
+    <string name="medicines_adherence_no_data">7h: tidak ada data</string>
+    <string name="medicines_reminders_format">%1$d aktif / %2$d nonaktif</string>
+    <string name="confirm_delete_medicines">Hapus obat \"%s\" ? Riwayat konsumsi dan pengingat akan dihapus permanen.</string>
     <string name="title_today_doses">Dosis hari ini</string>
     <string name="today_doses_format">%1$d dari %2$d dosis</string>
     <string name="today_next_dose_format">berikutnya pukul %1$s</string>

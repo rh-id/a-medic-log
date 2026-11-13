@@ -40,6 +40,7 @@ import m.co.rh.id.a_medic_log.app.ui.page.ImportProfileSelectPage;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineDetailPage;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineIntakeDetailPage;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineIntakeListPage;
+import m.co.rh.id.a_medic_log.app.ui.page.MedicinesPage;
 import m.co.rh.id.a_medic_log.app.ui.page.MedicineReminderDetailPage;
 import m.co.rh.id.a_medic_log.app.ui.page.NoteAttachmentDetailPage;
 import m.co.rh.id.a_medic_log.app.ui.page.NoteDetailPage;
@@ -130,6 +131,7 @@ public class AppProviderModule implements ProviderModule {
         navMap.put(Routes.MEDICINE_DETAIL_PAGE, (args, activity) -> new MedicineDetailPage());
         navMap.put(Routes.MEDICINE_REMINDER_DETAIL_PAGE, (args, activity) -> new MedicineReminderDetailPage());
         navMap.put(Routes.MEDICINE_INTAKES_PAGE, (args, activity) -> new MedicineIntakeListPage());
+        navMap.put(Routes.MEDICINES_PAGE, (args, activity) -> new MedicinesPage());
         navMap.put(Routes.MEDICINE_INTAKE_DETAIL_PAGE, (args, activity) -> new MedicineIntakeDetailPage());
         navMap.put(Routes.ADHERENCE_PAGE, (args, activity) -> new AdherencePage());
         navMap.put(Routes.COMMON_CREATE_FILE_DIALOG, (args, activity) -> new CreateFileSVDialog());

@@ -16,7 +16,7 @@
 - Child StatefulViews: `@NavInject`, disposed+null'ed in `dispose(Activity)`.
 
 ## Command pattern (business logic + validation, no base class)
-- 31 `*Cmd` in `app/provider/command/`: `New/Update/Delete/Query(+Paged)` × entity + export/import trio. Registered lazy in `CommandProviderModule`. Reminder/medicine commands are THIN: validation subjects + notifier + `MedicineRepository` call — ALL dose-occurrence bookkeeping lives in the repository (sole entry point; NO lock — each entry point is exactly one encompassing `runInTransaction` with its decision reads inside it; see `mem:adherence`).
+- 32 `*Cmd` in `app/provider/command/`: `New/Update/Delete/Query(+Paged)` × entity + export/import trio. Registered lazy in `CommandProviderModule`. Reminder/medicine commands are THIN: validation subjects + notifier + `MedicineRepository` call — ALL dose-occurrence bookkeeping lives in the repository (sole entry point; NO lock — each entry point is exactly one encompassing `runInTransaction` with its decision reads inside it; see `mem:adherence`).
 - Execution idiom: `Single.fromCallable(() -> { repo.insert(x); notifier.xAdded(x); return x; }).subscribeOn(Schedulers.from(mExecutorService.get()))` — every mutation fires its notifier.
 - Commands double as validators: `valid(state)` pushes errors into BehaviorSubjects exposed as `getXxxValid(): Flowable<String>` — UI subscribes to per-field error streams on the command instance.
 
@@ -33,6 +33,11 @@
 - `ExportArchiveCmd`: full backup ZIP — `export.json` manifest + `profiles/<id>.json` + raw attachment files; `exportTo(uri)` via SAF.
 - `ImportArchiveCmd`: `peek(Uri)` → `List<FileProfile>` preview (drives `ImportProfileSelectPage`), then `importProfiles`.
 - `ExportSpreadsheetCmd`: XLSX (`ExcelExporter`, a-poi-spreadsheet, 4 sheets) on API 26+, else ZIP of CSVs (`CsvArchiveExporter`, UTF-8 BOM, CRLF).
+
+## Medicines page (drawer, `/medicines`)
+- `MedicinesPage` + `MedicineListSV` + `PagedMedicinesCmd` (+ `MedicineRow` in `app/model/`, `MedicinesItemSV/Adapter` — plural, NOT MedicineItemSV/MedicineRecyclerViewAdapter: those belong to the note editor): per-profile grouped medicine list; medicines remain note-created (view/manage only, no standalone add).
+- Invariants: grouping key = `name.trim().toLowerCase(Locale.ROOT)`, representative = newest row, stats (reminders on/off, last intake, adherence) aggregated across group ids; NO pagination — the Paged*Cmd doubling-limit guard compares grouped count vs raw limit and silently stops, so this command intentionally loads all rows; row delete MUST hydrate full state incl. reminders (`MedicineRepository.queryMedicineInfo`) off-main before `DeleteMedicineCmd` or enabled alarms are orphaned (`MedicineReminderEventHandler` reads the payload's reminder list); adherence "no data" (never 0%) for medicines absent from the 7-day report.
+- Queries added: `MedicineIntakeDao.findLastIntakesByProfileId` (one newest intake per medicine), `MedicineReminderDao.findMedicineRemindersByProfileId`. Popup: intake list + View note (→ `NoteDetailPage.Args.forUpdate(medicine.noteId)`).
 
 ## base data layer
 - `AppDatabase` v6, name `"a-medic-log.db"`; entities: Profile, Note, NoteTag, NoteAttachment, NoteAttachmentFile, Medicine, MedicineReminder (+ lastEnabled/lastDisabledDateTime, never cleared), MedicineIntake, MedicineDoseOccurrence, AndroidNotification. Hierarchy: Profile→Note→Medicine→(Reminder|Intake|DoseOccurrence); Note→Attachments/Tags.

@@ -84,6 +84,7 @@
     <string name="confirm_delete_medicine_reminder">Delete reminder \"%s\" ?</string>
     <string name="success_deleting_medicine_reminder">Medicine reminder deleted</string>
     <string name="title_medicine_intake_list">Medicine Intake List</string>
+    <string name="title_view_note">View note</string>
     <string name="confirm_delete_medicine_intake">Delete medicine intake \"%s\" ?</string>
     <string name="success_deleting_medicine_intake">Medicine intake deleted</string>
     <string name="theme_setting">Theme Setting</string>
@@ -176,6 +177,13 @@
     <string name="adherence_taken_missed_format">%1$s %2$d · %3$s %4$d</string>
     <string name="adherence_taken_missed_extra_format">%1$s %2$d · %3$s %4$d · %5$s %6$d</string>
     <string name="adherence_chart_summary">Adherence chart: %d taken, %d missed over %d days</string>
+    <string name="title_medicines">Medicines</string>
+    <string name="medicines_no_profile">No profile yet. Add a profile first.</string>
+    <string name="medicines_empty">No medicines yet. Medicines are added from medical notes.</string>
+    <string name="medicines_adherence_format">7d: %1$d%% (%2$s %3$d / %4$s %5$d)</string>
+    <string name="medicines_adherence_no_data">7d: no data</string>
+    <string name="medicines_reminders_format">%1$d on / %2$d off</string>
+    <string name="confirm_delete_medicines">Delete medicine \"%s\" ? Intake history and reminders will be permanently deleted.</string>
     <string name="title_today_doses">Today\'s doses</string>
     <string name="today_doses_format">%1$d of %2$d doses</string>
     <string name="today_next_dose_format">next %1$s</string>
