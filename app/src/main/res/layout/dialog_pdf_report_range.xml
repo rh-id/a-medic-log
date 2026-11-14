@@ -28,7 +28,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/pdf_report_range_7_days" />
+            android:text="@string/dialog_pdf_report_range_7_days"
+            android:textAllCaps="false"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/toggle_30_days"
@@ -36,7 +39,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/pdf_report_range_30_days" />
+            android:text="@string/dialog_pdf_report_range_30_days"
+            android:textAllCaps="false"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/toggle_90_days"
@@ -44,7 +50,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="@string/pdf_report_range_90_days" />
+            android:text="@string/dialog_pdf_report_range_90_days"
+            android:textAllCaps="false"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <LinearLayout

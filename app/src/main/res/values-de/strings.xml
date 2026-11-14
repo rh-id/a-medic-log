@@ -233,6 +233,9 @@
     <string name="pdf_report_intakes_empty">Keine Einnahmen in diesem Zeitraum protokolliert</string>
     <string name="pdf_report_page_format">Seite %1$d von %2$d</string>
     <string name="dialog_pdf_report_range_title">Einnahmezeitraum</string>
+    <string name="dialog_pdf_report_range_7_days">7 Tage</string>
+    <string name="dialog_pdf_report_range_30_days">30 Tage</string>
+    <string name="dialog_pdf_report_range_90_days">90 Tage</string>
     <string name="companion_promo_title">Möchten Sie Ihren Medikamentenbestand verfolgen?</string>
     <string name="companion_promo_description">Personal Stuff, eine App desselben Entwicklers, verwaltet Bestände, Ablaufdaten und Käufe Ihrer Artikel. Es werden keine Daten mit Medic Log geteilt; die Prüfung erfolgt nur auf diesem Gerät.</string>
     <string name="companion_promo_button">In F-Droid ansehen</string>

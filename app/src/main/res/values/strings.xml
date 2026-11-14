@@ -234,6 +234,9 @@
     <string name="pdf_report_intakes_empty">No intakes logged in this period</string>
     <string name="pdf_report_page_format">Page %1$d of %2$d</string>
     <string name="dialog_pdf_report_range_title">Intake history range</string>
+    <string name="dialog_pdf_report_range_7_days">7 days</string>
+    <string name="dialog_pdf_report_range_30_days">30 days</string>
+    <string name="dialog_pdf_report_range_90_days">90 days</string>
     <string name="companion_promo_title">Want to track your medicine stock?</string>
     <string name="companion_promo_description">Personal Stuff, an app by the same developer, tracks stock amounts, expiry dates and purchases of your items. It shares no data with Medic Log and the check runs on this device only.</string>
     <string name="companion_promo_button">View in F-Droid</string>

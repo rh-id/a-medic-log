@@ -233,6 +233,9 @@
     <string name="pdf_report_intakes_empty">Sellel perioodil pole võtmisi registreeritud</string>
     <string name="pdf_report_page_format">Lehekülg %1$d / %2$d</string>
     <string name="dialog_pdf_report_range_title">Võtmise periood</string>
+    <string name="dialog_pdf_report_range_7_days">7 päeva</string>
+    <string name="dialog_pdf_report_range_30_days">30 päeva</string>
+    <string name="dialog_pdf_report_range_90_days">90 päeva</string>
     <string name="companion_promo_title">Kas soovid jälgida oma ravimite varusid?</string>
     <string name="companion_promo_description">Personal Stuff on sama arendaja rakendus, mis jälgib sinu esemete varusid, aegumiskuupäevi ja oste. See ei jaga andmeid Medic Logiga; kontroll toimub ainult selles seadmes.</string>
     <string name="companion_promo_button">Vaata F-Droidis</string>
