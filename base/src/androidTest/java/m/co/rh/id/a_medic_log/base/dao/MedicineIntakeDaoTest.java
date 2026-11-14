@@ -15,7 +15,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -28,9 +27,9 @@ import m.co.rh.id.a_medic_log.base.room.DbMigration;
 import m.co.rh.id.a_medic_log.base.room.converter.LinkedHashSetConverter;
 
 /**
- * Instrumented tests of the medicine-intake search queries: the unbounded
- * description search, the global LIMIT cap with created_date_time DESC, id DESC
- * ordering and the medicine_id scoping variant.
+ * Instrumented tests of the medicine-intake search queries: the distinct
+ * description search (GROUP BY cap), the global LIMIT cap with
+ * created_date_time DESC, id DESC ordering and the medicine_id scoping variant.
  */
 @RunWith(AndroidJUnit4.class)
 public class MedicineIntakeDaoTest {
@@ -144,39 +143,42 @@ public class MedicineIntakeDaoTest {
     }
 
     @Test
-    public void searchMedicineIntakeDescription_matchesAndOrdersNewestFirst_noMatchEmpty() {
+    public void searchDistinctMedicineIntakeDescriptions_matchesAndOrdersNewestFirst_deduplicates_noMatchEmpty() {
         MedicineIntakeDao medicineIntakeDao = mAppDatabase.medicineIntakeDao();
-        // arrange: one medicine with three intakes matching the search term
-        // and one that does not
-        Medicine medicine = createMedicine("unbounded keyword medicine", "desc");
-        List<Long> matchingIntakeIds = new ArrayList<>();
+        // arrange: one medicine with three intakes whose distinct descriptions
+        // match the search term, one intake that does not match and a duplicate
+        // of the newest description (e.g. a copied reminder message logged twice)
+        Medicine medicine = createMedicine("distinct keyword medicine", "desc");
         long baseDateTime = System.currentTimeMillis();
         for (int i = 0; i < 3; i++) {
             MedicineIntake intake = createMedicineIntake(medicine.id,
-                    "unbounded keyword intake " + i);
+                    "distinct keyword intake " + i);
             // distinct timestamp per seed, strictly newer the later it is
-            // inserted, so the created_date_time DESC order is deterministic
-            // even when inserts land in the same millisecond
+            // inserted, so the MAX(created_date_time) DESC order is
+            // deterministic even when inserts land in the same millisecond
             intake.createdDateTime = new Date(baseDateTime - (3 - i) * 1000L);
-            matchingIntakeIds.add(medicineIntakeDao.insert(intake));
+            medicineIntakeDao.insert(intake);
         }
+        MedicineIntake duplicateNewest = createMedicineIntake(medicine.id,
+                "distinct keyword intake 2");
+        duplicateNewest.createdDateTime = new Date(baseDateTime - 500);
+        medicineIntakeDao.insert(duplicateNewest);
         medicineIntakeDao.insert(createMedicineIntake(medicine.id, "unrelated intake"));
 
-        // assert: the unbounded intake search returns only the matching
-        // intakes, newest first (created_date_time DESC); the seeds carry
-        // distinct timestamps so the order is deterministic
-        List<MedicineIntake> matches = medicineIntakeDao
-                .searchMedicineIntakeDescription("unbounded keyword");
+        // assert: identical descriptions collapse into one distinct row and
+        // the rows are ordered newest first (MAX(created_date_time) DESC);
+        // the limit is far above the seeded distinct count so it does not
+        // interfere with the ordering assertions
+        List<String> matches = medicineIntakeDao
+                .searchDistinctMedicineIntakeDescriptions("distinct keyword", 100);
         assertEquals(3, matches.size());
-        for (MedicineIntake match : matches) {
-            assertTrue(matchingIntakeIds.contains(match.id));
-        }
-        assertEquals(matchingIntakeIds.get(matchingIntakeIds.size() - 1).longValue(),
-                matches.get(0).id);
+        assertEquals("distinct keyword intake 2", matches.get(0));
+        assertEquals("distinct keyword intake 1", matches.get(1));
+        assertEquals("distinct keyword intake 0", matches.get(2));
 
         // assert: a term that matches nothing returns an empty list
-        List<MedicineIntake> noMatches = medicineIntakeDao
-                .searchMedicineIntakeDescription("missing term");
+        List<String> noMatches = medicineIntakeDao
+                .searchDistinctMedicineIntakeDescriptions("missing term", 100);
         assertTrue(noMatches.isEmpty());
     }
 

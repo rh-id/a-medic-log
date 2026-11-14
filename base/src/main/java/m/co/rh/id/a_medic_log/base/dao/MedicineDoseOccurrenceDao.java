@@ -23,6 +23,15 @@ public abstract class MedicineDoseOccurrenceDao {
             "ORDER BY scheduled_date_time ASC")
     public abstract List<MedicineDoseOccurrence> findMedicineDoseOccurrencesByScheduledDateTimeBetween(long from, long to);
 
+    @Query("SELECT medicine_dose_occurrence.* FROM medicine_dose_occurrence " +
+            "INNER JOIN medicine ON medicine_dose_occurrence.medicine_id = medicine.id " +
+            "INNER JOIN note ON medicine.note_id = note.id " +
+            "WHERE note.profile_id = :profileId " +
+            "AND medicine_dose_occurrence.scheduled_date_time BETWEEN :from AND :to " +
+            "ORDER BY medicine_dose_occurrence.scheduled_date_time ASC")
+    public abstract List<MedicineDoseOccurrence> findMedicineDoseOccurrencesByProfileIdAndScheduledDateTimeBetween(
+            long profileId, long from, long to);
+
     @Query("SELECT * FROM medicine_dose_occurrence WHERE reminder_id = :reminderId " +
             "ORDER BY scheduled_date_time DESC LIMIT 1")
     public abstract MedicineDoseOccurrence findLatestMedicineDoseOccurrenceByReminderId(long reminderId);

@@ -83,12 +83,13 @@ public class AdherenceReportGenerator {
             long from = AdherenceCalculator.rangeStart(now, rangeDay);
             long to = AdherenceCalculator.rangeEnd(now);
             List<MedicineDoseOccurrence> occurrencesInRange = mMedicineDoseOccurrenceDao.get()
-                    .findMedicineDoseOccurrencesByScheduledDateTimeBetween(from, to);
+                    .findMedicineDoseOccurrencesByProfileIdAndScheduledDateTimeBetween(profileId, from, to);
             // both bounds are widened by the matching window: an intake logged
             // outside the range (e.g. 00:30 the next day) can still be the
             // matching intake of an occurrence inside it
             List<MedicineIntake> intakesInRangeWidened = mMedicineIntakeDao.get()
-                    .findMedicineIntakesByTakenDateTimeBetween(
+                    .findMedicineIntakesByProfileIdAndTakenDateTimeBetween(
+                            profileId,
                             from - AdherenceCalculator.WINDOW_MILLIS,
                             to + AdherenceCalculator.WINDOW_MILLIS);
             reports.add(AdherenceCalculator.calculate(profileId, rangeDay, now,

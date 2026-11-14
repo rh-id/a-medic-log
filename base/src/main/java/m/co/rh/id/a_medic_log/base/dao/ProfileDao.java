@@ -23,8 +23,15 @@ public abstract class ProfileDao {
             "about LIKE '%'||:search||'%' ORDER BY name ASC")
     public abstract List<Profile> searchProfile(String search);
 
+    /**
+     * Returns all profiles whose id is in the given list (queried in batches; deduplicates and tolerates null/empty input).
+     */
+    public List<Profile> findProfilesByIds(List<Long> ids) {
+        return DaoBatchQueryUtil.queryInBatches(ids, this::getProfilesByIds);
+    }
+
     @Query("SELECT * FROM profile WHERE id IN (:ids)")
-    public abstract List<Profile> findProfilesByIds(List<Long> ids);
+    abstract List<Profile> getProfilesByIds(List<Long> ids);
 
     @Query("SELECT * FROM profile WHERE id = :id")
     public abstract Profile findProfileById(long id);

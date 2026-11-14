@@ -28,7 +28,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 public class NoteRepository {
-
     private final ProviderValue<AppDatabase> mAppDatabase;
     private final ProviderValue<NoteDao> mNoteDao;
     private final ProviderValue<NoteAttachmentDao> mNoteAttachmentDao;

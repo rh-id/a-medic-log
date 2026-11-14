@@ -1,5 +1,6 @@
 package m.co.rh.id.a_medic_log.app.provider.command;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -60,8 +61,24 @@ public class GetTodayDoseStatusCmd {
                     .findMedicineDoseOccurrencesByScheduledDateTimeBetween(from, to);
             List<MedicineIntake> intakesToday = mMedicineIntakeDao.get()
                     .findMedicineIntakesByTakenDateTimeBetween(from, to);
-            List<Medicine> medicines = mMedicineDao.get().findAllMedicines();
-            List<Note> notes = mNoteDao.get().findAllNotes();
+            // the card's dose content is driven by the range-scoped
+            // occurrences, so only those medicines (and their notes) are
+            // needed; the batch util keeps the IN list within SQLite's
+            // bind-variable limit regardless
+            List<Long> medicineIds = new ArrayList<>();
+            for (MedicineDoseOccurrence occurrence : occurrencesToday) {
+                if (occurrence.medicineId > 0) {
+                    medicineIds.add(occurrence.medicineId);
+                }
+            }
+            List<Medicine> medicines = mMedicineDao.get().findMedicinesByIds(medicineIds);
+            List<Long> noteIds = new ArrayList<>();
+            for (Medicine medicine : medicines) {
+                if (medicine.noteId != null) {
+                    noteIds.add(medicine.noteId);
+                }
+            }
+            List<Note> notes = mNoteDao.get().findNotesByIds(noteIds);
             List<Profile> profiles = mProfileDao.get().findProfiles();
             Map<Long, Medicine> medicineMap = new HashMap<>();
             for (Medicine medicine : medicines) {

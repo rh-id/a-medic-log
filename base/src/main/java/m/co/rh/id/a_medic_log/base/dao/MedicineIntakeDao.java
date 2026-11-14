@@ -29,8 +29,9 @@ public abstract class MedicineIntakeDao {
     @Query("SELECT * FROM medicine_intake WHERE medicine_id = :medicineId ORDER BY created_date_time DESC")
     public abstract List<MedicineIntake> findMedicineIntakesByMedicineId(long medicineId);
 
-    @Query("SELECT * FROM medicine_intake WHERE description LIKE '%'||:search||'%' ORDER BY created_date_time DESC")
-    public abstract List<MedicineIntake> searchMedicineIntakeDescription(String search);
+    @Query("SELECT description FROM medicine_intake WHERE description LIKE '%'||:search||'%' " +
+            "GROUP BY description ORDER BY MAX(created_date_time) DESC, MAX(id) DESC LIMIT :limit")
+    public abstract List<String> searchDistinctMedicineIntakeDescriptions(String search, int limit);
 
     @Query("SELECT * FROM medicine_intake WHERE medicine_id = :medicineId " +
             "AND description LIKE '%'||:search||'%' " +
@@ -45,6 +46,15 @@ public abstract class MedicineIntakeDao {
     @Query("SELECT * FROM medicine_intake WHERE taken_date_time BETWEEN :from AND :to " +
             "ORDER BY taken_date_time DESC")
     public abstract List<MedicineIntake> findMedicineIntakesByTakenDateTimeBetween(long from, long to);
+
+    @Query("SELECT medicine_intake.* FROM medicine_intake " +
+            "INNER JOIN medicine ON medicine_intake.medicine_id = medicine.id " +
+            "INNER JOIN note ON medicine.note_id = note.id " +
+            "WHERE note.profile_id = :profileId " +
+            "AND medicine_intake.taken_date_time BETWEEN :from AND :to " +
+            "ORDER BY medicine_intake.taken_date_time DESC")
+    public abstract List<MedicineIntake> findMedicineIntakesByProfileIdAndTakenDateTimeBetween(
+            long profileId, long from, long to);
 
     @Query("SELECT COUNT(*) FROM medicine_intake INNER JOIN medicine " +
             "ON medicine_intake.medicine_id = medicine.id WHERE medicine.note_id = :noteId")

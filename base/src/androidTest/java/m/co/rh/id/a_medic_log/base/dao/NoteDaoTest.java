@@ -21,7 +21,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import m.co.rh.id.a_medic_log.base.AppDatabase;
@@ -344,6 +346,121 @@ public class NoteDaoTest {
         assertEquals(1, medicineReminderDao.countMedicineRemindersByProfileId(profileB.id));
         assertEquals(0, noteAttachmentDao.countNoteAttachmentsByProfileId(profileB.id));
         assertEquals(1, medicineIntakeDao.countMedicineIntakesByProfileId(profileB.id));
+    }
+
+    // ---------------------------------------------------------------- note id batch queries
+
+    @Test
+    public void findNotesByIds_returnsAllRowsBeyondChunkSize() {
+        NoteDao noteDao = mAppDatabase.noteDao();
+
+        List<Long> insertedNoteIds = new ArrayList<>();
+        Note[] excludedNote = new Note[1];
+        mAppDatabase.runInTransaction(() -> {
+            for (int i = 0; i < 1001; i++) {
+                Note note = insertNote(null, "batch note " + i, minutesAfterBase(i));
+                insertedNoteIds.add(note.id);
+            }
+            // insert one extra note but don't add it to the query list
+            excludedNote[0] = insertNote(null, "excluded batch note", minutesAfterBase(1001));
+        });
+
+        // query all notes by their ids (this should chunk at 500, then 500, then 1)
+        List<Note> result = noteDao.findNotesByIds(insertedNoteIds);
+
+        // assert all 1001 notes are returned
+        assertEquals(1001, result.size());
+
+        // assert the set of returned ids equals the set of inserted ids
+        Set<Long> returnedIds = new HashSet<>();
+        for (Note note : result) {
+            returnedIds.add(note.id);
+        }
+        Set<Long> expectedIds = new HashSet<>(insertedNoteIds);
+        assertEquals(expectedIds, returnedIds);
+
+        // assert the excluded note is not in the results
+        assertTrue(!returnedIds.contains(excludedNote[0].id));
+    }
+
+    @Test
+    public void findNotesByIds_deduplicatesInputAcrossChunks() {
+        NoteDao noteDao = mAppDatabase.noteDao();
+
+        List<Long> insertedNoteIds = new ArrayList<>();
+        mAppDatabase.runInTransaction(() -> {
+            for (int i = 0; i < 1001; i++) {
+                Note note = insertNote(null, "batch dedup note " + i, minutesAfterBase(i));
+                insertedNoteIds.add(note.id);
+            }
+        });
+
+        // build input list with duplicates spanning chunk boundaries
+        List<Long> inputIds = new ArrayList<>(insertedNoteIds);
+        // append the first 600 ids again — without global deduplication these
+        // duplicates would span chunk boundaries and return duplicate rows
+        for (int i = 0; i < 600; i++) {
+            inputIds.add(insertedNoteIds.get(i));
+        }
+
+        // query with duplicate ids
+        List<Note> result = noteDao.findNotesByIds(inputIds);
+
+        // assert deduplication happened: still only 1001 unique notes returned
+        assertEquals(1001, result.size());
+
+        // assert all returned ids are unique
+        Set<Long> returnedIds = new HashSet<>();
+        for (Note note : result) {
+            returnedIds.add(note.id);
+        }
+        assertEquals(1001, returnedIds.size());
+
+        // assert the returned ids match the original inserted ids
+        Set<Long> expectedIds = new HashSet<>(insertedNoteIds);
+        assertEquals(expectedIds, returnedIds);
+    }
+
+    @Test
+    public void findNotesByIds_nullAndEmptyInput() {
+        NoteDao noteDao = mAppDatabase.noteDao();
+
+        // null input returns empty non-null list
+        List<Note> nullResult = noteDao.findNotesByIds(null);
+        assertNotNull(nullResult);
+        assertEquals(0, nullResult.size());
+
+        // empty input returns empty non-null list
+        List<Note> emptyResult = noteDao.findNotesByIds(new ArrayList<>());
+        assertNotNull(emptyResult);
+        assertEquals(0, emptyResult.size());
+    }
+
+    @Test
+    public void findNotesByIds_exactlyAtChunkSizeReturnsAll() {
+        NoteDao noteDao = mAppDatabase.noteDao();
+
+        List<Long> insertedNoteIds = new ArrayList<>();
+        mAppDatabase.runInTransaction(() -> {
+            for (int i = 0; i < 500; i++) {
+                Note note = insertNote(null, "batch boundary note " + i, minutesAfterBase(i));
+                insertedNoteIds.add(note.id);
+            }
+        });
+
+        // query all 500 notes by their ids (exactly at the chunk-size boundary)
+        List<Note> result = noteDao.findNotesByIds(insertedNoteIds);
+
+        // assert all 500 notes are returned
+        assertEquals(500, result.size());
+
+        // assert the set of returned ids equals the set of inserted ids
+        Set<Long> returnedIds = new HashSet<>();
+        for (Note note : result) {
+            returnedIds.add(note.id);
+        }
+        Set<Long> expectedIds = new HashSet<>(insertedNoteIds);
+        assertEquals(expectedIds, returnedIds);
     }
 
     // ---------------------------------------------------------------- note search queries

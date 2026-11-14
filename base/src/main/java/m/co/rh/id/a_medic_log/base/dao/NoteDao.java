@@ -52,8 +52,15 @@ public abstract class NoteDao {
             "ORDER BY entry_date_time DESC, id DESC LIMIT :limit")
     public abstract List<Note> searchNotesWithLimit(String search, int limit);
 
-    @Query("SELECT * FROM note ORDER BY entry_date_time DESC")
-    public abstract List<Note> findAllNotes();
+    /**
+     * Returns all notes whose id is in the given list (queried in batches; deduplicates and tolerates null/empty input).
+     */
+    public List<Note> findNotesByIds(List<Long> noteIds) {
+        return DaoBatchQueryUtil.queryInBatches(noteIds, this::getNotesByIds);
+    }
+
+    @Query("SELECT * FROM note WHERE id IN (:noteIds)")
+    abstract List<Note> getNotesByIds(List<Long> noteIds);
 
     @Query("SELECT COUNT(*) FROM note WHERE profile_id = :profileId")
     public abstract int countNotesByProfileId(long profileId);

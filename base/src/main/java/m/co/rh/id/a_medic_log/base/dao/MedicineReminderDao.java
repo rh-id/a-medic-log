@@ -19,8 +19,9 @@ public abstract class MedicineReminderDao {
     @Query("SELECT * FROM medicine_reminder WHERE id = :id")
     public abstract MedicineReminder findMedicineReminderById(long id);
 
-    @Query("SELECT * FROM medicine_reminder WHERE message LIKE '%'||:search||'%' ORDER BY created_date_time DESC")
-    public abstract List<MedicineReminder> searchMedicineReminderMessage(String search);
+    @Query("SELECT message FROM medicine_reminder WHERE message LIKE '%'||:search||'%' " +
+            "GROUP BY message ORDER BY MAX(created_date_time) DESC, MAX(id) DESC LIMIT :limit")
+    public abstract List<String> searchDistinctMedicineReminderMessages(String search, int limit);
 
     @Query("SELECT * FROM medicine_reminder WHERE reminder_enabled = 1 ORDER BY created_date_time DESC")
     public abstract List<MedicineReminder> findMedicineRemindersEnabled();

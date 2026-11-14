@@ -18,11 +18,19 @@ public abstract class MedicineDao {
     @Query("SELECT * FROM medicine WHERE id = :id")
     public abstract Medicine findMedicineById(long id);
 
-    @Query("SELECT * FROM medicine WHERE name LIKE '%'||:search||'%' ORDER BY created_date_time DESC")
-    public abstract List<Medicine> searchMedicineName(String search);
+    @Query("SELECT name FROM medicine WHERE name LIKE '%'||:search||'%' " +
+            "GROUP BY name ORDER BY MAX(created_date_time) DESC, MAX(id) DESC LIMIT :limit")
+    public abstract List<String> searchDistinctMedicineNames(String search, int limit);
 
-    @Query("SELECT * FROM medicine ORDER BY created_date_time DESC")
-    public abstract List<Medicine> findAllMedicines();
+    /**
+     * Returns all medicines whose id is in the given list (queried in batches; deduplicates and tolerates null/empty input).
+     */
+    public List<Medicine> findMedicinesByIds(List<Long> medicineIds) {
+        return DaoBatchQueryUtil.queryInBatches(medicineIds, this::getMedicinesByIds);
+    }
+
+    @Query("SELECT * FROM medicine WHERE id IN (:medicineIds)")
+    abstract List<Medicine> getMedicinesByIds(List<Long> medicineIds);
 
     @Query("SELECT medicine.* FROM medicine INNER JOIN note " +
             "ON medicine.note_id = note.id WHERE note.profile_id = :profileId " +
