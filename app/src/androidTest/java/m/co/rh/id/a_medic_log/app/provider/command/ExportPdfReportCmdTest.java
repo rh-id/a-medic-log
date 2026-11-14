@@ -156,7 +156,8 @@ public class ExportPdfReportCmdTest {
     @Test
     public void assemble_intakesOfOtherProfilesMedicines_neverInRange() throws Exception {
         // arrange: two profiles, each with its own note and medicine, an
-        // intake for each medicine inside the range
+        // intake for each medicine inside the range plus an earlier one for
+        // profile A's medicine
         Profile profileA = createProfile(mProfileDao, "Pdf Scope Profile A", "about");
         Profile profileB = createProfile(mProfileDao, "Pdf Scope Profile B", "about");
         Note noteA = createNote(mNoteDao, profileA.id, "pdf scope note A");
@@ -164,6 +165,8 @@ public class ExportPdfReportCmdTest {
         Medicine medicineA = createMedicine(mMedicineDao, noteA.id, "Medicine A", "desc");
         Medicine medicineB = createMedicine(mMedicineDao, noteB.id, "Medicine B", "desc");
         Date withinRange = new Date();
+        Date earlierWithinRange = new Date(withinRange.getTime() - 60000);
+        insertMedicineIntake(medicineA.id, "own profile earlier intake", earlierWithinRange);
         insertMedicineIntake(medicineA.id, "own profile intake", withinRange);
         insertMedicineIntake(medicineB.id, "other profile intake", withinRange);
         long rangeStart = AdherenceCalculator.rangeStart(withinRange, 30);
@@ -173,10 +176,17 @@ public class ExportPdfReportCmdTest {
         PdfReportData reportDataA = mExportPdfReportCmd.assembleReportData(profileA,
                 new AdherenceReport(), new AdherenceReport(), rangeStart, rangeEnd);
 
-        // assert: the global between-dates fetch is scoped in memory to the
-        // profile's own medicines, the other profile's intake must not appear
-        assertEquals(1, reportDataA.getIntakesInRange().size());
+        // assert: the intake fetch is profile-scoped in SQL via
+        // findMedicineIntakesByProfileIdAndTakenDateTimeBetween, the other
+        // profile's intake must not appear, and both of the profile's own
+        // intakes come back in ascending takenDateTime order (the scoped
+        // query returns DESC, the assembler re-sorts for the PDF history)
+        assertEquals(2, reportDataA.getIntakesInRange().size());
         assertEquals(medicineA.id, reportDataA.getIntakesInRange().get(0).medicineId);
+        assertEquals(medicineA.id, reportDataA.getIntakesInRange().get(1).medicineId);
+        assertTrue("intakes must be sorted ascending by takenDateTime",
+                reportDataA.getIntakesInRange().get(0).takenDateTime
+                        .before(reportDataA.getIntakesInRange().get(1).takenDateTime));
 
         PdfReportData reportDataB = mExportPdfReportCmd.assembleReportData(profileB,
                 new AdherenceReport(), new AdherenceReport(), rangeStart, rangeEnd);

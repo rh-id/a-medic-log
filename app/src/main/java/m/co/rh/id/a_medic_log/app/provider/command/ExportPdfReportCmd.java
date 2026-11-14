@@ -2,16 +2,13 @@ package m.co.rh.id.a_medic_log.app.provider.command;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
@@ -149,24 +146,13 @@ public class ExportPdfReportCmd {
         medicines.sort(Comparator.comparing(medicine -> medicine.name,
                 Comparator.nullsLast(Comparator.naturalOrder())));
         Map<Long, List<MedicineReminder>> reminderMap = new LinkedHashMap<>();
-        Set<Long> medicineIds = new HashSet<>();
         for (Medicine medicine : medicines) {
-            medicineIds.add(medicine.id);
             reminderMap.put(medicine.id,
                     mMedicineReminderDao.findMedicineRemindersByMedicineId(medicine.id));
         }
-        // the intake fetch is global between-dates, it must be filtered in
-        // memory to the profile's own medicines so a per-profile report
-        // never contains another profile's intakes
-        List<MedicineIntake> intakesInRange = new ArrayList<>();
-        for (MedicineIntake medicineIntake : mMedicineIntakeDao
-                .findMedicineIntakesByTakenDateTimeBetween(
-                        intakeRangeStartMillis, intakeRangeEndMillis)) {
-            if (medicineIntake.medicineId != null
-                    && medicineIds.contains(medicineIntake.medicineId)) {
-                intakesInRange.add(medicineIntake);
-            }
-        }
+        List<MedicineIntake> intakesInRange = mMedicineIntakeDao
+                .findMedicineIntakesByProfileIdAndTakenDateTimeBetween(
+                        profile.id, intakeRangeStartMillis, intakeRangeEndMillis);
         intakesInRange.sort(Comparator.comparing(intake -> intake.takenDateTime));
         return new PdfReportData(profile, medicines, reminderMap,
                 adherence7Days, adherence30Days, intakesInRange,
