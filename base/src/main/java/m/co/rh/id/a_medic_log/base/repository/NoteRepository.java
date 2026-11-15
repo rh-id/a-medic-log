@@ -89,7 +89,12 @@ public class NoteRepository {
                     if (medicineReminders != null && !medicineReminders.isEmpty()) {
                         for (MedicineReminder medicineReminder : medicineReminders) {
                             medicineReminder.medicineId = medicineId;
-                            medicineReminder.id = mMedicineReminderDao.get().insert(medicineReminder);
+                            // routed through the bookkeeping entry point so the
+                            // reminder is create-stamped and its expected doses
+                            // of today are generated; nested call, the nested
+                            // transaction coalesces into the outermost one on
+                            // the same thread
+                            mMedicineRepository.get().insertMedicineReminder(medicineReminder);
                         }
                     }
                 }

@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import m.co.rh.id.a_medic_log.base.AppDatabase;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
@@ -52,6 +53,16 @@ import m.co.rh.id.aprovider.ProviderValue;
  * MedicineRepositoryTest, including multi-threaded entry-point races.
  */
 public class MedicineRepository {
+
+    /**
+     * Creation grace for the occurrence-generation lower bounds, mirrors the
+     * alarm-side catch-up grace (MedicineReminderEventHandler uses the same
+     * value): a dose scheduled at or just before the reminder's creation
+     * moment (the dialog-open default start) must still be generated for the
+     * start day, within the same 5-minute tolerance the alarm side already
+     * applies.
+     */
+    public static final long CREATION_GRACE_PERIOD_MS = TimeUnit.MINUTES.toMillis(5);
 
     private final ProviderValue<AppDatabase> mAppDatabase;
     private final ProviderValue<MedicineDao> mMedicineDao;
@@ -215,12 +226,14 @@ public class MedicineRepository {
                     }
                 }
                 // newly inserted reminders record their expected doses of
-                // today right away, the generation core skips anything
-                // before createdDateTime itself
+                // today right away, the creation grace lets a dose
+                // scheduled at or just before the dialog-open creation
+                // moment still generate for the start day
                 for (MedicineReminder newReminder : newReminders) {
                     if (isReminderEnabled(newReminder)) {
                         generateFor(newReminder,
-                                newReminder.createdDateTime.getTime(),
+                                floorToMinute(newReminder.createdDateTime.getTime())
+                                        - CREATION_GRACE_PERIOD_MS,
                                 endOfTodayMillis(now));
                     }
                 }
@@ -236,7 +249,11 @@ public class MedicineRepository {
 
     /**
      * Inserts a reminder and records its create-time status stamp plus, when
-     * enabled, its expected doses of today. Also called nested by
+     * enabled, its expected doses of today. The generation lower bound is the
+     * created time floored to the minute minus the creation grace
+     * {@link #CREATION_GRACE_PERIOD_MS}: schedule-comparison bounds operate at
+     * minute precision, so a start at or just after the dialog-open creation
+     * moment still generates today's dose. Also called nested by
      * {@link #insertMedicine(Medicine, List)}, safe because nested same-thread
      * Room transactions coalesce into the outermost one.
      */
@@ -247,12 +264,14 @@ public class MedicineRepository {
             stampCreation(medicineReminder);
             long id = mMedicineReminderDao.get().insert(medicineReminder);
             medicineReminder.id = id;
-            // expected doses of today are recorded right away, the
-            // generation core skips anything before createdDateTime itself
+            // expected doses of today are recorded right away, the creation
+            // grace lets a dose scheduled at or just before the dialog-open
+            // creation moment still generate for the start day
             if (isReminderEnabled(medicineReminder)) {
                 Date now = new Date();
                 generateFor(medicineReminder,
-                        medicineReminder.createdDateTime.getTime(),
+                        floorToMinute(medicineReminder.createdDateTime.getTime())
+                                - CREATION_GRACE_PERIOD_MS,
                         endOfTodayMillis(now));
             }
         });
@@ -264,7 +283,12 @@ public class MedicineRepository {
      * caller-supplied before-state and any stamps pre-set from a stale
      * snapshot are discarded), then the row is written, stale FUTURE
      * occurrences are truncated and, when enabled, today's remaining doses are
-     * regenerated from the update time.
+     * regenerated from the update time. The regeneration lower bound is the
+     * update time floored to the minute minus the creation grace
+     * {@link #CREATION_GRACE_PERIOD_MS} on a plain edit (schedule-comparison
+     * bounds operate at minute precision, so a just-passed start time still
+     * generates today's dose); a re-enable transition keeps the strict
+     * update-time bound so the recorded off-period is never regenerated.
      */
     public void updateMedicineReminder(MedicineReminder edited) {
         Date now = new Date();
@@ -282,13 +306,14 @@ public class MedicineRepository {
             }
             boolean wasEnabled = isReminderEnabled(before);
             boolean isEnabled = isReminderEnabled(edited);
+            boolean reEnableTransition = isEnabled && !wasEnabled;
             // the persisted stamp values are authoritative, discard
             // anything a stale caller snapshot pre-set on the entity
             edited.lastEnabledDateTime = before.lastEnabledDateTime;
             edited.lastDisabledDateTime = before.lastDisabledDateTime;
             // record the enable/disable transition, these columns are
             // never cleared once set
-            if (isEnabled && !wasEnabled) {
+            if (reEnableTransition) {
                 edited.lastEnabledDateTime = now;
             } else if (!isEnabled && wasEnabled) {
                 edited.lastDisabledDateTime = now;
@@ -298,7 +323,14 @@ public class MedicineRepository {
             // the history <= now stays immutable
             truncateAfter(edited.id, now.getTime());
             if (isEnabled) {
-                generateFor(edited, now.getTime(), endOfTodayMillis(now));
+                // plain edits get the same creation grace so a just-passed
+                // start time still generates today's dose; re-enables keep
+                // the strict bound so the recorded off-period is never
+                // regenerated
+                long lowerBound = reEnableTransition
+                        ? now.getTime()
+                        : floorToMinute(now.getTime()) - CREATION_GRACE_PERIOD_MS;
+                generateFor(edited, lowerBound, endOfTodayMillis(now));
             }
         });
     }
@@ -378,9 +410,16 @@ public class MedicineRepository {
      * lowerBoundMillis &lt; scheduledDateTime &lt;= upperBoundMillis,
      * on the days in reminder.reminderDays, at the time-of-day
      * (HOUR/MINUTE/SECOND) taken from reminder.startDateTime.
-     * Skips occurrences scheduled before reminder.startDateTime and
-     * before reminder.createdDateTime. Inserts with IGNORE, making repeated
-     * calls idempotent.
+     * Skips occurrences scheduled before reminder.startDateTime and before
+     * reminder.createdDateTime minus the creation grace
+     * {@link #CREATION_GRACE_PERIOD_MS}: the schedule-comparison bounds
+     * operate at minute precision (both stamps are floored to the minute) so
+     * a start picked at the dialog-open moment still generates its own
+     * start-day dose. Occurrences strictly inside a recorded
+     * disable -&gt; re-enable window (lastDisabledDateTime &lt;
+     * scheduledDateTime &lt; lastEnabledDateTime) are never regenerated,
+     * honoring the off-period during backfill. Inserts with IGNORE, making
+     * repeated calls idempotent.
      * Day stepping uses Calendar (never millis arithmetic) so daylight saving
      * transitions keep the local time-of-day.
      *
@@ -397,6 +436,20 @@ public class MedicineRepository {
         int hourOfDay = startCalendar.get(Calendar.HOUR_OF_DAY);
         int minute = startCalendar.get(Calendar.MINUTE);
         int second = startCalendar.get(Calendar.SECOND);
+
+        // schedule-comparison bounds operate at minute precision: the
+        // seconds/millis of the start and creation stamps are floored away
+        // so a start picked at the dialog-open moment still generates its
+        // own start-day dose, and the creation grace mirrors the alarm-side
+        // catch-up tolerance
+        long startBoundMillis = floorToMinute(reminder.startDateTime.getTime());
+        long createdBoundMillis = floorToMinute(reminder.createdDateTime.getTime())
+                - CREATION_GRACE_PERIOD_MS;
+        // a recorded disable -> re-enable window is never regenerated
+        // (phantom-miss prevention, same invariant as routineCatchUp's floor)
+        boolean hasOffPeriodWindow = reminder.lastDisabledDateTime != null
+                && reminder.lastEnabledDateTime != null
+                && reminder.lastDisabledDateTime.before(reminder.lastEnabledDateTime);
 
         // day cursor always holds a start-of-day (00:00:00.000) time so
         // stepping one day at a time is DST safe
@@ -419,8 +472,11 @@ public class MedicineRepository {
                 occurrenceCalendar.set(Calendar.MILLISECOND, 0);
                 long scheduledMillis = occurrenceCalendar.getTimeInMillis();
                 if (scheduledMillis > lowerBoundMillis && scheduledMillis <= upperBoundMillis
-                        && scheduledMillis >= reminder.startDateTime.getTime()
-                        && scheduledMillis >= reminder.createdDateTime.getTime()) {
+                        && scheduledMillis >= startBoundMillis
+                        && scheduledMillis >= createdBoundMillis
+                        && !(hasOffPeriodWindow
+                            && scheduledMillis > reminder.lastDisabledDateTime.getTime()
+                            && scheduledMillis < reminder.lastEnabledDateTime.getTime())) {
                     MedicineDoseOccurrence occurrence = new MedicineDoseOccurrence();
                     occurrence.reminderId = reminder.id;
                     occurrence.medicineId = reminder.medicineId;
@@ -495,7 +551,14 @@ public class MedicineRepository {
      * One-time backfill for reminders that existed before occurrence tracking,
      * for ENABLED reminders only. Disabled reminders are skipped entirely:
      * without a recorded disable time their history is unknowable and a
-     * recorded off-period must never produce expected doses.
+     * recorded off-period must never produce expected doses. The per-reminder
+     * lower bound is the later of the creation time (floored to the minute,
+     * minus the creation grace {@link #CREATION_GRACE_PERIOD_MS}) and the
+     * start time (floored to the minute): schedule-comparison bounds operate
+     * at minute precision, so the backfill heals legacy reminders whose
+     * start-day occurrence was skipped by the old millis-precision bound,
+     * while generateFor's off-period guard keeps disable -&gt; re-enable
+     * history phantom-free.
      *
      * @param ceilingMillis upper generation bound (end-of-today of the
      *                      operation time), passed in by the entry point
@@ -511,9 +574,17 @@ public class MedicineRepository {
                     || reminder.startDateTime == null || reminder.createdDateTime == null) {
                 continue;
             }
-            // generateFor's own skip rules handle the start/created bounds
-            long lowerBound = Math.max(reminder.createdDateTime.getTime(),
-                    reminder.startDateTime.getTime());
+            // floored bounds + creation grace heal legacy reminders whose
+            // start-day occurrence was skipped by the old millis-precision
+            // bound; generateFor's off-period guard keeps disable ->
+            // re-enable history phantom-free. Accepted edge: a legacy start
+            // whose SECOND is exactly 0 lands its candidate exactly on
+            // floorToMinute(start) and stays excluded by the strict caller
+            // bound - documented, not fixed.
+            long lowerBound = Math.max(
+                    floorToMinute(reminder.createdDateTime.getTime())
+                            - CREATION_GRACE_PERIOD_MS,
+                    floorToMinute(reminder.startDateTime.getTime()));
             inserted += generateFor(reminder, lowerBound, ceilingMillis);
         }
         return inserted;
@@ -581,6 +652,20 @@ public class MedicineRepository {
         calendar.set(Calendar.MINUTE, 59);
         calendar.set(Calendar.SECOND, 59);
         calendar.set(Calendar.MILLISECOND, 999);
+        return calendar.getTimeInMillis();
+    }
+
+    /**
+     * @return timeMillis floored to the minute (SECOND/MILLISECOND zeroed),
+     * the precision of every schedule-comparison bound: the dialog's time
+     * picker result and legacy start stamps carry seconds/millis that must
+     * not push a start-day candidate below its own bound
+     */
+    private static long floorToMinute(long timeMillis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(timeMillis);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
         return calendar.getTimeInMillis();
     }
 

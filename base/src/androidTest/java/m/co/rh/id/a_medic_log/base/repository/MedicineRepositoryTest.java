@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -40,6 +41,7 @@ import m.co.rh.id.a_medic_log.base.entity.MedicineIntake;
 import m.co.rh.id.a_medic_log.base.entity.MedicineReminder;
 import m.co.rh.id.a_medic_log.base.entity.Note;
 import m.co.rh.id.a_medic_log.base.state.MedicineState;
+import m.co.rh.id.a_medic_log.base.state.NoteState;
 import m.co.rh.id.aprovider.Provider;
 
 /**
@@ -197,6 +199,19 @@ public class MedicineRepositoryTest {
         calendar.clear();
         calendar.set(FIXED_YEAR, month, dayOfMonth, hourOfDay, minute, 0);
         calendar.set(Calendar.MILLISECOND, 0);
+        return calendar.getTime();
+    }
+
+    /**
+     * @return a fixed 2026 anchor date with explicit second and millis, for
+     * the legacy-stamp fixtures of the minute-precision regression coverage
+     */
+    private static Date fixedDateTime(int month, int dayOfMonth, int hourOfDay,
+                                      int minute, int second, int millis) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.clear();
+        calendar.set(FIXED_YEAR, month, dayOfMonth, hourOfDay, minute, second);
+        calendar.set(Calendar.MILLISECOND, millis);
         return calendar.getTime();
     }
 
@@ -918,6 +933,356 @@ public class MedicineRepositoryTest {
         assertEquals(30, occurrenceCalendar.get(Calendar.SECOND));
         assertEquals(0, occurrenceCalendar.get(Calendar.MILLISECOND));
         assertEquals(startDateTime, occurrences.get(0).scheduledDateTime);
+    }
+
+    // ---- issue #34: minute-precision schedule bounds, the shared creation
+    // grace and the backfill off-period guard (the dialog's "now"/picker
+    // results carry second/millis precision, legacy rows carry
+    // non-zero-second starts) ----
+
+    @Test
+    public void insertMedicineReminder_startAtDialogOpenMoment_generatesTodaysOccurrence() {
+        Medicine medicine = insertMedicine("dialog-open host", 0);
+        // THE issue repro: the dialog pre-fills "now" (with millis precision)
+        // as the default start and the user saves at the dialog-open moment,
+        // so createdDateTime == startDateTime == now with sub-second fields;
+        // the old raw createdDateTime bound skipped today's own dose
+        Date now = new Date();
+        MedicineReminder reminder = new MedicineReminder();
+        reminder.medicineId = medicine.id;
+        reminder.message = "dialog-open reminder";
+        reminder.reminderEnabled = true;
+        reminder.createdDateTime = now;
+        reminder.updatedDateTime = now;
+        reminder.startDateTime = now;
+        reminder.reminderDays = new LinkedHashSet<>(Arrays.asList(
+                Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY,
+                Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY));
+
+        mMedicineRepository.insertMedicineReminder(reminder);
+
+        // the generation window spans floor(created) - grace .. end-of-today,
+        // so exactly the dialog-open moment's own dose can exist (a
+        // yesterday-slot candidate is rejected by the minute-precision start
+        // bound)
+        List<MedicineDoseOccurrence> occurrences = findOccurrencesByReminderId(reminder.id);
+        assertEquals(1, occurrences.size());
+        // scheduled == start truncated to .000 millis: the dose keeps the
+        // start's H:M:S and carries no sub-second residue
+        Calendar expectedCalendar = Calendar.getInstance();
+        expectedCalendar.setTime(now);
+        expectedCalendar.set(Calendar.MILLISECOND, 0);
+        assertEquals(expectedCalendar.getTime(), occurrences.get(0).scheduledDateTime);
+    }
+
+    @Test
+    public void insertMedicineReminder_futurePickWithSeconds_generatesTodaysOccurrence() {
+        Medicine medicine = insertMedicine("future pick host", 0);
+        // dialog pick: a start later today with the picker's second/millis
+        // fields set; the sub-second residue must not push today's dose out
+        Date now = new Date();
+        Date start = plusMinutes(now, 120);
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.setTime(start);
+        startCalendar.set(Calendar.SECOND, 30);
+        startCalendar.set(Calendar.MILLISECOND, 123);
+        start = startCalendar.getTime();
+        MedicineReminder reminder = reminder(medicine.id, now, 0, 0);
+        reminder.startDateTime = start;
+
+        mMedicineRepository.insertMedicineReminder(reminder);
+
+        List<MedicineDoseOccurrence> occurrences = findOccurrencesByReminderId(reminder.id);
+        if (start.getTime() > endOfToday(now)) {
+            // the +2h pick crossed midnight while building the entity: the
+            // dose belongs to tomorrow, outside the end-of-today ceiling
+            assertEquals(0, occurrences.size());
+        } else {
+            // the dose exists at the start's H:M:SS.000
+            Calendar expectedCalendar = Calendar.getInstance();
+            expectedCalendar.setTime(start);
+            expectedCalendar.set(Calendar.MILLISECOND, 0);
+            assertEquals(1, occurrences.size());
+            assertEquals(expectedCalendar.getTime(), occurrences.get(0).scheduledDateTime);
+        }
+    }
+
+    @Test
+    public void insertMedicineReminder_startJustWithinGrace_generates() {
+        Medicine medicine = insertMedicine("grace host", 0);
+        // start 3 minutes before the dialog-open creation: inside the shared
+        // 5-minute creation grace, the start dose must still be generated
+        Date start = plusMinutes(new Date(), -3);
+        MedicineReminder reminder = reminder(medicine.id, new Date(), 0, 0);
+        reminder.startDateTime = start;
+        // restrict the schedule to the start date's own day-of-week so a
+        // midnight-crossing run cannot offer another day's legitimate future
+        // slot as a false positive
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.setTime(start);
+        reminder.reminderDays = new LinkedHashSet<>(Collections.singletonList(
+                startCalendar.get(Calendar.DAY_OF_WEEK)));
+
+        mMedicineRepository.insertMedicineReminder(reminder);
+
+        List<MedicineDoseOccurrence> occurrences = findOccurrencesByReminderId(reminder.id);
+        assertEquals(1, occurrences.size());
+        assertEquals(start, occurrences.get(0).scheduledDateTime);
+    }
+
+    @Test
+    public void insertMedicineReminder_startBeyondGrace_skipsToday() {
+        Medicine medicine = insertMedicine("beyond grace host", 0);
+        // start 6 minutes before the dialog-open creation: beyond the shared
+        // 5-minute creation grace, the start dose is not regenerated
+        Date start = plusMinutes(new Date(), -6);
+        MedicineReminder reminder = reminder(medicine.id, new Date(), 0, 0);
+        reminder.startDateTime = start;
+        // start date's own day-of-week only: the dose at the start slot is
+        // the only candidate and it sits strictly before the floored
+        // created-minus-grace bound
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.setTime(start);
+        reminder.reminderDays = new LinkedHashSet<>(Collections.singletonList(
+                startCalendar.get(Calendar.DAY_OF_WEEK)));
+
+        mMedicineRepository.insertMedicineReminder(reminder);
+
+        assertEquals(0, findOccurrencesByReminderId(reminder.id).size());
+    }
+
+    @Test
+    public void updateMedicineReminder_reEnable_keepsStrictBound_offPeriodNotRegenerated() {
+        Medicine medicine = insertMedicine("re-enable host", 0);
+        // start one minute before the dialog-open creation so the insert
+        // generates the start dose as history
+        Date start = plusMinutes(new Date(), -1);
+        MedicineReminder reminder = reminder(medicine.id, new Date(), 0, 0);
+        reminder.startDateTime = start;
+        // start date's own day-of-week only, so the strict re-enable bound
+        // has no legitimate later-today slot to regenerate and the count
+        // assertion stays deterministic across midnight-crossing runs
+        Calendar startCalendar = Calendar.getInstance();
+        startCalendar.setTime(start);
+        reminder.reminderDays = new LinkedHashSet<>(Collections.singletonList(
+                startCalendar.get(Calendar.DAY_OF_WEEK)));
+
+        mMedicineRepository.insertMedicineReminder(reminder);
+        assertEquals(1, findOccurrencesByReminderId(reminder.id).size());
+
+        // disable: the start dose is history (<= now) and survives the
+        // truncate-after
+        MedicineReminder disabled = reminder.clone();
+        disabled.reminderEnabled = false;
+        mMedicineRepository.updateMedicineReminder(disabled);
+        MedicineReminder storedDisabled =
+                mMedicineReminderDao.findMedicineReminderById(reminder.id);
+        Date disableTime = storedDisabled.lastDisabledDateTime;
+        assertNotNull(disableTime);
+        int occurrencesWhileDisabled = findOccurrencesByReminderId(reminder.id).size();
+        assertEquals(1, occurrencesWhileDisabled);
+
+        // re-enable through the repository, edited built from a fresh read
+        MedicineReminder reEnabled =
+                mMedicineReminderDao.findMedicineReminderById(reminder.id).clone();
+        reEnabled.reminderEnabled = true;
+        mMedicineRepository.updateMedicineReminder(reEnabled);
+        MedicineReminder storedReEnabled =
+                mMedicineReminderDao.findMedicineReminderById(reminder.id);
+        Date enableTime = storedReEnabled.lastEnabledDateTime;
+        assertNotNull(enableTime);
+
+        // the re-enable keeps the strict update-time bound: no phantom
+        // expected dose appears strictly inside the recorded off-period and
+        // the start-dose history survives untouched
+        List<MedicineDoseOccurrence> occurrences = findOccurrencesByReminderId(reminder.id);
+        assertEquals(occurrencesWhileDisabled, occurrences.size());
+        for (MedicineDoseOccurrence occurrence : occurrences) {
+            long scheduledMillis = occurrence.scheduledDateTime.getTime();
+            boolean inOffPeriod = scheduledMillis > disableTime.getTime()
+                    && scheduledMillis < enableTime.getTime();
+            assertFalse(inOffPeriod);
+        }
+        assertEquals(start, occurrences.get(0).scheduledDateTime);
+    }
+
+    @Test
+    public void insertMedicine_newReminderBranch_generatesTodaysOccurrence() {
+        Medicine medicine = insertMedicine("new branch host", 0);
+        // a brand-new reminder (id == null) reaching the bookkeeping through
+        // updateMedicine's new-reminder branch with created == start == now
+        // with millis precision: the day-0 dose must be generated right away
+        Date now = new Date();
+        MedicineReminder newReminder = new MedicineReminder();
+        newReminder.message = "new branch reminder";
+        newReminder.reminderEnabled = true;
+        newReminder.createdDateTime = now;
+        newReminder.updatedDateTime = now;
+        newReminder.startDateTime = now;
+        newReminder.reminderDays = new LinkedHashSet<>(Arrays.asList(
+                Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY,
+                Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY));
+        ArrayList<MedicineReminder> medicineReminders = new ArrayList<>();
+        medicineReminders.add(newReminder);
+
+        mMedicineRepository.updateMedicine(medicine, medicineReminders);
+
+        // the new-reminder branch stamps, inserts and generates in one pass
+        assertNotNull(newReminder.id);
+        Calendar expectedCalendar = Calendar.getInstance();
+        expectedCalendar.setTime(now);
+        expectedCalendar.set(Calendar.MILLISECOND, 0);
+        List<MedicineDoseOccurrence> occurrences =
+                findOccurrencesByReminderId(newReminder.id);
+        assertEquals(1, occurrences.size());
+        assertEquals(expectedCalendar.getTime(), occurrences.get(0).scheduledDateTime);
+    }
+
+    @Test
+    public void insertNote_stampsReminderAndGeneratesTodaysOccurrence() {
+        NoteRepository noteRepository = mProvider.get(NoteRepository.class);
+        // the note flow assembles reminder rows without bookkeeping; since
+        // the raw dao insert was replaced by the repository entry point, the
+        // reminder must come out create-stamped with today's dose generated
+        Date now = new Date();
+        MedicineReminder reminder = new MedicineReminder();
+        reminder.message = "note reminder";
+        reminder.reminderEnabled = true;
+        reminder.createdDateTime = now;
+        reminder.updatedDateTime = now;
+        reminder.startDateTime = now;
+        reminder.reminderDays = new LinkedHashSet<>(Arrays.asList(
+                Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY,
+                Calendar.FRIDAY, Calendar.SATURDAY, Calendar.SUNDAY));
+        List<MedicineReminder> medicineReminders = new ArrayList<>();
+        medicineReminders.add(reminder);
+        MedicineState medicineState = new MedicineState();
+        Medicine medicine = new Medicine();
+        medicine.name = "note medicine";
+        medicineState.updateMedicine(medicine);
+        medicineState.updateMedicineReminderList(medicineReminders);
+        NoteState noteState = new NoteState();
+        Note note = new Note();
+        note.content = "note with dialog-open reminder";
+        noteState.updateNote(note);
+        ArrayList<MedicineState> medicineStates = new ArrayList<>();
+        medicineStates.add(medicineState);
+        noteState.updateMedicineStates(medicineStates);
+
+        noteRepository.insertNote(noteState);
+
+        // ids back-filled on the passed payload, the reminder row carries the
+        // create-time enable stamp (previously never set by the raw insert)
+        assertNotNull(noteState.getNoteId());
+        assertNotNull(reminder.id);
+        MedicineReminder stored =
+                mMedicineReminderDao.findMedicineReminderById(reminder.id);
+        assertNotNull(stored);
+        assertNotNull(stored.lastEnabledDateTime);
+        // today's dose exists at the dialog-open moment's H:M:S.000
+        Calendar expectedCalendar = Calendar.getInstance();
+        expectedCalendar.setTime(now);
+        expectedCalendar.set(Calendar.MILLISECOND, 0);
+        List<MedicineDoseOccurrence> occurrences =
+                findOccurrencesByReminderId(reminder.id);
+        assertEquals(1, occurrences.size());
+        assertEquals(expectedCalendar.getTime(), occurrences.get(0).scheduledDateTime);
+    }
+
+    @Test
+    public void backfillOccurrences_offPeriodNeverRegenerated() {
+        Medicine medicine = insertMedicine("backfill off-period host", 0);
+        // daily 08:00 reminder enabled since Thursday Oct 1 08:00 with a
+        // recorded disable (Oct 3 12:00) -> re-enable (Oct 10 09:00) window
+        MedicineReminder reminder = plantReminder(medicine.id,
+                fixedDate(Calendar.OCTOBER, 1, 8, 0),
+                fixedDate(Calendar.OCTOBER, 1, 8, 0), true,
+                Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY,
+                Calendar.THURSDAY, Calendar.FRIDAY, Calendar.SATURDAY,
+                Calendar.SUNDAY);
+        reminder.lastDisabledDateTime = fixedDate(Calendar.OCTOBER, 3, 12, 0);
+        reminder.lastEnabledDateTime = fixedDate(Calendar.OCTOBER, 10, 9, 0);
+        mMedicineReminderDao.update(reminder);
+
+        mMedicineRepository.backfillOccurrences(fixedDate(Calendar.OCTOBER, 18, 12, 0));
+
+        // CRITICAL: zero occurrences strictly inside the off-period
+        List<MedicineDoseOccurrence> occurrences =
+                findFixedWindowOccurrencesByReminderId(reminder.id);
+        Date offPeriodStart = fixedDate(Calendar.OCTOBER, 3, 12, 0);
+        Date offPeriodEnd = fixedDate(Calendar.OCTOBER, 10, 9, 0);
+        for (MedicineDoseOccurrence occurrence : occurrences) {
+            assertFalse(occurrence.scheduledDateTime.after(offPeriodStart)
+                    && occurrence.scheduledDateTime.before(offPeriodEnd));
+        }
+        // outside-window candidates still appear per the floored bounds: Oct 2
+        // and Oct 3 08:00 (created..disable stretch), nothing on Oct 1 08:00
+        // (exactly the start floor, strictly excluded), nothing Oct 4 .. Oct 10
+        // 08:00 (inside the off-period), the schedule resumes Oct 11 through
+        // the Oct 18 ceiling
+        assertEquals(Arrays.asList(
+                fixedDate(Calendar.OCTOBER, 2, 8, 0),
+                fixedDate(Calendar.OCTOBER, 3, 8, 0),
+                fixedDate(Calendar.OCTOBER, 11, 8, 0),
+                fixedDate(Calendar.OCTOBER, 12, 8, 0),
+                fixedDate(Calendar.OCTOBER, 13, 8, 0),
+                fixedDate(Calendar.OCTOBER, 14, 8, 0),
+                fixedDate(Calendar.OCTOBER, 15, 8, 0),
+                fixedDate(Calendar.OCTOBER, 16, 8, 0),
+                fixedDate(Calendar.OCTOBER, 17, 8, 0),
+                fixedDate(Calendar.OCTOBER, 18, 8, 0)),
+                scheduledDates(occurrences));
+    }
+
+    @Test
+    public void backfillOccurrences_healsLegacyMissingStartDayOccurrence() {
+        Medicine medicine = insertMedicine("backfill heal host", 0);
+        // legacy reminder from the millis-precision era: created Monday Oct 5
+        // 10:35:30.456, start Monday Oct 5 22:00:24.567 - the start-day dose
+        // (22:00:24.000) sat below the old raw start bound (22:00:24.567)
+        // and was skipped by the first backfill run
+        MedicineReminder reminder = plantReminder(medicine.id,
+                fixedDateTime(Calendar.OCTOBER, 5, 22, 0, 24, 567),
+                fixedDateTime(Calendar.OCTOBER, 5, 10, 35, 30, 456), true,
+                Calendar.MONDAY);
+
+        mMedicineRepository.backfillOccurrences(fixedDate(Calendar.OCTOBER, 18, 12, 0));
+
+        // healed: the day-X 22:00:24.000 row now exists (the floored start
+        // bound 22:00:00.000 plus the creation grace let it pass), and the
+        // next Monday's dose is appended by the same run
+        List<MedicineDoseOccurrence> occurrences =
+                findFixedWindowOccurrencesByReminderId(reminder.id);
+        assertEquals(2, occurrences.size());
+        assertEquals(fixedDateTime(Calendar.OCTOBER, 5, 22, 0, 24, 0),
+                occurrences.get(0).scheduledDateTime);
+        assertEquals(fixedDateTime(Calendar.OCTOBER, 12, 22, 0, 24, 0),
+                occurrences.get(1).scheduledDateTime);
+    }
+
+    @Test
+    public void backfillOccurrences_secondZeroStart_staysUnhealed() {
+        Medicine medicine = insertMedicine("backfill edge host", 0);
+        // same shape as the heal case but the legacy start's SECOND is
+        // exactly 0 (22:00:00.456): its candidate (22:00:00.000) lands exactly
+        // on floorToMinute(start), which is also the backfill's lower bound,
+        // and the strict lower-bound comparison excludes it. This edge is
+        // documented in initialBackfill, not fixed: the backfill must never
+        // fabricate a dose at a minute boundary the schedule never proposed
+        MedicineReminder reminder = plantReminder(medicine.id,
+                fixedDateTime(Calendar.OCTOBER, 5, 22, 0, 0, 456),
+                fixedDateTime(Calendar.OCTOBER, 5, 10, 35, 30, 456), true,
+                Calendar.MONDAY);
+
+        mMedicineRepository.backfillOccurrences(fixedDate(Calendar.OCTOBER, 18, 12, 0));
+
+        // the day-X start-day row stays absent; the next Monday's dose proves
+        // the backfill ran and the schedule itself is intact
+        List<MedicineDoseOccurrence> occurrences =
+                findFixedWindowOccurrencesByReminderId(reminder.id);
+        assertEquals(1, occurrences.size());
+        assertEquals(fixedDateTime(Calendar.OCTOBER, 12, 22, 0, 0, 0),
+                occurrences.get(0).scheduledDateTime);
     }
 
     // ---- concurrency: the entry points take no lock, serialization is each

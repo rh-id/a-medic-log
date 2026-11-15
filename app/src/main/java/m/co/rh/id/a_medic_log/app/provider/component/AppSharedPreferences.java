@@ -82,9 +82,15 @@ public class AppSharedPreferences {
                 mMedicineReminderAlarmMigratedKey, DEFAULT_MEDICINE_REMINDER_ALARM_MIGRATED);
 
         mDoseOccurrenceBackfilledKey = SHARED_PREFERENCES_NAME
-                + ".doseOccurrenceBackfilled";
+                + ".doseOccurrenceBackfilled_v2";
         mDoseOccurrenceBackfilled = mSharedPreferences.getBoolean(
                 mDoseOccurrenceBackfilledKey, DEFAULT_DOSE_OCCURRENCE_BACKFILLED);
+        // versioned so the one-time backfill re-runs once on upgrade and
+        // heals legacy reminders with the floored minute-precision bounds;
+        // drop the un-versioned flag left behind by the first backfill run
+        mSharedPreferences.edit()
+                .remove(SHARED_PREFERENCES_NAME + ".doseOccurrenceBackfilled")
+                .apply();
 
         mCompanionAppPromoDismissedAtKey = SHARED_PREFERENCES_NAME
                 + ".companionAppPromoDismissedAt";

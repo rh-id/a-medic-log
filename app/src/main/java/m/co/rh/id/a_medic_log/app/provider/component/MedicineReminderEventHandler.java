@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -35,8 +34,9 @@ import m.co.rh.id.aprovider.ProviderValue;
 public class MedicineReminderEventHandler implements ProviderDisposable {
     private static final String TAG = MedicineReminderEventHandler.class.getName();
     // grace covers the lag between the form's pre-filled "now" start time and the actual save;
-    // the recurrence path passes false so the daily recurrence stays exact
-    private static final long CATCH_UP_GRACE_PERIOD_MS = TimeUnit.MINUTES.toMillis(5);
+    // the recurrence path passes false so the daily recurrence stays exact.
+    // Value is shared with MedicineRepository's occurrence-generation creation grace
+    private static final long CATCH_UP_GRACE_PERIOD_MS = MedicineRepository.CREATION_GRACE_PERIOD_MS;
     private final ExecutorService mExecutorService;
     private final WorkManager mWorkManager;
     private final MedicineDao mMedicineDao;
