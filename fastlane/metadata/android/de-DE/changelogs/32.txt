@@ -1,0 +1,13 @@
+Release 2.4.0+32
+
+Neuheiten:
+* Neue Medikamente-Seite: alle Medikamente auf einen Blick mit 7-Tage-Therapietreue, Erinnerungsstatus und den verknüpften Notizen
+* Karte auf dem Startbildschirm für Personal Stuff, eine App desselben Entwicklers, mit Links zu F-Droid und GitHub-Releases; lässt sich 14 Tage ausblenden
+
+Verbesserungen:
+* Karte „Heutige Einnahmen“, Therapietreue-Bericht und PDF-Export sind dank gebündelter und profilbezogener Datenbankabfragen jetzt schneller
+* Aktualisierte Navigationsbibliothek: flüssigerer Fortschrittsdialog und vorhersehbareres Verhalten beim Zurück-Drücken
+
+Fehlerbehebungen:
+* Eine Erinnerung erzeugt ihre Dose nun schon am Starttag, sodass die erste Dose sofort auf der Karte „Heutige Einnahmen“ erscheint
+* Beschriftungen im Zeitraum-Dialog des PDF-Medikamentenberichts werden auf schmalen Bildschirmen nicht mehr abgeschnitten

@@ -1,0 +1,13 @@
+Release 2.4.0+32
+
+Novità:
+* Nuova pagina Medicinali: tutti i medicinali a colpo d'occhio con l'aderenza su 7 giorni, lo stato dei promemoria e le note collegate
+* Scheda nella schermata principale che presenta Personal Stuff, l'app dello stesso sviluppatore, con link alle release su F-Droid e GitHub; può essere nascosta per 14 giorni
+
+Miglioramenti:
+* Scheda «Dosi di oggi», report di aderenza ed esportazione PDF più veloci grazie a query sul database raggruppate e limitate al profilo
+* Libreria di navigazione aggiornata: finestra di avanzamento più fluida e comportamento del tasto Indietro più prevedibile
+
+Correzioni:
+* Un promemoria ora genera la sua dose il giorno di inizio, così la prima dose compare subito nella scheda «Dosi di oggi»
+* Le etichette della finestra di periodo del report PDF non vengono più tagliate sugli schermi stretti

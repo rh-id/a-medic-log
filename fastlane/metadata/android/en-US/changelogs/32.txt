@@ -1,0 +1,13 @@
+Release 2.4.0+32
+
+Features:
+* New Medicines page: all medicines at a glance with 7-day adherence, reminder status and their linked notes
+* Homepage card promoting the companion app Personal Stuff, with links to F-Droid and GitHub releases; can be dismissed for 14 days
+
+Improvements:
+* Faster today card, adherence report and PDF export thanks to batched and profile-scoped database queries
+* Updated navigation library: smoother progress dialog and more predictable back-press behavior
+
+Fixes:
+* A reminder now generates its dose on its start day, so the first dose shows up on the today card immediately
+* PDF report range dialog labels no longer get cut off on narrow screens

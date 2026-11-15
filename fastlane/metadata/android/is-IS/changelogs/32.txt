@@ -1,0 +1,13 @@
+Release 2.4.0+32
+
+Nýjungar:
+* Ný lyfjasíða: öll lyf í einu yfirliti, með eftirfylgni síðustu 7 daga, stöðu minninga og tengdum minnispunktum
+* Spjald á heimaskjá sem kynnir appið Personal Stuff frá sama höfundi, með tengla á útgáfur á F-Droid og GitHub; má fela það í 14 daga
+
+Endurbætur:
+* Spjaldið „Skammtar í dag“, eftirfylgniskýrslan og PDF-útflutningur eru nú fljótari þökk sé gagnagrunnsfyrirspurnum í lotum, afmarkaðum við snið
+* Uppfært leiðsagnasafn: mjúkari framvindusvargluggi og fyrirsjáanlegri hegðun þegar ýtt er á Til baka
+
+Villuleiðréttingar:
+* Minning býr nú til skammt sinn á upphafsdaginn, svo fyrsti skammturinn birtist strax á spjaldinu „Skammtar í dag“
+* Textar í tímabilsvarglugga PDF-lyfjaskýrslunnar klippast ekki lengur af á þröngum skjáum

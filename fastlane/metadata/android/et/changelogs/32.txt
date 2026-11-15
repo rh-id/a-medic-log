@@ -1,0 +1,13 @@
+Release 2.4.0+32
+
+Uued funktsioonid:
+* Uus ravimite leht: kõik ravimid ühe pilguga koos viimase 7 päeva järgimise, meeldetuletuse oleku ja seotud märkmetega
+* Avalehe kaart sama arendaja rakenduse Personal Stuff tutvustamiseks koos linkidega F-Droidi ja GitHubi väljalasetele; saab 14 päevaks peita
+
+Täiustused:
+* Kiirem „Tänased annused“ kaart, järgimise aruanne ja PDF-i eksport tänu grupeeritud ja profiilipõhistele andmebaasipäringutele
+* Uuendatud navigeerimisteek: sujuvam edenemisdialoog ja prognoositavam tagasivajutuse käitumine
+
+Parandused:
+* Meeldetuletus loob nüüd oma annuse juba alguspäeval, nii et esimene annus ilmub „Tänased annused“ kaardile kohe
+* PDF-raporti perioodi dialoogi sildid ei lõigata enam maha kitsastel ekraanidel

@@ -1,0 +1,13 @@
+Release 2.4.0+32
+
+Nouveautés :
+* Nouvelle page Médicaments : tous les médicaments d'un coup d'œil, avec l'observance sur 7 jours, l'état des rappels et les notes liées
+* Carte sur l'écran d'accueil pour présenter Personal Stuff, l'application du même développeur, avec des liens vers les versions sur F-Droid et GitHub ; peut être masquée pendant 14 jours
+
+Améliorations :
+* Carte « Doses du jour », rapport d'observance et export PDF plus rapides grâce à des requêtes en base de données groupées et restreintes au profil
+* Bibliothèque de navigation mise à jour : dialogue de progression plus fluide et comportement du retour en arrière plus prévisible
+
+Corrections :
+* Un rappel génère désormais sa dose dès son jour de début, la première dose apparaît donc immédiatement sur la carte « Doses du jour »
+* Les libellés du dialogue de période du rapport PDF ne sont plus coupés sur les écrans étroits

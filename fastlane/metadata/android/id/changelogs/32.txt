@@ -1,0 +1,13 @@
+Release 2.4.0+32
+
+Fitur Baru:
+* Halaman Obat baru: semua obat dalam sekali pandang dengan kepatuhan 7 hari, status pengingat, dan catatan yang terkait
+* Kartu di layar utama yang memperkenalkan Personal Stuff, aplikasi dari pengembang yang sama, dengan tautan ke rilis F-Droid dan GitHub; bisa ditutup selama 14 hari
+
+Peningkatan:
+* Kartu dosis hari ini, laporan kepatuhan, dan ekspor PDF lebih cepat berkat kueri database yang dikelompokkan dan terbatas per profil
+* Pustaka navigasi diperbarui: dialog progres lebih lancar dan perilaku tombol kembali lebih dapat diprediksi
+
+Perbaikan:
+* Pengingat kini membuat dosisnya pada hari mulainya, sehingga dosis pertama langsung muncul di kartu dosis hari ini
+* Label dialog rentang laporan PDF tidak lagi terpotong di layar sempit

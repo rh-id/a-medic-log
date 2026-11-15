@@ -1,0 +1,13 @@
+Release 2.4.0+32
+
+Nova funcziuns:
+* Nova pagina da medikaments: tut ils medikaments sin ina rigurda cun l'observanza dals ultims 7 dis, il stadi da las erinner e las notas colliadas
+* Charta sin l'ecran principal che preschenta Personal Stuff, in'app dal medem developer, cun links tar las versiuns sin F-Droid e GitHub; po vegnir zuppada 14 dis
+
+Meglieraziuns:
+* Charta «Dosas dad oz», rapport d'observanza ed export PDF plui sperts grazia a queries da banca da datas gruppadas e limitadas al profil
+* Biblioteca da navigaziun actualisada: dialog da progressiun plui fluid e cumportament pli previsibel cun smatgar enavos
+
+Correcturas:
+* Ina erinner genera uss sia dosa gia sin il di d'entschatta, uschia che l'emprima dosa cumpara immediatamain sin la charta «Dosas dad oz»
+* Las etichettas en il dialog «Perioda da prenda» dal rapport PDF vegnan betg plui tagliadas davent sin ecrans graschleivs

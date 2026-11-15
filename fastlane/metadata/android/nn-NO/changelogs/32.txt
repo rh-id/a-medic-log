@@ -1,0 +1,13 @@
+Release 2.4.0+32
+
+Nytt:
+* Ny medisinside: alle medisinar samla med etterlevnad over 7 dagar, påminningsstatus og tilknytta notat
+* Kort på heimeskjermen som presenterer Personal Stuff, ein app frå same utviklar, med lenkjer til utgåver på F-Droid og GitHub; kan gøymast i 14 dagar
+
+Forbetringar:
+* Raskare «Dosar i dag»-kort, etterlevnadsrapport og PDF-eksport takka vere grupperte og profilavgrensa databasespørjingar
+* Oppdatert navigasjonsbibliotek: jamnare framdriftsdialog og meir føreseieleg åtferd ved trykk på Tilbake
+
+Feilrettingar:
+* Ei påminning lagar no dosen sin på startdagen, slik at den første dosen visast med ein gong på «Dosar i dag»-kortet
+* Etikettane i periode-dialogen for PDF-rapporten klippast ikkje lenger av på smale skjermar
