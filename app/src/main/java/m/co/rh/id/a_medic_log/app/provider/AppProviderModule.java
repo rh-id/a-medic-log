@@ -54,7 +54,6 @@ import m.co.rh.id.a_medic_log.app.ui.page.SplashPage;
 import m.co.rh.id.a_medic_log.app.ui.page.common.CreateFileSVDialog;
 import m.co.rh.id.a_medic_log.app.ui.page.common.ImageViewPage;
 import m.co.rh.id.a_medic_log.app.ui.page.common.PdfReportRangeSVDialog;
-import m.co.rh.id.a_medic_log.app.ui.page.common.ProgressSVDialog;
 import m.co.rh.id.a_medic_log.base.provider.BaseProviderModule;
 import m.co.rh.id.a_medic_log.base.provider.DatabaseProviderModule;
 import m.co.rh.id.anavigator.NavConfiguration;
@@ -136,7 +135,6 @@ public class AppProviderModule implements ProviderModule {
         navMap.put(Routes.ADHERENCE_PAGE, (args, activity) -> new AdherencePage());
         navMap.put(Routes.COMMON_CREATE_FILE_DIALOG, (args, activity) -> new CreateFileSVDialog());
         navMap.put(Routes.COMMON_IMAGEVIEW, (args, activity) -> new ImageViewPage());
-        navMap.put(Routes.COMMON_PROGRESS_DIALOG, (args, activity) -> new ProgressSVDialog());
         navMap.put(Routes.COMMON_PDF_RANGE_DIALOG, (args, activity) -> new PdfReportRangeSVDialog());
         navMap.putAll(provider.get(NavExtDialogConfig.class).getNavMap());
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =

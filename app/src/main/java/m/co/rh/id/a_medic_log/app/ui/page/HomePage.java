@@ -39,7 +39,6 @@ import m.co.rh.id.a_medic_log.app.ui.component.AppBarSV;
 import m.co.rh.id.a_medic_log.app.ui.component.PromoBannerSV;
 import m.co.rh.id.a_medic_log.app.ui.component.report.TodayCardSV;
 import m.co.rh.id.a_medic_log.app.ui.page.common.PdfReportRangeSVDialog;
-import m.co.rh.id.a_medic_log.app.ui.page.common.ProgressSVDialog;
 import m.co.rh.id.a_medic_log.app.util.UiUtils;
 import m.co.rh.id.a_medic_log.base.dao.MedicineDao;
 import m.co.rh.id.a_medic_log.base.dao.NoteDao;
@@ -52,9 +51,11 @@ import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.NavActivityLifecycle;
+import m.co.rh.id.anavigator.component.NavBackPressResult;
 import m.co.rh.id.anavigator.component.NavOnActivityResult;
 import m.co.rh.id.anavigator.component.NavOnBackPressed;
 import m.co.rh.id.anavigator.component.RequireComponent;
+import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
 public class HomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity>, NavOnActivityResult<Activity>, NavActivityLifecycle<Activity>, DrawerLayout.DrawerListener, View.OnClickListener {
@@ -107,6 +108,11 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
 
     // component
     private transient Provider mSvProvider;
+    private transient NavExtDialogConfig mNavExtDialogConfig;
+    // route name of the extension progress dialog, pushed instead of the
+    // removed common Routes.COMMON_PROGRESS_DIALOG; the pop guard compares
+    // against this actual route name
+    private transient String mProgressRoute;
     private transient ExecutorService mExecutorService;
     private transient MedicineDao mMedicineDao;
     private transient NoteDao mNoteDao;
@@ -133,6 +139,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     @Override
     public void provideComponent(Provider provider) {
         mSvProvider = provider.get(StatefulViewProvider.class);
+        mNavExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
+        mProgressRoute = mNavExtDialogConfig.route_progressDialog();
         mExecutorService = mSvProvider.get(ExecutorService.class);
         mMedicineDao = mSvProvider.get(MedicineDao.class);
         mNoteDao = mSvProvider.get(NoteDao.class);
@@ -272,20 +280,32 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mImportArchiveCmd = null;
         mExportSpreadsheetCmd = null;
         mExportPdfReportCmd = null;
+        mNavExtDialogConfig = null;
+        mProgressRoute = null;
     }
 
+    /**
+     * Handles back on the home page. Every branch here is a side effect
+     * (drawer close, double-back toast, exit via finishActivity) and never a
+     * route pop, so every branch consumes the back press itself by returning
+     * {@link NavBackPressResult#noPop()}; the navigator must keep the route
+     * stack untouched.
+     */
     @Override
-    public void onBackPressed(View currentView, Activity activity, INavigator navigator) {
+    public NavBackPressResult onBackPressed(View currentView, Activity activity, INavigator navigator) {
         if (mDrawerLayout.isOpen()) {
             mDrawerLayout.close();
+            return NavBackPressResult.noPop();
         } else {
             long currentMilis = System.currentTimeMillis();
             if ((currentMilis - mLastBackPressMilis) < 1000) {
                 navigator.finishActivity(null);
+                return NavBackPressResult.noPop();
             } else {
                 mLastBackPressMilis = currentMilis;
                 mSvProvider.get(ILogger.class).i(TAG,
                         activity.getString(R.string.toast_back_press_exit));
+                return NavBackPressResult.noPop();
             }
         }
     }
@@ -482,7 +502,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         // close the gate before pushing so no reminder slips in during the
         // push window; anything held is released when the dialog is popped
         mReminderNavigationGate.onNext(false);
-        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG, ProgressSVDialog.Args.newArgs(
+        mNavigator.push(mProgressRoute, mNavExtDialogConfig.args_progressDialog(
                 activity.getString(R.string.title_export_pdf),
                 activity.getString(R.string.pdf_report_progress_generating)));
         Context context = mSvProvider.getContext();
@@ -528,7 +548,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         // close the gate before pushing so no reminder slips in during the
         // push window; anything held is released when the dialog is popped
         mReminderNavigationGate.onNext(false);
-        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG, ProgressSVDialog.Args.newArgs(
+        mNavigator.push(mProgressRoute, mNavExtDialogConfig.args_progressDialog(
                 activity.getString(titleRes),
                 activity.getString(messageRes)));
         Context context = mSvProvider.getContext();
@@ -573,7 +593,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         // close the gate before pushing so no reminder slips in during the
         // push window; anything held is released when the dialog is popped
         mReminderNavigationGate.onNext(false);
-        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG, ProgressSVDialog.Args.newArgs(
+        mNavigator.push(mProgressRoute, mNavExtDialogConfig.args_progressDialog(
                 activity.getString(R.string.title_import),
                 activity.getString(R.string.import_progress_reading)));
         Context context = mSvProvider.getContext();
@@ -630,7 +650,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         // close the gate before pushing so no reminder slips in during the
         // push window; anything held is released when the dialog is popped
         mReminderNavigationGate.onNext(false);
-        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG, ProgressSVDialog.Args.newArgs(
+        mNavigator.push(mProgressRoute, mNavExtDialogConfig.args_progressDialog(
                 activity.getString(R.string.title_import),
                 activity.getString(R.string.import_progress_importing)));
         Context context = mSvProvider.getContext();
@@ -660,7 +680,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private void popProgressDialog() {
         NavRoute currentRoute = mNavigator.getCurrentRoute();
         if (currentRoute != null
-                && Routes.COMMON_PROGRESS_DIALOG.equals(currentRoute.getRouteName())) {
+                && mProgressRoute.equals(currentRoute.getRouteName())) {
             mNavigator.pop();
         }
         // the operation is done: let held medicine-reminder navigation proceed
